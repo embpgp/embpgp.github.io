@@ -4,9 +4,9 @@
   
   <link href="/atom.xml" rel="self"/>
   
-  <link href="http://yoursite.com/"/>
+  <link href="http://embpgp.github.io/"/>
   <updated>2016-11-03T11:21:24.633Z</updated>
-  <id>http://yoursite.com/</id>
+  <id>http://embpgp.github.io/</id>
   
   <author>
     <name>John Doe</name>
@@ -17,8 +17,8 @@
   
   <entry>
     <title>Hello world</title>
-    <link href="http://yoursite.com/2016/08/16/hello-world/"/>
-    <id>http://yoursite.com/2016/08/16/hello-world/</id>
+    <link href="http://embpgp.github.io/2016/08/16/hello-world/"/>
+    <id>http://embpgp.github.io/2016/08/16/hello-world/</id>
     <published>2016-08-16T07:10:22.000Z</published>
     <updated>2016-11-03T11:21:24.633Z</updated>
     
@@ -50,10 +50,10 @@ $ hexo d　　　#上传至github,可以在浏览器键入username.github.io二�
     
     </summary>
     
-      <category term="study" scheme="http://yoursite.com/categories/study/"/>
+      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
     
     
-      <category term="Configure" scheme="http://yoursite.com/tags/Configure/"/>
+      <category term="Configure" scheme="http://embpgp.github.io/tags/Configure/"/>
     
   </entry>
   
