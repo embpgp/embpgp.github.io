@@ -3,11 +3,12 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
-subtitle:
-description:
-author: John Doe
-language:
+title: rutk1t0r's blog
+subtitle: PGP 程序猿 攻城狮
+description: gnireenigne | 0x41414141 | \xff\xe4\xcc
+author: rutk1t0r
+email: pgp@rutk1t0r.cn
+language: zh-Hans
 timezone:
 
 # URL
