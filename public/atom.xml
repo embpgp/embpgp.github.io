@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2016-11-03T09:28:41.785Z</updated>
+  <updated>2016-11-03T11:21:24.633Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -16,29 +16,44 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>Hello World</title>
-    <link href="http://yoursite.com/2016/11/03/hello-world/"/>
-    <id>http://yoursite.com/2016/11/03/hello-world/</id>
-    <published>2016-11-03T09:28:41.785Z</published>
-    <updated>2016-11-03T09:28:41.785Z</updated>
+    <title>Hello world</title>
+    <link href="http://yoursite.com/2016/08/16/hello-world/"/>
+    <id>http://yoursite.com/2016/08/16/hello-world/</id>
+    <published>2016-08-16T07:10:22.000Z</published>
+    <updated>2016-11-03T11:21:24.633Z</updated>
     
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo generate</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo deploy</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
+    <content type="html"><![CDATA[<h1 id="Hexo-and-NexT-on-Github-建博客折腾…"><a href="#Hexo-and-NexT-on-Github-建博客折腾…" class="headerlink" title="Hexo and NexT on Github 建博客折腾…"></a>Hexo and NexT on Github 建博客折腾…</h1><hr>
+<p><strong>参考资料</strong>  </p>
+<ol>
+<li><a href="https://hexo.io/zh-cn/docs/" title="Hexo官网" target="_blank" rel="external">Hexo.io原装教程:https://hexo.io/zh-cn/docs/</a>  </li>
+<li><a href="http://theme-next.iissnan.com/theme-settings.html" title="Next主题" target="_blank" rel="external">Next主题配置:http://theme-next.iissnan.com/theme-settings.html</a>  </li>
+<li><a href="http://ibruce.info/2013/11/22/hexo-your-blog/" title="不如的博客" target="_blank" rel="external">不如的教程，很是详细:http://ibruce.info/2013/11/22/hexo-your-blog/</a>  </li>
+<li><a href="http://bubkoo.com/2013/12/16/hexo-issure/" title="tags.." target="_blank" rel="external">bubukoo:http://bubkoo.com/2013/12/16/hexo-issure/</a>  </li>
+<li><a href="http://www.cnblogs.com/debugzer0/articles/5461804.html" target="_blank" rel="external">新增tags等:http://www.cnblogs.com/debugzer0/articles/5461804.html</a>  </li>
+</ol>
+<hr>
+<h4 id="1-装环境-详情参考官网教程-此处简述，至少github环境安装从略-Windows的有点坑"><a href="#1-装环境-详情参考官网教程-此处简述，至少github环境安装从略-Windows的有点坑" class="headerlink" title="1. 装环境(详情参考官网教程,此处简述，至少github环境安装从略~_~Windows的有点坑)"></a>1. 装环境(详情参考官网教程,此处简述，至少github环境安装从略~_~Windows的有点坑)</h4><p><strong>安装Node.js</strong><br>    Wget:<br>    <code>$ wget -qO- https://raw.github.com/creationix/nvm/master/install.sh | sh</code><br>    安装完成后，重启终端并执行一下命令：<br>    <code>$ nvm install stable</code><br><strong>安装Hexo</strong><br>    <code>$ npm install hexo-cli -g　　#装hexo</code><br><strong>初始化项目并开启服务</strong>(在github上建立一个名为username.github.io(或者com)项目，并在本地仓库进行绑定)</p>
+<pre><code>$ hexo init username.github.com　#此处应保证项目(username替换成你的名字)目录已被git remote add等操作过即已经绑定github项目,如果不绑定也能用即可忽略  
+$ cd username.github.com　　　　　　#切换到工作目录   
+$ npm install　　　　#npm加载,从远程端加载默认配置文件到本地  
+$ hexo g　　　#生成相应的文件和文档,每次更改之后都要键入这行命令，或者直接键入hexo g -d就可生成并上传  
+$ hexo s 　　　#开启服务监听，即在本地可以访问，默认是http://localhost:4000,每次可以先在本地浏览无误后上传至github  
+$ hexo d　　　#上传至github,可以在浏览器键入username.github.io二级域名进行访问，在此之前需要配置好_config.yml文件
+</code></pre><h4 id="2-配置"><a href="#2-配置" class="headerlink" title="2. 配置"></a>2. 配置</h4><p><code>按照教程更改相应参数即可，若上述命令中遇到有错误，可直接google或者按照错误打印出来的网址进行访问即可得到解决方案,下图是我的github配置,某些情况下可能需要改成使用https,但是仍然可以不必每次都输入账户名和密码</code><br><img src="/images/git.png" alt="github配置"></p>
+<h4 id="3-选择主题"><a href="#3-选择主题" class="headerlink" title="3. 选择主题"></a>3. 选择主题</h4><p><code>我觉得加载一个好的主题对一个博客还是很重要的，所以我找了很久，官方放出来的链接在这里</code><a href="https://hexo.io/themes/index.html" title="theme" target="_blank" rel="external">https://hexo.io/themes/index.html</a>,<code>慢慢寻找吧，几乎都是开源可用的，有一些需要一些前端方面的知识．建议选择Next．pacman等经典的主题，即简单又美观.</code>  </p>
+<h4 id="4-编辑和发布"><a href="#4-编辑和发布" class="headerlink" title="4. 编辑和发布"></a>4. 编辑和发布</h4><p><code>参考前文教程装好所有的插件(评论系统，统计，打赏系统等)之后就可以自己写文章发布了，在这里注意完成菜单下的各个类别的目录的创建．比如</code><strong>hexo new page “tags”</strong><code>等，否则会导致访问失败．参考快速写文章的命令以及生成和发布命令可以使得写作是一种享受哦．一起来用MarkDown写博客吧.</code>  </p>
 ]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.
+      &lt;h1 id=&quot;Hexo-and-NexT-on-Github-建博客折腾…&quot;&gt;&lt;a href=&quot;#Hexo-and-NexT-on-Github-建博客折腾…&quot; class=&quot;headerlink&quot; title=&quot;Hexo and NexT on Github 建博客折腾…&quot;&gt;
     
     </summary>
     
+      <category term="study" scheme="http://yoursite.com/categories/study/"/>
+    
+    
+      <category term="Configure" scheme="http://yoursite.com/tags/Configure/"/>
     
   </entry>
   
