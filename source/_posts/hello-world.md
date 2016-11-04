@@ -56,6 +56,9 @@ Hexo and NexT on Github 建博客折腾...
 	npm install hexo-generator-feed@1 --save
 	npm install hexo-generator-sitemap@1 --save
 	npm install hexo-generator-searchdb --save    #搜索服务
+	npm install --save hexo-generator-index
+	npm install --save hexo-generator-archive 
+	npm install --save hexo-generator-tag
 
 ```  
 
