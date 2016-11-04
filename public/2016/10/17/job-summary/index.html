@@ -1,0 +1,944 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="misc," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="rutk1t0r's blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="经过一个多月的奋战,昨天终于签约了,个人也算结束了校招吧,一路走来,倍感心酸.
+
+老吴去年心得:http://www.nephen.com/2015/11/job-summary
+
+个人技术体系大学三年来主要的学习方向是嵌入式，编程语言主要为Asm,C/C++，用shell和python脚本开发过树莓派等的相关功能。操作系统平台为Linux,做过STM32,TI等芯片的开发，2015-2016学">
+<meta property="og:type" content="article">
+<meta property="og:title" content="求职艰辛路">
+<meta property="og:url" content="http://embpgp.github.io/2016/10/17/job-summary/index.html">
+<meta property="og:site_name" content="rutk1t0r's blog">
+<meta property="og:description" content="经过一个多月的奋战,昨天终于签约了,个人也算结束了校招吧,一路走来,倍感心酸.
+
+老吴去年心得:http://www.nephen.com/2015/11/job-summary
+
+个人技术体系大学三年来主要的学习方向是嵌入式，编程语言主要为Asm,C/C++，用shell和python脚本开发过树莓派等的相关功能。操作系统平台为Linux,做过STM32,TI等芯片的开发，2015-2016学">
+<meta property="og:updated_time" content="2016-11-04T02:35:28.261Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="求职艰辛路">
+<meta name="twitter:description" content="经过一个多月的奋战,昨天终于签约了,个人也算结束了校招吧,一路走来,倍感心酸.
+
+老吴去年心得:http://www.nephen.com/2015/11/job-summary
+
+个人技术体系大学三年来主要的学习方向是嵌入式，编程语言主要为Asm,C/C++，用shell和python脚本开发过树莓派等的相关功能。操作系统平台为Linux,做过STM32,TI等芯片的开发，2015-2016学">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://embpgp.github.io/2016/10/17/job-summary/"/>
+
+
+  <title> 求职艰辛路 | rutk1t0r's blog </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?31cbb53616f160459c7d835bac187364";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">rutk1t0r's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">PGP 程序猿 攻城狮</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-schedule">
+          <a href="/schedule" rel="section">
+            
+            日程
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                求职艰辛路
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-10-17T16:25:59+08:00" content="2016-10-17">
+              2016-10-17
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/misc/" itemprop="url" rel="index">
+                    <span itemprop="name">misc</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/17/job-summary/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/17/job-summary/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>经过一个多月的奋战,昨天终于签约了,个人也算结束了校招吧,一路走来,倍感心酸.</p>
+</blockquote>
+<p>老吴去年心得:<a href="http://www.nephen.com/2015/11/job-summary" target="_blank" rel="external">http://www.nephen.com/2015/11/job-summary</a></p>
+<hr>
+<h2 id="个人技术体系"><a href="#个人技术体系" class="headerlink" title="个人技术体系"></a>个人技术体系</h2><p>大学三年来主要的学习方向是嵌入式，编程语言主要为Asm,C/C++，用shell和python脚本开发过树莓派等的相关功能。操作系统平台为Linux,做过STM32,TI等芯片的开发，2015-2016学年在嵌入式创新基地主要学习四轴飞行器，目前开发平台为外国开源之王Pixhawk；在物联网实验室主要学习物联网作品相关技术体系，包括ZigBee，RFID，QT上位机等。对于信息安全、网络安全和软件安全亦有涉猎。</p>
+<h3 id="为什么选择了嵌入式"><a href="#为什么选择了嵌入式" class="headerlink" title="为什么选择了嵌入式?"></a>为什么选择了嵌入式?</h3><p>个人对于计算机领域的起步较晚,高中及之前一直只会开关机等.大一恍恍惚惚地过了一年,基本没学啥,C和C++课程开得等于没学,数据结构和算法没好好听课….好在自己对于技术的热衷度不减,尤其是H4ck技术.大一的时候就买了<em>加密与解密</em>,<em>Windows PE权威指南</em>,<em>黑客大曝光</em>等,各种幻想,但是眼高手低,几乎看不懂里面的原理…,到大二开了数字电路的课程,瞬时间感觉底层在召唤我,所以在大二下结束的时候毅然决定加入嵌入式实验室学习.一进去直接上手stm32,买的正点原子的开发板,看着各个模块的介绍,照着提供的例程逐个地跑代码,修改代码,调试代码等.后期加入了四轴飞行器小组,担任软件组主攻手.到后来参与物联网实验室的建设,学习物联网相关技术,算是大致使得自己对整个计算机体系有了基本的认识.</p>
+<h3 id="为什么涉猎安全技术"><a href="#为什么涉猎安全技术" class="headerlink" title="为什么涉猎安全技术?"></a>为什么涉猎安全技术?</h3><p>相信每个学习计算机的或多或少地对于H4ck3r有所耳闻或是冲着这个来的,但是到了大学发现实际情况并非如此.如果高校开的课程还算综合的话确实什么都会接触一点,但是都不能深入了解(谁说读大学就是学技术找工作的,详情搜索<strong>教育</strong>二字).因此如果有兴趣,你肯定会自己主动去索取相关资料的,这样学起来也是很快,当然要记得多动手.在今天这个信息化时代,安全问题已经成了普遍问题了,而非各个国家特殊组织所专有的.当然也不排除某些商业公司逆向工程竞争对手的产品来Get功能或者渗透测试对方信息系统达到某种目的.信息对抗及攻防延伸了到前所未有的高度,大型互联网公司脱裤,撞库事件层出不穷…随便去@n网搜一下,H3i产有多赚钱?未来安全产业估值不可限量,有兴趣的你还是好好学基础吧.</p>
+<h3 id="为什么看起来有些xjbg"><a href="#为什么看起来有些xjbg" class="headerlink" title="为什么看起来有些xjbg"></a>为什么看起来有些xjbg</h3><p>据说计算机类相关专业考研的专业课包括<strong>数据结构</strong>,<strong>计算机组成原理</strong>,<strong>操作系统</strong>,<strong>计算机网络</strong>.我觉得挺合理的,这几门课程基本上能够概括计算机基本技术.有人会说,学那么多有用吗?企业到时候把人招进公司还不只是把一样做好就行了.现实可能是这样,但是作为一个计算机类相关专业的大学生,如果不懂原理,出了问题不知如何解决不会tm很尴尬吗?作为研究者就更加要有凡事都需要探索的精神.如果再给我一次机会重来大学的机会,我还是会贪婪地学习这么多,但是很会注重某个点.如果我架不起这个技术体系,我就会感到心虚(恨只恨起步太晚).对于面试官的问题<strong>你觉得你的优点和缺点是什么</strong>我就是实情这样回答的.因此我觉得,只要认真去搞过,那些东西都会是你的.</p>
+<h2 id="如何校招"><a href="#如何校招" class="headerlink" title="如何校招?"></a>如何校招?</h2><p>首先概括:大三暑假最好去实习,或者提前批,9-10月份的校招很吃亏.都是有很鲜明的例子,具体原因可自行推理,当然类似于我们专业的神哥这样的人物除外咯.9-10月份是各大企业来校招的高峰期,期间可能会冲突很多,但是简历一定要投.模板可参考乔布,知页等(虽然泄露个人信息).内容可参考企业对相关岗位的要求照葫芦画瓢.校招来的企业可参考各大高校的就业网,最好去省会知名高校的官网看,或者直接去心仪的企业官网查看,以及各大就业网站(毕竟很多企业都是委托第三方来制作招聘网站的)等.用文字图表编辑工具记录下校招行程,包括宣讲会,笔试面试发放offer等流程的具体日期.不清楚的可以咨询自己的学长学姐,他们是过来人,不会坑你的,否则就是你请他们的饭只有一顿…</p>
+<h2 id="笔试"><a href="#笔试" class="headerlink" title="笔试"></a>笔试</h2><p>关于技术岗和非技术岗的情况还是相差很远的.一般非技术岗位不需要笔试而直接进入群面环节.而技术岗一般会进行一轮笔试,内容几乎都是基础,当然也不排除大型公司提高难度.一定要把那些<strong>套路</strong>搞明白,笔试和面试都有<strong>套路</strong>.此处会省略很多字,因为在互联网上能够匹配到.把能够做的一定都做了,一般会结合笔试成绩和简历来决定是否进入下一轮环节.建议建立一个找工作的讨论组,每天发布新消息,讨论和总结相关试题等.毕竟赶场也不容易,可以多吃点儿了…</p>
+<h2 id="面试"><a href="#面试" class="headerlink" title="面试"></a>面试</h2><p>笔试中不会做的题目考完之后一定要弄懂!!!这个坑不填几乎就可以直接See You Again了.一面的面试官一般还是喜欢问一些基础,比如<strong>指针和引用的异同</strong>,<strong>线程和进程的区别</strong>,<strong>#define用法</strong>,<strong>static,const用法</strong>,<strong>C++多态的实现方法</strong>,<strong>TCP时序图</strong>,<strong>各种排序,查找,遍历等的算法原理</strong>,<strong>网络编程中IO复用的情况</strong>等等,Linux的后台开发可以参考这个<a href="http://blog.csdn.net/huangjm_13/article/details/8799595" target="_blank" rel="external">链接</a>.搞熟了就会了.技术嘛,就是不断学习和应用的过程.二面一般是压力测试,讲一些自己做过的项目,怎么做的,怎么解决问题的等,可以搞一搞<strong>剑指offer</strong>和<strong>程序员面试宝典</strong>等书籍.在和面试官交流的过程可以稍微引导一下,体现出一个循序渐进的过程.在最后,一般面试官会说:<strong>“你有什么需要问我的吗?”</strong>,这个时候很重要,或<strong>削发明志</strong>,或<strong>力挽狂澜</strong>.一定不要傻乎乎地啥都不问就走了.所以有些技巧还是需要把握的,技术能力是一个很重要的因素,但是也要注意细节.可能某些企业不怎么想去,但是也可以去笔试面试,亲身收获面经,为更好的做准备.不打无准备的仗!!!</p>
+<h2 id="HR约谈"><a href="#HR约谈" class="headerlink" title="HR约谈"></a>HR约谈</h2><p>一般过了两面就会跟人力资源的HR姐姐约谈待遇和薪水问题,某些企业都是明码标价的.我是觉得应届毕业生还是应该多关注行业和自己感兴趣的技术,不能太过于强求金子,当然食宿也得考虑.找到工作仅仅只是一个开始,后面还需要不断学习新的技术和沉淀,这么早确定自己的未来有意思不?</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>感谢诸位背后的支持,在这段日子里一直有一群小伙伴一起为公共交通事业作出卓越贡献,大家能够抗住周围的压力并发挥出自己的实力,是一个成熟的过程.祝愿小伙伴们早日找到心仪的工作,继续加油!!!</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+  <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+    <div>坚持特色口味技术分享，您的支持将鼓励我继续创作哦！</div>
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+      <span>赏</span>
+    </button>
+    <div id="QR" style="display: none;">
+      
+      
+        <div id="alipay" style="display: inline-block">
+          <img id="alipay_qr" src="/images/zhifubao.png" alt="rutk1t0r Alipay"/>
+          <p>支付宝打赏</p>
+        </div>
+      
+    </div>
+  </div>
+
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/misc/" rel="tag">#misc</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/25/一起来撸printf吧/" rel="next" title="一起来撸printf吧">
+                <i class="fa fa-chevron-left"></i> 一起来撸printf吧
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/27/常用VPN服务器配置/" rel="prev" title="常用VPN服务器配置">
+                常用VPN服务器配置 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <div class="ds-share flat" data-thread-key="2016/10/17/job-summary/"
+     data-title="求职艰辛路"
+     data-content=""
+     data-url="http://embpgp.github.io/2016/10/17/job-summary/">
+  <div class="ds-share-inline">
+    <ul  class="ds-share-icons-16">
+
+      <li data-toggle="ds-share-icons-more"><a class="ds-more" href="javascript:void(0);">分享到：</a></li>
+      <li><a class="ds-weibo" href="javascript:void(0);" data-service="weibo">微博</a></li>
+      <li><a class="ds-qzone" href="javascript:void(0);" data-service="qzone">QQ空间</a></li>
+      <li><a class="ds-qqt" href="javascript:void(0);" data-service="qqt">腾讯微博</a></li>
+      <li><a class="ds-wechat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+
+    </ul>
+    <div class="ds-share-icons-more">
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/10/17/job-summary/"
+           data-title="求职艰辛路" data-url="http://embpgp.github.io/2016/10/17/job-summary/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="rutk1t0r" />
+          <p class="site-author-name" itemprop="name">rutk1t0r</p>
+          <p class="site-description motion-element" itemprop="description">gnireenigne | 0x41414141 | \xff\xe4\xcc</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">11</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">12</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/embpgp" target="_blank" title="Github">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  Github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://twitter.com/pgp_csust" target="_blank" title="Twitter">
+                  
+                    <i class="fa fa-fw fa-twitter"></i>
+                  
+                  Twitter
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.facebook.com/wade.james.7" target="_blank" title="Facebook">
+                  
+                    <i class="fa fa-fw fa-facebook"></i>
+                  
+                  Facebook
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/3867322666" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.hicoder.cn" title="源神官网" target="_blank">源神官网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.nephen.com" title="老吴官网" target="_blank">老吴官网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://hayifeng.github.io" title="小wulian" target="_blank">小wulian</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://hackercs.cn" title="唐大兄弟" target="_blank">唐大兄弟</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.fengpla.cn" title="锋四爷" target="_blank">锋四爷</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/fangyz" title="方小白" target="_blank">方小白</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#个人技术体系"><span class="nav-number">1.</span> <span class="nav-text">个人技术体系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么选择了嵌入式"><span class="nav-number">1.1.</span> <span class="nav-text">为什么选择了嵌入式?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么涉猎安全技术"><span class="nav-number">1.2.</span> <span class="nav-text">为什么涉猎安全技术?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么看起来有些xjbg"><span class="nav-number">1.3.</span> <span class="nav-text">为什么看起来有些xjbg</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何校招"><span class="nav-number">2.</span> <span class="nav-text">如何校招?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#笔试"><span class="nav-number">3.</span> <span class="nav-text">笔试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#面试"><span class="nav-number">4.</span> <span class="nav-text">面试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HR约谈"><span class="nav-number">5.</span> <span class="nav-text">HR约谈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"blog-rutk1t0r"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = false;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = decodeURIComponent(data.url);
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title >= 0 || index_content >= 0 ){
+                                isMatch = true;
+								if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            } 
+							
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
