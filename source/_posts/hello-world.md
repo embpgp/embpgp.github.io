@@ -34,13 +34,29 @@ Hexo and NexT on Github 建博客折腾...
 **安装Hexo**  
 	`$ npm install hexo-cli -g　　#装hexo`   
 **初始化项目并开启服务**(在github上建立一个名为username.github.io(或者com)项目，并在本地仓库进行绑定)
-```  
+```bash
 	$ hexo init username.github.io　#此处应保证项目(username替换成你的名字)目录已被git remote add等操作过即已经绑定github项目,如果不绑定也能用即可忽略  
 	$ cd username.github.io　　　　　　#切换到工作目录   
 	$ npm install　　　　#npm加载,从远程端加载默认配置文件到本地  
 	$ hexo g　　　#生成相应的文件和文档,每次更改之后都要键入这行命令，或者直接键入hexo g -d就可生成并上传  
 	$ hexo s 　　　#开启服务监听，即在本地可以访问，默认是http://localhost:4000,每次可以先在本地浏览无误后上传至github  
 	$ hexo d　　　#上传至github,可以在浏览器键入username.github.io二级域名进行访问，在此之前需要配置好_config.yml文件  
+    #各种插件
+    npm install hexo-generator-index --save
+	npm install hexo-generator-archive --save
+	npm install hexo-generator-category --save
+	npm install hexo-generator-tag --save
+	npm install hexo-server --save
+	npm install hexo-deployer-git --save
+	npm install hexo-deployer-heroku --save
+	npm install hexo-deployer-rsync --save
+	npm install hexo-deployer-openshift --save
+	npm install hexo-renderer-marked@0.2 --save
+	npm install hexo-renderer-stylus@0.2 --save
+	npm install hexo-generator-feed@1 --save
+	npm install hexo-generator-sitemap@1 --save
+	npm install hexo-generator-searchdb --save    #搜索服务
+
 ```  
 
 > 如果出现生成之后没有看到预期的效果,可尝试`hexo clean; rm -rf .deploy_git; hexo g`来重新生成.  

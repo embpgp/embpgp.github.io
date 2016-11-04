@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://embpgp.github.io/"/>
-  <updated>2016-11-04T01:07:29.079Z</updated>
+  <updated>2016-11-04T01:52:54.043Z</updated>
   <id>http://embpgp.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://embpgp.github.io/2016/08/16/hello-world/"/>
     <id>http://embpgp.github.io/2016/08/16/hello-world/</id>
     <published>2016-08-16T07:10:22.000Z</published>
-    <updated>2016-11-04T01:07:29.079Z</updated>
+    <updated>2016-11-04T01:52:54.043Z</updated>
     
     <content type="html"><![CDATA[<h1 id="Hexo-and-NexT-on-Github-建博客折腾…"><a href="#Hexo-and-NexT-on-Github-建博客折腾…" class="headerlink" title="Hexo and NexT on Github 建博客折腾…"></a>Hexo and NexT on Github 建博客折腾…</h1><hr>
 <blockquote>
@@ -37,13 +37,29 @@
 </ol>
 <hr>
 <h1 id="装环境-详情参考官网教程-此处简述，至少github环境安装从略-Windows的有点坑-可以直接去nodejs官网下载msi安装"><a href="#装环境-详情参考官网教程-此处简述，至少github环境安装从略-Windows的有点坑-可以直接去nodejs官网下载msi安装" class="headerlink" title="装环境(详情参考官网教程,此处简述，至少github环境安装从略~_~Windows的有点坑,可以直接去nodejs官网下载msi安装)"></a>装环境(详情参考官网教程,此处简述，至少github环境安装从略~_~Windows的有点坑,可以直接去nodejs官网下载msi安装)</h1><p><strong>安装Node.js</strong><br>    Wget:<br>    <code>$ wget -qO- https://raw.github.com/creationix/nvm/master/install.sh | sh</code><br>    安装完成后，重启终端并执行一下命令：<br>    <code>$ nvm install stable</code><br><strong>安装Hexo</strong><br>    <code>$ npm install hexo-cli -g　　#装hexo</code><br><strong>初始化项目并开启服务</strong>(在github上建立一个名为username.github.io(或者com)项目，并在本地仓库进行绑定)</p>
-<pre><code>$ hexo init username.github.io　#此处应保证项目(username替换成你的名字)目录已被git remote add等操作过即已经绑定github项目,如果不绑定也能用即可忽略  
-$ cd username.github.io　　　　　　#切换到工作目录   
-$ npm install　　　　#npm加载,从远程端加载默认配置文件到本地  
-$ hexo g　　　#生成相应的文件和文档,每次更改之后都要键入这行命令，或者直接键入hexo g -d就可生成并上传  
-$ hexo s 　　　#开启服务监听，即在本地可以访问，默认是http://localhost:4000,每次可以先在本地浏览无误后上传至github  
-$ hexo d　　　#上传至github,可以在浏览器键入username.github.io二级域名进行访问，在此之前需要配置好_config.yml文件
-</code></pre><blockquote>
+<pre><code class="bash">$ hexo init username.github.io　<span class="comment">#此处应保证项目(username替换成你的名字)目录已被git remote add等操作过即已经绑定github项目,如果不绑定也能用即可忽略  </span>
+$ <span class="built_in">cd</span> username.github.io　　　　　　<span class="comment">#切换到工作目录   </span>
+$ npm install　　　　<span class="comment">#npm加载,从远程端加载默认配置文件到本地  </span>
+$ hexo g　　　<span class="comment">#生成相应的文件和文档,每次更改之后都要键入这行命令，或者直接键入hexo g -d就可生成并上传  </span>
+$ hexo s 　　　<span class="comment">#开启服务监听，即在本地可以访问，默认是http://localhost:4000,每次可以先在本地浏览无误后上传至github  </span>
+$ hexo d　　　<span class="comment">#上传至github,可以在浏览器键入username.github.io二级域名进行访问，在此之前需要配置好_config.yml文件  </span>
+<span class="comment">#各种插件</span>
+npm install hexo-generator-index --save
+npm install hexo-generator-archive --save
+npm install hexo-generator-category --save
+npm install hexo-generator-tag --save
+npm install hexo-server --save
+npm install hexo-deployer-git --save
+npm install hexo-deployer-heroku --save
+npm install hexo-deployer-rsync --save
+npm install hexo-deployer-openshift --save
+npm install hexo-renderer-marked@0.2 --save
+npm install hexo-renderer-stylus@0.2 --save
+npm install hexo-generator-feed@1 --save
+npm install hexo-generator-sitemap@1 --save
+npm install hexo-generator-searchdb --save    <span class="comment">#搜索服务</span>
+</code></pre>
+<blockquote>
 <p>如果出现生成之后没有看到预期的效果,可尝试<code>hexo clean; rm -rf .deploy_git; hexo g</code>来重新生成.  </p>
 </blockquote>
 <h1 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h1><p><code>按照教程更改相应参数即可，若上述命令中遇到有错误，可直接google或者按照错误打印出来的网址进行访问即可得到解决方案,下图是我的github配置,某些情况下可能需要改成使用https,但是仍然可以不必每次都输入账户名和密码</code>(以前的配置)<br><img src="/images/git.png" alt="github配置"></p>
