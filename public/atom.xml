@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://embpgp.github.io/"/>
-  <updated>2016-11-07T03:07:25.364Z</updated>
+  <updated>2016-11-07T06:14:22.700Z</updated>
   <id>http://embpgp.github.io/</id>
   
   <author>
@@ -14,6 +14,46 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Linux内核0.11完全注释 第一章</title>
+    <link href="http://embpgp.github.io/2016/11/07/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%80%E7%AB%A0/"/>
+    <id>http://embpgp.github.io/2016/11/07/Linux内核0-11完全注释-第一章/</id>
+    <published>2016-11-07T05:38:41.000Z</published>
+    <updated>2016-11-07T06:14:22.700Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote>
+<p>一直学习Linux内核源码,现在有些时间了,便开始找本书籍开始.从最初的成形版本可以学到当时Linux内核开发者的思考方式,便于理解后期Linux的改进路线.</p>
+</blockquote>
+<hr>
+<h1 id="Linux诞生和发展"><a href="#Linux诞生和发展" class="headerlink" title="Linux诞生和发展"></a>Linux诞生和发展</h1><p>Linux操作系统的诞生,发展和成长过程依赖于以下五个重要支柱:<br>UNIX操作系统:鼻祖<br>MINIX操作系统:DEMOE版本供学习<br>GNU计划:GNU’s not Unix,含编辑工具,shell程序,gcc系列编译程序,gdb调试程序等<br>POSIX标准:Linux的未来<br>Internet网络:传播的媒介</p>
+<h1 id="主要版本号"><a href="#主要版本号" class="headerlink" title="主要版本号"></a>主要版本号</h1><p><img src="/images/kernel_release_1.png" alt="kernel_release_1"><br><img src="/images/kernel_release_2.png" alt="kernel_release_2"></p>
+<h1 id="内核目录树"><a href="#内核目录树" class="headerlink" title="内核目录树"></a>内核目录树</h1><p><img src="/images/Linux_kernel_0.11.png" alt="Linux_kernel_0.11"></p>
+<h1 id="书籍章节划分"><a href="#书籍章节划分" class="headerlink" title="书籍章节划分"></a>书籍章节划分</h1><p>书籍分为了5个部分,第1章至第4章是基础部分.操作系统与所运行的硬件环境密切相关(Intel的80X86保护模式下的编程原理,到目前位置Linus本人仍然认为X86系列的处理器比较适合Linux);<br>第二部分包括第5至第7章,描述内核引导启动和32位运行方式的准备阶段,作为学习内核的初学者应该全部进行阅读;<br>第三部分是从第8章到第13章是内核代码的主要部分;<br>第四部分是从14章到16章,作为第三部分的参考部分;<br>第五部分介绍如何使用PC模拟软件系统Bochs针对Linux 0.11内核进行各种实验活动.  </p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;一直学习Linux内核源码,现在有些时间了,便开始找本书籍开始.从最初的成形版本可以学到当时Linux内核开发者的思考方式,便于理解后期Linux的改进路线.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr&gt;
+&lt;h1 id=&quot;Linux诞生和发展&quot;&gt;&lt;
+    
+    </summary>
+    
+      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+    
+    
+      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+    
+      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+    
+      <category term="Asm" scheme="http://embpgp.github.io/tags/Asm/"/>
+    
+      <category term="LDD" scheme="http://embpgp.github.io/tags/LDD/"/>
+    
+  </entry>
   
   <entry>
     <title>raspberry pi xrdp error</title>
