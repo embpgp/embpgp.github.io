@@ -82,10 +82,10 @@
     <link href="http://embpgp.github.io/2016/11/07/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%80%E7%AB%A0/"/>
     <id>http://embpgp.github.io/2016/11/07/Linux内核0-11完全注释-第一章/</id>
     <published>2016-11-07T05:38:41.000Z</published>
-    <updated>2016-11-07T06:32:54.370Z</updated>
+    <updated>2016-11-07T13:21:18.849Z</updated>
     
     <content type="html"><![CDATA[<blockquote>
-<p>一直学习Linux内核源码,现在有些时间了,便开始找本书籍开始.从最初的成形版本可以学到当时Linux内核开发者的思考方式,便于理解后期Linux的改进路线.</p>
+<p>一直想学习Linux内核源码,现在有些时间了,便开始找本书籍开始.从最初的成形版本可以学到当时Linux内核开发者的思考方式,便于理解后期Linux的改进路线.</p>
 </blockquote>
 <hr>
 <h1 id="Linux诞生和发展"><a href="#Linux诞生和发展" class="headerlink" title="Linux诞生和发展"></a>Linux诞生和发展</h1><p>Linux操作系统的诞生,发展和成长过程依赖于以下五个重要支柱:<br>UNIX操作系统:鼻祖<br>MINIX操作系统:DEMO版本供学习<br>GNU计划:GNU’s not Unix,含编辑工具,shell程序,gcc系列编译程序,gdb调试程序等<br>POSIX标准:Linux的未来<br>Internet网络:传播的媒介</p>
@@ -97,10 +97,10 @@
     <summary type="html">
     
       &lt;blockquote&gt;
-&lt;p&gt;一直学习Linux内核源码,现在有些时间了,便开始找本书籍开始.从最初的成形版本可以学到当时Linux内核开发者的思考方式,便于理解后期Linux的改进路线.&lt;/p&gt;
+&lt;p&gt;一直想学习Linux内核源码,现在有些时间了,便开始找本书籍开始.从最初的成形版本可以学到当时Linux内核开发者的思考方式,便于理解后期Linux的改进路线.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;hr&gt;
-&lt;h1 id=&quot;Linux诞生和发展&quot;&gt;&lt;
+&lt;h1 id=&quot;Linux诞生和发展&quot;&gt;
     
     </summary>
     
