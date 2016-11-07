@@ -18,7 +18,7 @@ tags:
 # Linux诞生和发展
 Linux操作系统的诞生,发展和成长过程依赖于以下五个重要支柱:
 UNIX操作系统:鼻祖
-MINIX操作系统:DEMOE版本供学习
+MINIX操作系统:DEMO版本供学习
 GNU计划:GNU's not Unix,含编辑工具,shell程序,gcc系列编译程序,gdb调试程序等
 POSIX标准:Linux的未来
 Internet网络:传播的媒介
