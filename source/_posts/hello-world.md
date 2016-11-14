@@ -11,16 +11,17 @@ Hexo and NexT on Github 建博客折腾...
 ==============
 
 ------   
-> 本来已经搭建好了,后来在知乎上看到了自己以前想解决的问题--->如何保证仓库所有的都同步.因为hexo只会生成网页所需要的部分,并不会将本地仓库所有内容都上传至github,由此再次折腾....
+> 本来已经搭建好了,后来在知乎上看到了自己以前想解决的问题--->如何保证仓库所有的都同步.因为hexo只会生成网页所需要的部分,并不会将本地仓库所有内容都上传至github,由此再次折腾....为了在Windows上搭建环境看是否能够同步,由此再再次验证...
 
 **参考资料**  
-1. [Hexo.io原装教程:https://hexo.io/zh-cn/docs/](https://hexo.io/zh-cn/docs/ "Hexo官网")  
-2. [Next主题配置:http://theme-next.iissnan.com/theme-settings.html](http://theme-next.iissnan.com/theme-settings.html "Next主题")  
-3. [不如的教程，很是详细:http://ibruce.info/2013/11/22/hexo-your-blog/](http://ibruce.info/2013/11/22/hexo-your-blog/ "不如的博客")  
-4. [bubukoo:http://bubkoo.com/2013/12/16/hexo-issure/](http://bubkoo.com/2013/12/16/hexo-issure/ "tags..")  
-5. [新增tags等:http://www.cnblogs.com/debugzer0/articles/5461804.html](http://www.cnblogs.com/debugzer0/articles/5461804.html)  
-6. [双份仓库:http://crazymilk.github.io/2015/12/28/GitHub-Pages-Hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2/](http://crazymilk.github.io/2015/12/28/GitHub-Pages-Hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2/)
-
+- [Hexo.io原装教程:https://hexo.io/zh-cn/docs/](https://hexo.io/zh-cn/docs/ "Hexo官网")  
+- [Next主题配置:http://theme-next.iissnan.com/theme-settings.html](http://theme-next.iissnan.com/theme-settings.html "Next主题")  
+- [不如的教程:http://ibruce.info/2013/11/22/hexo-your-blog/](http://ibruce.info/2013/11/22/hexo-your-blog/ "不如的博客")  
+- [bubukoo:http://bubkoo.com/2013/12/16/hexo-issure/](http://bubkoo.com/2013/12/16/hexo-issure/ "tags..")  
+- [新增tags等:http://www.cnblogs.com/debugzer0/articles/5461804.html](http://www.cnblogs.com/debugzer0/articles/5461804.html "add tags")  
+- [双份仓库解决](http://crazymilk.github.io/2015/12/28/GitHub-Pages-Hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2/ "two repository")  
+- [端口占用问题](http://www.wuliaole.com/post/the_error_met_during_the_installation_of_hexo/#Hexo-g的时候遇到Warn-No-layout "port busy")  
+- [主题配置文件同步:https://github.com/iissnan/hexo-theme-next/issues/328](https://github.com/iissnan/hexo-theme-next/issues/328)  
 ---
 
 # 装环境(详情参考官网教程,此处简述，至少github环境安装从略~_~Windows的有点坑,可以直接去nodejs官网下载msi安装)  
@@ -62,7 +63,7 @@ Hexo and NexT on Github 建博客折腾...
 
 ```  
 
-> 如果出现生成之后没有看到预期的效果,可尝试`hexo clean; rm -rf .deploy_git; hexo g`来重新生成.  
+> 如果出现生成之后没有看到预期的效果,可尝试`hexo clean; rm -rf .deploy_git; hexo g`来重新生成.如果用多个设备开发应该在每次编辑前应该使用`git pull origin hexo`把远程仓库最新的内容拉下来同步到本地仓库.   
 
 # 配置  
 按照教程更改相应参数即可，若上述命令中遇到有错误，可直接google或者按照错误打印出来的网址进行访问即可得到解决方案,下图是我的github配置,某些情况下可能需要改成使用https,但是仍然可以不必每次都输入账户名和密码(以前的配置)   
