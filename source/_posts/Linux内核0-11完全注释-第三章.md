@@ -166,10 +166,17 @@ endbss:
  ![Linux_0.11_chapter3_a.out_symbol1.png](/images/Linux_0.11_chapter3_a.out_symbol1.png)
  ![Linux_0.11_chapter3_a.out_symbol2.png](/images/Linux_0.11_chapter3_a.out_symbol2.png)
 
+# Make 和 Makefile
+- make程序通过Makefile文件知道如何编译和链接程序
+- make的执行过程为两个阶段。
+ - 读取**所有的**Makefile文件以及包含的Makefile文件等，记录所有的变量及值、隐式的或显式的规则，并构造出所有目标对象及其先决条件的一幅全景图;
+ - make就使用这些内部结构来确定哪个目标对象需要被重建，并且根据相应的规则来操作。
+- 当make重新编译程序的时，每个修改过的C代码文件(根据文件时间戳)必须被重新编译。如果头文件被修改过了，那么为了保证正确，make也会重新编译每个包含此头文件的C代码文件(因此某些声明最好放在头文件中，加快编译速度)。
 
 # 总结
 - 基本的开发环境需要搭建和理解
 - 汇编语言在Linux内核中的重要性
-- 目标文件格式基本格式(PE更复杂)
-- 链接器的高级特效
+- 目标文件格式基本格式需理解(PE更复杂)
+- 链接器的高级特效需理解
+- Makefile高级用法需要会用
 
