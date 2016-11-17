@@ -123,7 +123,7 @@ endbss:
 			"stosb\n\t"		//存储al->ES:[edi],edi++
 			"testb %%al, %%al\n\t"	//测试刚刚存储是否为NULL字符
 			"jne 1b"		//不是则继续跳到标号1处，否则就结束
-			::"S"(src), "D"(dest":"si","di","ax");
+			::"S"(src), "D"(dest)":"si","di","ax");
 	return dest;			//返回目的字符串首地址，实现链式
 	}
 	```
