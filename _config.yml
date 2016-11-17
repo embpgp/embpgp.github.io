@@ -1,14 +1,14 @@
-# Hexo Configuration
+﻿# Hexo Configuration
 ## Docs: https://hexo.io/docs/configuration.html
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
 title: rutk1t0r's blog
-subtitle: PGP 程序猿 攻城狮
+subtitle: Developer & Researcher
 description: gnireenigne | 0x41414141 | \xff\xe4\xcc
 author: rutk1t0r
-email: pgp@rutk1t0r.cn
-language: zh-Hans
+email: pgp@rutk1t0r.org
+language: en
 timezone:
 
 # URL
@@ -135,13 +135,13 @@ search:
 
 #links
 # title
-links_title: 友情链接
+links_title: Friends Links
 # links
 links:
-  源神官网:   http://www.hicoder.cn
-  老吴官网:   http://www.nephen.com
-  小wulian:	 http://hayifeng.github.io
-  唐大兄弟:	   http://hackercs.cn
-  锋四爷:	   http://www.fengpla.cn
-  方小白:	http://www.cnblogs.com/fangyz
-  许一:		http://xuyi-emb.win
+  Yuan :   http://www.hicoder.cn
+  Nephen:   http://www.nephen.com
+  Wulian:	 http://hayifeng.github.io
+  Quan:	   http://hackercs.cn
+  Feng:	   http://www.fengpla.cn
+  Fangyz:	http://www.cnblogs.com/fangyz
+  Xuyi:		http://xuyi-emb.win
