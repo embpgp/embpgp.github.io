@@ -179,8 +179,25 @@ tags:
 - 而后置位CR0的PE位并jmp清空流水线即可运行在保护模式下
 # 一个简单的多任务内核例子
 
-> 先安装个环境跑一下....
+> 先安装个环境跑一下....   
 
+
+- 由于这两天赵博士维护的开源网站[www.oldlinux.org](http://www.oldlinux.org)貌似突然down掉了，真是资料到用的时候方恨没下载。不过幸好我早期下载了一份**Linux-0.11-040305**。按照网上的教程手动编译源码后进入这个文件夹，翻到书最后一章，仿照并依据自身实际情况修改，如下图所示，终于跑上了系统。
+![Linux_0.11_chapter4_run_linux_0.11_hd.png](/images/Linux_0.11_chapter4_run_linux_0.11_hd.png)
+ - 我的配置
+ ```bash
+	rutk1t0r@Rutk1t0r:linux-0.11-040305$ cat bochsrc-hd-new.bxrc 
+	romimage: file=$BXSHARE/BIOS-bochs-latest
+	megs: 16
+	vgaromimage: file=/usr/local/share/bochs/VGABIOS-lgpl-latest
+	floppya: 1_44=bootimage-0.11-hd.new, status=inserted
+	ata0-master: type=disk, path="hdc-0.11.img", mode=flat, cylinders=121, heads=16, spt=63
+	boot: a
+	rutk1t0r@Rutk1t0r:linux-0.11-040305$ bochs -f ./bochsrc-hd-new.bxrc
+ ```
+ ![Linux_0.11_chapter4_run_linux_0.11_bochs_self.png](/images/Linux_0.11_chapter4_run_linux_0.11_bochs_self.png)
+
+- 接下来应该编译这个小程序并融合进去，看是否有错误...
 
 # 总结
 Intel的保护模式确实很复杂，如果想要完全深入理解必须要动手鼓捣鼓捣
