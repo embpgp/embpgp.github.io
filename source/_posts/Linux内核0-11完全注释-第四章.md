@@ -81,9 +81,65 @@ tags:
 
 ### 段选择符
 ![Linux_0.11_chapter4_sector.png](/images/Linux_0.11_chapter4_sector.png)
+- 以前的段寄存器并不直接用于寻址，而是提供index，并隐含不可直接操作的Cache部分，只有在切换的时候才更新，加快处理速度。
 ![Linux_0.11_chapter4_sector_CDEFGS.png](/images/Linux_0.11_chapter4_sector_CDEFGS.png)
+- 各个8字节的描述符概括图，主要三个字段的段基址、段限长和段属性一般由编译器、链接器、加载器和操作系统来创建。详细定义参考Intel开发者手册等。开发者需要理解芯片设计者的本意而后根据自己的实际情况来创建。
+![Linux_0.11_chapter4_SD_common.png](/images/Linux_0.11_chapter4_SD_common.png)
+
+- 除了代码段、数据段和堆栈段等一般的段还有系统描述符类型，包括LDT、TSS、调用门、中断门、陷阱门和任务门。
+
+
+### 分页机制
+- 作为分段机制的补充和"串联选择",如果不开启则分段过程后地址将直接放在系统总线上。
+- 提供OS高级功能虚拟内存的硬件平台。
+- 提供加强的内存属性保护
+![Linux_0.11_chapter4_address_to_real_address.png](/images/Linux_0.11_chapter4_address_to_real_address.png)
 # 各种保护措施
+![Linux_0.11_chapter4_protect_for_segment_and_page.png](/images/Linux_0.11_chapter4_protect_for_segment_and_page.png)
+## 段级保护
+> 所有违反保护的操作都将导致产生一个异常，要么进行异常过程处理，要么down掉Reset。
+
+
+### 段界限检查
+- 主要是GDT、LDT、IDT长度限制和常规描述符的段限长控制
+### 段类型检查
+> 谈谈绕过方法的个人猜想，当不讨论分页机制时候或者说没有开启分页的时候，分段机制作为最核心的内存保护而存在于CPU内部。诸如下面的保护都是在CPU内部完成的，当我们想要修改内存中数据怎么办呢？首先需要取得所有权限，即0特权级，而后建立新的描述符指向我们想要修改的内存区域(例如某某进程的密码等等),而后即可绕过"他人的防守"径直地向系统总线上发控制信号来读写内存数据。而当其他进程再去操作的时候拿到的东西已经被"掉过包"了。这也是为什么内存攻防中能够提权的漏洞越来越得到重视的原因之一，由于shellcode等已经被"共享"得差不多了，也大同小异。为了获取系统权限，必须不断Fuzzing冲击内存，突破程序逻辑....
+
+
+
+- 根据描述符属性字段中的tpye进行匹配
+- 当一个描述符的选择符被加进段寄存器时
+ - CS寄存器只能被加载进一个可执行段的选择符;
+ - 不可读可执行的选择符不能加进数据段选择子;
+ - 只有可写数据段才能被加进SS寄存器  
+- 当指令访问段时
+ - 任何指令不能写一个可执行段
+ - 任何指令不能写一个可写位没有置位的数据段
+ - 任何指令不能读一个可执行段，除非可执行段设置了可读标志
+
+
+### 特权级检查
+- CPL的值即为CS和SS寄存器的低2位(保护模式中要求任何时候代码段和堆栈段的CPL一致) 
+- 关于更详细和细致地代码段特权级检查可参考[代码一致性和非一致性](http://blog.csdn.net/trochiluses/article/details/8968386)
+- 数据段中主要是CPL、RPL和DPL的逻辑比较
+- 属性字段的匹配
+
+
+### 指令集限制
+- 主要是非特权程序不能执行特权指令
+
+
+## 页级保护
+![Linux_0.11_chapter4_page_check.png](/images/Linux_0.11_chapter4_page_check.png)
 # 中断和异常处理
+> 硬件机制和软件处理两者完美结合才能完成一个良好的系统的设计
+
+![Linux_0.11_chapter4_interrupt_vector.png](/images/Linux_0.11_chapter4_interrupt_vector.png)
+- 把中断看作是另一个控制流程即可,从逻辑上符合人类思考。
+- 需要提前填充处理过程的地址，处理器自动加载并跳转执行。
+- 中断源来自硬件(INTR和NMI引脚)和软件(指令各种内部错误和主动发起的int n软中断)
+- 中断优先级规定
+ ![Linux_0.11_chapter4_interrupt_priority.png](/images/Linux_0.11_chapter4_interrupt_priority.png) 
 # 任务管理
 # 保护模式编程的初始化
 # 一个简单的多任务内核例子
