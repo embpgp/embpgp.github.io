@@ -1,5 +1,5 @@
 ---
-title: Linux内核0-11完全注释 第四章
+title: Linux内核0.11完全注释 第四章
 date: 2016-11-19 21:36:22
 categories:
 - study
@@ -182,9 +182,10 @@ tags:
 > 先安装个环境跑一下....   
 
 
+## 囧囧囧ｏ（╯□╰）ｏ
 - 由于这两天赵博士维护的开源网站[www.oldlinux.org](http://www.oldlinux.org)貌似突然down掉了，真是资料到用的时候方恨没下载。不过幸好我早期下载了一份**Linux-0.11-040305**。按照网上的教程手动编译源码后进入这个文件夹，翻到书最后一章，仿照并依据自身实际情况修改，如下图所示，终于跑上了系统。
 ![Linux_0.11_chapter4_run_linux_0.11_hd.png](/images/Linux_0.11_chapter4_run_linux_0.11_hd.png)
- - 我的配置
+- 我的配置
  ```bash
 	rutk1t0r@Rutk1t0r:linux-0.11-040305$ cat bochsrc-hd-new.bxrc 
 	romimage: file=$BXSHARE/BIOS-bochs-latest
@@ -197,10 +198,13 @@ tags:
  ```
  ![Linux_0.11_chapter4_run_linux_0.11_bochs_self.png](/images/Linux_0.11_chapter4_run_linux_0.11_bochs_self.png)
 
-- 接下来应该编译这个小程序并融合进去，看是否有错误...
+
+> 接下来应该编译这个小程序并融合进去，看是否有错误...
 
 
+## 自个儿来折腾
 
+- 由于这两天我一直在折腾这个事情，收获也颇丰富，因此决定来一个番外篇,请转这篇文章。
 # 总结
 - Intel的保护模式确实很复杂，如果想要完全深入理解必须要动手鼓捣鼓捣
 - [泰晓科技](http://www.tinylab.org/linux-0.11-lab/)有大牛已经搭建好了平台，只需简单make即可，并且linux 0.11系统也具有gcc。
