@@ -127,7 +127,9 @@ endbss:
 	return dest;			//返回目的字符串首地址，实现链式
 	}
 	```
-
+ - 嵌入汇编加载代码
+ ![Linux_0.11_chapter3_emb_asm_load_code1.png](/images/Linux_0.11_chapter3_emb_asm_load_code1.png)
+ ![Linux_0.11_chapter3_emb_asm_load_code2.png](/images/Linux_0.11_chapter3_emb_asm_load_code2.png)
 ## C与汇编的相互调用
 - 调用约定(主要根据参数顺序、传参方式以及平衡堆栈者等来区分,当然其他体系结构也有其他实现,这里主要是IA-32体系,Intel 64调用约定已经开始大幅度使用寄存器传参)
   - fastcall:Linux系统调用比较常用，直接利用寄存器传参，子程序(被调用者)清除栈帧
