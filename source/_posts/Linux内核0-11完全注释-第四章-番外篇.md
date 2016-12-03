@@ -100,5 +100,7 @@ rutk1t0r@Rutk1t0r:example_for_multi_tasks$
 - 去掉中断看全景图吧!!!瞬间被霸屏。
 ![Linux_0.11_chapter4_extra_bochs_running.png](/images/Linux_0.11_chapter4_extra_bochs_running.png)
 
+- 自己新增加的任务2,其中利用了局部段描述符的第0个槽位,打印字符'0'。
+![Linux_0.11_chapter4_extra_bochs_add_2_task.png](/images/Linux_0.11_chapter4_extra_bochs_add_2_task.png)
 # 总结
 能折腾总会学到很多...关于代码的分析请参见[这里](https://github.com/embpgp/Linux_kernel_0.11_examples/tree/master/chapter4/example_for_multi_tasks)吧
