@@ -89,7 +89,7 @@ rutk1t0r@Rutk1t0r:example_for_multi_tasks$
 ![Linux_0.11_chapter4_extra_bochs_protect_0.png](/images/Linux_0.11_chapter4_extra_bochs_protect_0.png)
 - 注意观察bochs界面的左上角处，已经打印出了大约10个A。
 ![Linux_0.11_chapter4_extra_bochs_first_show.png](/images/Linux_0.11_chapter4_extra_bochs_first_show.png)
-- 用s单步走，注意观察第一次jmp后的变化,esp已经改变,此时已经处于任务1即打印B的任务的用户空间了。由于处于调试状态的程序不能单步直接相应定时器中断，我们再次键入c继续等待下一次中断。
+- 用s单步走，注意观察第一次jmp后的变化,esp已经改变,此时已经处于任务1即打印B的任务的用户空间了。由于处于调试状态的程序不能单步直接响应定时器中断，我们再次键入c继续等待下一次中断。
 ![Linux_0.11_chapter4_extra_bochs_first_jmp.png](/images/Linux_0.11_chapter4_extra_bochs_first_jmp.png)
 - 注意观察bochs界面的左上角处，又打印了大约10B。说明此时被中断后来到了任务1(即打印B)的内核空间，esp也发生了变化。
 ![Linux_0.11_chapter4_extra_bochs_task0_kernel.png](/images/Linux_0.11_chapter4_extra_bochs_task0_kernel.png)
