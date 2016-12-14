@@ -62,7 +62,7 @@ tags:
 - 小于16M的物理内存也可以运行Linux 0.11,在init/main.c中也仅仅映射了0-16MB的内存范围，多了也用不到，除非自己修改内核代码，增加页表。
 
 ## 任务0
-- 空闲进程
+- 空闲进程，主要执行pause()系统调用
 ![Linux_0.11_chapter5_task0_space.png](/images/Linux_0.11_chapter5_task0_space.png)
 ## 任务1
 - init进程
@@ -163,3 +163,15 @@ struct task_struct {
 };
 
 ```
+## 创建新进程
+![Linux_0.11_chapter5_fork_principle.png](/images/Linux_0.11_chapter5_fork_principle.png)
+## 调度程序
+![Linux_0.11_chapter5_schedule_algorithm.png](/images/Linux_0.11_chapter5_schedule_algorithm.png)
+## 堆栈分布
+![Linux_0.11_chapter5_stack_space.png](/images/Linux_0.11_chapter5_stack_space.png)
+
+# 文件系统
+![Linux_0.11_chapter5_file_system_minix.png](/images/Linux_0.11_chapter5_file_system_minix.png)
+
+# 小结
+Linux 0.11内核基本框架摘录，详情还得根据需求继续参考，争取尽快熟悉根文件系统并拓展shell。
