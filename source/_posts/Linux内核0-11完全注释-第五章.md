@@ -37,7 +37,7 @@ tags:
 # 内核对内存的管理和使用
 ## 内存分布视图
 ![Linux_0.11_chapter5_Linux_kernel_mm_function.png](/images/Linux_0.11_chapter5_Linux_kernel_mm_function.png)
-- 其中显存和BIOS ROM部分是由于工程师在集成PC的时候把地址空间分给了它们。
+- 其中显存和ROM BIOS部分是由于工程师在集成PC的时候把地址空间分给了它们。
 - 分段机制在Intel处理器中必须开启，但是软件工程师可以采用"平坦模式"寻址使得没有分段
 - 分页机制需要大量的"铺垫"才能启用，并且为mm子系统提供支持
 ## 内存地址空间概念
