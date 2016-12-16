@@ -1,5 +1,5 @@
 ---
-title: Linux内核0.11完全注释-第五章
+title: Linux内核0.11完全注释 第五章
 date: 2016-12-14 17:14:41
 categories:
 - study
