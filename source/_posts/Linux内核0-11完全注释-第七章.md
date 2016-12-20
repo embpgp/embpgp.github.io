@@ -97,7 +97,29 @@ void sched_init(void)
 
 ## init_task共同体
 - 关于内核态的堆栈"只读"理解见[这里](https://github.com/embpgp/Linux_kernel_0.11_examples/blob/master/chapter4/example_for_multi_tasks/head.s#L180)
-- 注释里面也提到了，task_struct结构体和内核态堆栈都处于同一个页面，因此把两者放在一起构成一个共同体是很正确的用法。但得保证task结构体必须放在4K对齐边界，否则在初始化的时候加了个PAGE_SIZE esp0就指到了另外一个内存页了。
+- 注释里面也提到了，task_struct结构体和内核态堆栈都处于同一个页面，因此把两者放在一起构成一个共同体是很正确的用法。~~但得保证task结构体必须放在4K对齐边界，否则在初始化的时候加了个PAGE_SIZE esp0就指到了另外一个内存页了。~~经过调试发现任务0并不需要满足4K对齐条件，编译的时候也没有特意要求init_task共同体放在边界，但只要不影响程序执行就没什么特别对待的。但后面经过fork()的任务通过层次调用get_page()返回的地址就是4K对齐了。
+```bash
+(gdb) info registers 
+eax            0x0	0
+ecx            0x55e8	21992
+edx            0x17	23
+ebx            0x3	3
+esp            0x1f0ec	0x1f0ec <init_task+4012>
+ebp            0x24e88	0x24e88 <user_stack+4072>
+esi            0xe0000	917504
+edi            0xffc	4092
+eip            0x6d4c	0x6d4c <schedule+163>
+eflags         0x246	[ PF ZF IF ]
+cs             0x8	8
+ss             0x10	16
+ds             0x10	16
+es             0x10	16
+fs             0x17	23
+gs             0x17	23
+(gdb) print &init_task
+$1 = (union task_union *) 0x1e140 <init_task>
+(gdb)
+```
 ```C
 // 每个任务(进程)在内核态运行时都有自己的内核态堆栈。这里定义了任务的内核态堆栈结构。
 // 定义任务联合(任务结构成员和stack字符数组成员)。因为一个任务的数据结构与其内核态堆栈
