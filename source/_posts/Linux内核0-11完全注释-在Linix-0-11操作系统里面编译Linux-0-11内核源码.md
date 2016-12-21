@@ -29,3 +29,17 @@ tags:
  ![Linux_0.11_compile_0.11_make.png](/images/Linux_0.11_compile_0.11_make.png)
 - restart
  ![Linux_0.11_compile_0.11_new_kernel_start.png](/images/Linux_0.11_compile_0.11_new_kernel_start.png)
+
+# 继续尝试调用sethostname
+为了保险期间我先用嵌入汇编来写(系统调用号也被改到74去了)，但是居然给我报出了-38的错误号(我用printf看的)，果然查看内核错误号发现居然没有实现的意思，看源码发现真的是没有实现...dev版本的sys_sethostname系统调用直接`return -ENOSYS;`然后果断照着教程修改源码实现一遍，写出如下C函数，发现终于可以用了。
+- ![Linux_0.11_compile_0.11_sethostname_syscall_num.png](/images/Linux_0.11_compile_0.11_sethostname_syscall_num.png)
+- ![Linux_0.11_compile_0.11_sethostname_call_C.png](/images/Linux_0.11_compile_0.11_sethostname_call_C.png)
+- ![Linux_0.11_compile_0.11_sethostname_test.png](/images/Linux_0.11_compile_0.11_sethostname_test.png)
+
+# 转到tinylab工程上去
+本以为是tinylab的Linux 0.11操作系统里面的Linux 0.11内核源代码出了问题，后来还是认为是hdc-0.11.img的缘故。果断修改tools下的bochs的硬盘配置文化，将ata0改为`ata0-master: type=disk, path="rootfs/hdc-0.11-new.img", mode=flat, cylinders=410, heads=16, spt=38`，其中的hdc-0.11-new.img文件从赵博士的dev版本拷贝过来的，而后make start-hd后继续make clean发现仍然出现`Not Owner`问题，直接一波刚`chown -R root.root ./*`。之后就OK了。顺利编译链接写入引导重启没问题。
+- ![Linux_0.11_compile_0.11_chown.png](/images/Linux_0.11_compile_0.11_chown.png)
+
+# 总结
+虽然用C语言搭载成功嵌入hdc-0.11.img的gcc1.4能够继续开发Linux 0.11内核功能，但是能否学习bash来更好地契合Linux呢?我想我应该首先学一遍文件系统相关理论知识自己能够鼓捣hdc文件吧。发现hexdump居然可以用了~~~
+![Linux_0.11_compile_0.11_hexdump_root.png](/images/Linux_0.11_compile_0.11_hexdump_root.png)
