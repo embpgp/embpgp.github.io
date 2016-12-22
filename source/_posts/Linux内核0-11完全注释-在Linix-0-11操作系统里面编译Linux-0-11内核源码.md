@@ -1,5 +1,5 @@
 ---
-title: Linux内核0-11完全注释 在Linix 0.11操作系统里面编译Linux 0.11内核源码
+title: Linux内核0.11完全注释 在Linix 0.11操作系统里面编译Linux 0.11内核源码
 date: 2016-12-21 12:46:31
 categories:
 - study
