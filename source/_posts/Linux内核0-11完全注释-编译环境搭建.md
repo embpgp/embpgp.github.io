@@ -1,5 +1,5 @@
 ---
-title: Linux内核0-11完全注释 编译环境搭建
+title: Linux内核0.11完全注释 编译环境搭建
 date: 2016-12-20 13:51:24
 categories:
 - study
