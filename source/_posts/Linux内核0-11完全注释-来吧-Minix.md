@@ -19,9 +19,9 @@ tags:
 ![Linux_0.11_Minix_mkfs_dev_fd1_360.png](/images/Linux_0.11_Minix_mkfs_dev_fd1_360.png)
 ![Linux_0.11_Minix_mkfs_dev_fd1_360_do.png](/images/Linux_0.11_Minix_mkfs_dev_fd1_360_do.png)
 
-# 再来简介Minux文件系统格式  
+# 再来简介Minix文件系统格式  
 ## 引导块
-根据Minux文件系统的设计，我们上面创建的360KB的软盘总共分为6个部分，图中的块是以1KB为单位的，这是设计需求，注意区别于硬盘中的扇区。其中约定第一个块为引导块，虽然引导区约定为512字节但是在这里最小单位为1K,浪费也就不在乎了。即使不引导也得有引导标志以符合标准。
+根据Minix文件系统的设计，我们上面创建的360KB的软盘总共分为6个部分，图中的块是以1KB为单位的，这是设计需求，注意区别于硬盘中的扇区。其中约定第一个块为引导块，虽然引导区约定为512字节但是在这里最小单位为1K,浪费也就不在乎了。即使不引导也得有引导标志以符合标准。
 ![Linux_0.11_Minix_360K_fd_layout.png](/images/Linux_0.11_Minix_360K_fd_layout.png)
 - 注意0x200偏移前面的0xaa55。
 ![Linux_0.11_Minix_360K_Boot.png](/images/Linux_0.11_Minix_360K_Boot.png)
@@ -34,7 +34,7 @@ tags:
 - 0x0001 short 16位 i节点位图占块数目　1表示仅仅用一个块就可以描述所有i就节点映射情况
 - 0x0001 short 16位 逻辑块位图占块数目 同上
 - 0x0008　short 16位 表示数据区第一个块号 真正保存文件内容的块区
-- 0x0000 short 16位 在Minux 1.0中恒等于0，为后期改版做准备。
+- 0x0000 short 16位 在Minix 1.0中恒等于0，为后期改版做准备。
 - 0x10081c00 long 32位 最大文件长度，书中注释到"显然有误",此字段应该是mkfs程序填充的，但是后面学习了i节点后进过计算个人认为没有那么"显然",mkfs程序仅仅是用双重间接块号来计算的，即512\*512\*1KB = 256MB=268966912=0x10081c00字节。但是实际情况是可以再存多一点的。加上前面的直接块号和一次间接块号。但是从内存字段的定义来看答案又不一样...(不触碰原则就没事儿,灵活点儿)
 - 0x137f short 16位 Magic Number　约定值，类似于本版本文件系统的标志。
 ![Linux_0.11_Minix_360K_super_block_data.png](/images/Linux_0.11_Minix_360K_super_block_data.png)
