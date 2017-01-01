@@ -365,5 +365,5 @@ exec_error1:
 ```
 
 # 总结
-相对于Windows的PE格式来说该版本的可执行文件格式(a.out)还是简单许多，所以需要配套的编译链接工具提供支持，有时间可以继续分析ELF。
+相对于Windows的PE格式来说该版本的可执行文件格式(a.out)还是简单许多，所以需要配套的编译链接工具提供支持，有时间可以继续分析ELF。可以同步参考[这里](https://tinylab.gitbooks.io/cbook/content/zh/preface/01-chapter1.html)
 
