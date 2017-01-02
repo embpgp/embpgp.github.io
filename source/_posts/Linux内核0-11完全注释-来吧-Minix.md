@@ -88,5 +88,127 @@ tags:
 ![Linux_0.11_Minix_1.0_find_file_by_name.png](/images/Linux_0.11_Minix_1.0_find_file_by_name.png)
 ![Linux_0.11_Minix_1.0_find_file_by_name_words.png](/images/Linux_0.11_Minix_1.0_find_file_by_name_words.png)
 
+
+> 现在来分析为什么说硬链接不能是目录以及不能跨文件系统而软链接就可以呢...
+
+
+# sys_link系统调用
+
+```C
+//// 为文件建立一个文件名目录项
+// 为一个已存在的文件创建一个新链接(也称为硬链接 - hard link)
+// 参数：oldname - 原路径名；newname - 新的路径名
+// 返回：若成功则返回0，否则返回出错号。
+int sys_link(const char * oldname, const char * newname)
+{
+	struct dir_entry * de;
+	struct m_inode * oldinode, * dir;
+	struct buffer_head * bh;
+	const char * basename;
+	int namelen;
+
+    // 首先对原文件名进行有效性验证，它应该存在并且不是一个目录名。所以我们先取得原文件
+    // 路径名对应的i节点oldnode.若果为0，则表示出错，返回出错号。若果原路径名对应的是
+    // 一个目录名，则放回该i节点，也返回出错号。
+	oldinode=namei(oldname);
+	if (!oldinode)
+		return -ENOENT;
+	if (S_ISDIR(oldinode->i_mode)) {
+		iput(oldinode);
+		return -EPERM;
+	}
+    // 然后查找新路径名的最顶层目录的i节点dir，并返回最后的文件名及其长度。如果目录的
+    // i节点没有找到，则放回原路径名的i节点，返回出错号。如果新路径名中不包括文件名，
+    // 则放回原路径名i节点和新路径名目录的i节点，返回出错号。
+	dir = dir_namei(newname,&namelen,&basename);
+	if (!dir) {
+		iput(oldinode);
+		return -EACCES;
+	}
+	if (!namelen) {
+		iput(oldinode);
+		iput(dir);
+		return -EPERM;
+	}
+    // 我们不能跨设备建立硬链接。因此如果新路径名顶层目录的设备号与原路径名的设备号不
+    // 一样，则放回新路径名目录的i节点和原路径名的i节点，返回出错号。另外，如果用户没
+    // 有在新目录中写的权限，则也不能建立连接，于是放回新路径名目录的i节点和原路径名
+    // 的i节点，返回出错号。
+	if (dir->i_dev != oldinode->i_dev) {
+		iput(dir);
+		iput(oldinode);
+		return -EXDEV;
+	}
+	if (!permission(dir,MAY_WRITE)) {
+		iput(dir);
+		iput(oldinode);
+		return -EACCES;
+	}
+    // 现在查询该新路径名是否已经存在，如果存在则也不能建立链接。于是释放包含该已存在
+    // 目录项的高速缓冲块，放回新路径名目录的i节点和原路径名的i节点，返回出错号。
+	bh = find_entry(&dir,basename,namelen,&de);
+	if (bh) {
+		brelse(bh);
+		iput(dir);
+		iput(oldinode);
+		return -EEXIST;
+	}
+    // 现在所有条件都满足了，于是我们在新目录中添加一个目录项。若失败则放回该目录的
+    // i节点和原路径名的i节点，返回出错号。否则初始设置该目录项的i节点号等于原路径名的
+    // i节点号，并置包含该新添加目录项的缓冲块已修改标志，释放该缓冲块，放回目录的i节点。
+	bh = add_entry(dir,basename,namelen,&de);
+	if (!bh) {
+		iput(dir);
+		iput(oldinode);
+		return -ENOSPC;
+	}
+	de->inode = oldinode->i_num;
+	bh->b_dirt = 1;
+	brelse(bh);
+	iput(dir);
+    // 再将原节点的链接计数加1，修改其改变时间为当前时间，并设置i节点已修改标志。最后
+    // 放回原路径名的i节点，并返回0（成功）。
+	oldinode->i_nlinks++;
+	oldinode->i_ctime = CURRENT_TIME;
+	oldinode->i_dirt = 1;
+	iput(oldinode);
+	return 0;
+}
+
+
+
+```
+
+- 根据源代码分析程序首先获取源(old)文件inode，如果不存在就直接返回了，如果存在则继续判断是否为目录，如果是则放回inode并返回。那么到这里几乎就可以回答为什么不能为目录了(因为源码实现不允许呀),但是仍然要刨根问底，假定有"开发者"绕过了这么策略操作系统将如何处理呢?先继续看。
+- 之后就是检查目的(new)文件的顶层目录权限了，如果没问题将继续往下走
+- 再后就是说的不能进行跨文件系统的硬链接...
+- 如果没问题的话就在目的文件的目录下建立一个链接文件-->本质上仅仅在其目录下新增了一个dir\_entry结构体并使得其inode字段指向源文件m_inode的i\_num字段,将inode的i\_nlinkds字段++。
+- 现在我们假设某"开发者"先绕过这个检查策略(自己修改这段源码然后创建目录硬链接或者二进制大牛自己手动输入都可)，看程序会发生什么...
+
+
+- 可以看到至少shell是不允许我们创建的
+![Linux_0.11_fs_hard_links_not_allow.png](/images/Linux_0.11_fs_hard_links_not_allow.png)
+- 开始建立一些测试文件,由于忘了linux 0.11版本仅仅允许最多14个字符的文件名字，导致有些名字不全。删除也出类似前面的问题，说不是owner。在写下这段文字之前我做的测试成功了但我自己建立的是根目录的硬链接，导致切换新的内核rm的时候把根文件系统删掉了。。。又重新复制了一个hdc文件过来。
+图中的`dir_for_hard_l`(其实是dir\_for\_hard_link)是我们想要链接的目录(为了保险起见了，怕忘了又把根目录删了...)。`hard_link_not_`是C语言源程序，但是gcc编译的时候报错，因此我重定向了一个短的.c文件。
+![linux_0.11_fs_usr_root_dir.png](/images/linux_0.11_fs_usr_root_dir.png)
+- 用来测试没有修改内核代码的时候能否创建目录硬链接。为了简单我也没有检测main函数的具体参数合法性了。看结果没有创建成功，而返回值-1恰恰是宏定义ENOENT的负数，说明内核检测到了目录问题。
+![linux_0.11_fs_hard_link_not_allow.png](/images/linux_0.11_fs_hard_link_not_allow.png)
+
+- 我修改了这段代码，然后重新编译内核代码看看吧。
+![linux_0.11_fs_hard_link_allow_codes.png](/images/linux_0.11_fs_hard_link_allow_codes.png)
+
+- 用bash修改失败了，猜测在bash的实现中提前加入了检测，我们用C语言来就成功了。可以看到确实可以创建硬链接的，在这种情况下也没有出问题。
+![linux_0.11_fs_hard_link_allow_test.png](/images/linux_0.11_fs_hard_link_allow_test.png)
+![linux_0.11_fs_hard_link_allow_new_file.png](/images/linux_0.11_fs_hard_link_allow_new_file.png)
+
+
+- 为了建立"有向循环图"测试之后删除的时候又把文件系统给删了...
+
+- 以下为bash自带bc计算器快速进制转换命令
+```bash
+$ echo "obase=10;ibase=16;50BA" | bc -l
+20666
+
+```
 # 总结
 当然不可能每次都需要人来手动计算，计算机内部实现了更多算法来存取数据，大概的基本原理就这些，当然内存里面关于缓存和文件表等后期会稍微提一下。
