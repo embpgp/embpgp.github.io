@@ -6,3 +6,5 @@ comments: false
 ---
 
 2016.11 -> Learning Linux kernel 0.11
+2017.01 -> Learning Linux kernel 2.6.11
+2017.01 -> learning The Shellcode's Handbook
