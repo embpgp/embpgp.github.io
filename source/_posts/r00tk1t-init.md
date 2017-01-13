@@ -11,7 +11,7 @@ tags:
 ---
 
 参考:
-[谷大神:http://www.freebuf.com/articles/system/54263.html](http://www.freebuf.com/articles/system/54263.html)
+[http://www.freebuf.com/articles/system/54263.html](http://www.freebuf.com/articles/system/54263.html)
 [https://chirath02.wordpress.com/tag/asmlinkage/](https://chirath02.wordpress.com/tag/asmlinkage/)
 [r00tk1t基础实验](http://mp.weixin.qq.com/s?__biz=MjM5OTk4MDE2MA==&mid=2655113676&idx=3&sn=07e450fb7553f87fa3c9fa5fd186c5b0&chksm=bc864c238bf1c5350ddc594555f4412faa42df025d49e2364884b851d7ea9a1e2d1cfda697d4#rd)
 [https://memset.wordpress.com/2010/12/28/syscall-hijacking-simple-rootkit-kernel-2-6-x/](https://memset.wordpress.com/2010/12/28/syscall-hijacking-simple-rootkit-kernel-2-6-x/)
@@ -72,7 +72,7 @@ root@r00t:~#
 
 ```
 # LKM
-按照谷大神的教程第一个LKM程序编译如下:
+按照freebuf的教程第一个LKM程序编译如下:
 ```bash
 root@r00t:~/LKM# make
 make -C /lib/modules/4.2.2/build SUBDIRS=/root/LKM modules
