@@ -27,14 +27,18 @@ tags:
 
 
 编辑系统配置文件/etc/sysctl.conf
+  
 
+开启数据报文转发  
 `net.ipv4.ip_forward = 1`
 
 
+立即生效  
 `sysctl -p`
 
 
 
+防火墙配置相应规则和策略  
 
 `iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE`
 `iptables -A FORWARD -p tcp --syn -s 10.0.0.0/24 -j TCPMSS --set-mss 1356`
