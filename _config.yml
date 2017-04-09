@@ -118,10 +118,10 @@ feed:
 avatar: /images/avatar.png
 
 #duoshuo comment
-duoshuo_shortname: blog-rutk1t0r
-duoshuo_share: true
+#duoshuo_shortname: blog-rutk1t0r
+#duoshuo_share: true
 #baidu analytics
-baidu_analytics: 31cbb53616f160459c7d835bac187364
+#baidu_analytics: 31cbb53616f160459c7d835bac187364
 #MySearch  Swiftype Search Key
 #swiftype_key: rC6v28T6pYx_DMFQLAdM  没啥卵用,md
 search:
