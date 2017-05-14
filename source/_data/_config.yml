@@ -8,7 +8,6 @@ favicon: /blog.ico
 # Set default keywords (Use a comma to separate)
 keywords: "rutk1t0r's blog"
 
-# Set rss to false to disable feed link.
 # Leave rss as empty to use site's feed link.
 # Set rss to specific value if you have burned your feed already.
 rss:
@@ -47,7 +46,6 @@ menu:
   #commonweal: /404.html
 
 
-# Enable/Disable menu icons.
 # Icon Mapping:
 #   Map a menu item to a specific FontAwesome icon name.
 #   Key is the name of menu item and value is the name of FontAwesome icon. Key is case-senstive.
@@ -222,7 +220,7 @@ excerpt_description: true
 # Automatically Excerpt. Not recommend.
 # Please use <!-- more --> in the post to control excerpt accurately.
 auto_excerpt:
-  enable: false
+  enable: true
   length: 150
 
 # Post meta display settings
