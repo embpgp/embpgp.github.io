@@ -63,3 +63,6 @@ menuentry 'Gentoo/Linux 4.9.34'{
 
 # 总结
 换个酷炫点的桌面还是继续折腾BLFS...
+
+## issue
+* 提示`The emerge option --autounmask-write writes autounmask features into the corresponding config files.`，重复上次的命令加上参数，然后使用自带的`dispatch-conf`命令自动写入配置，而后再执行最开始的命令即可解决软件安装版本以及依赖性问题．
