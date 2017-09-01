@@ -191,7 +191,7 @@ int sys_link(const char * oldname, const char * newname)
 - 开始建立一些测试文件,由于忘了linux 0.11版本仅仅允许最多14个字符的文件名字，导致有些名字不全。删除也出类似前面的问题，说不是owner。在写下这段文字之前我做的测试成功了但我自己建立的是根目录的硬链接，导致切换新的内核rm的时候把根文件系统删掉了。。。又重新复制了一个hdc文件过来。
 图中的`dir_for_hard_l`(其实是dir\_for\_hard_link)是我们想要链接的目录(为了保险起见了，怕忘了又把根目录删了...)。`hard_link_not_`是C语言源程序，但是gcc编译的时候报错，因此我重定向了一个短的.c文件。
 ![linux_0.11_fs_usr_root_dir.png](/images/linux_0.11_fs_usr_root_dir.png)
-- 用来测试没有修改内核代码的时候能否创建目录硬链接。为了简单我也没有检测main函数的具体参数合法性了。看结果没有创建成功，而返回值-1恰恰是宏定义ENOENT的负数，说明内核检测到了目录问题。
+- 用来测试没有修改内核代码的时候能否创建目录硬链接。为了简单我也没有检测main函数的具体参数合法性了。看结果没有创建成功，而返回值-1恰恰是宏定义EPERM的负数，说明内核检测到了目录问题。
 ![linux_0.11_fs_hard_link_not_allow.png](/images/linux_0.11_fs_hard_link_not_allow.png)
 
 - 我修改了这段代码，然后重新编译内核代码看看吧。
