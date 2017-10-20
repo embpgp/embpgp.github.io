@@ -313,3 +313,8 @@ print "Done!"
 要运行这份代码首先要用py安装scapy库,代码为了简单几乎连exit不想写了,因此直接运行记得要加参数.数据包填充也很简单,就是一直重叠分片,如果在Windows上用wireshark抓包则组包成一个之后会显示坏的包.
 
 # 实验
+在测试机器上运行shell命令,监控printk打印.
+`[root@localhost linux-2.6.32.27]# while :;do dmesg -c 5; sleep 1; done`
+我还是用的是上次测试Linux内存段页式转换那一台Centos6.9,从kernel.org下载一份2.6内核的代码重新编译.直接`make localmodconfig`,一路回车,之后`make -j8 && make modules_install && make install && reboot`即可.测试结果如下:
+![teardrop_attack_tcpdump.png](/images/teardrop_attack_tcpdump.png)
+![teardrop_attack_printk.png](/images/teardrop_attack_printk.png)
