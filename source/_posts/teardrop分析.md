@@ -21,7 +21,7 @@ tags:
 [https://yq.aliyun.com/articles/11345?spm=5176.100239.blogcont11018.9.W7XutP](https://yq.aliyun.com/articles/11345?spm=5176.100239.blogcont11018.9.W7XutP)
 
 # 原理
-teardrop主要是利用操作系统协议栈处理IP分片的时候,对于畸形数据包重叠其余分片来使得重组算法发生错误,轻则发生内存泄露重则造成宕机或者拒绝服务.可以参考绿盟分析Linux 2.0内核时期的漏洞原理.而从2.4开始内核就修复了这个漏洞,并尝试如果可能就尽量修复重叠的数据包.具体参见以下代码:
+teardrop主要是利用操作系统协议栈处理IP分片的时候,对于畸形数据包重叠其余分片来使得重组算法发生错误,轻则发生内存泄露重则造成宕机或者拒绝服务.可以参考绿盟分析Linux 2.0内核时期的漏洞原理.而从2.4开始内核就修复了这个漏洞,并尝试如果可能就尽量修复重叠的数据包.具体参见截取部分关键代码(net/ipv4/ip_fragment.c):
 ```C
 	/* We found where to put this one.  Check for overlap with
 	 * preceding fragment, and, if needed, align things so that
@@ -318,3 +318,8 @@ print "Done!"
 我还是用的是上次测试Linux内存段页式转换那一台Centos6.9,从kernel.org下载一份2.6内核的代码重新编译.直接`make localmodconfig`,一路回车,之后`make -j8 && make modules_install && make install && reboot`即可.测试结果如下:
 ![teardrop_attack_tcpdump.png](/images/teardrop_attack_tcpdump.png)
 ![teardrop_attack_printk.png](/images/teardrop_attack_printk.png)
+我是将命令码从4.3.2.1.0执行了一遍,可以分析得出基本是每两个包就造成一次释放分片链表,而截断长度为显示为0的分片包重组的时候没有报重叠,有一个覆盖后面的有可能是由于分片包到的顺序不一致,因而攻击代码2是最明显的,如果要打出具体的攻击IP则应该利用skb结构体来打更多信息.
+
+
+# 总结
+主要研究学习了下内核中IP分片包重组算法以及引用计数如何到0来使得整个分片链表被释放的.
