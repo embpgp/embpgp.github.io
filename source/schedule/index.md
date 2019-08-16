@@ -10,3 +10,4 @@ comments: false
 2017.01 -> Learning The Shellcode's Handbook
 2017.05 -> Learning LFS Gentoo etcs
 2017.08 -> Learning Cyber Security via USTC
+2019.08 -> Learning afl/fuzz etcs
