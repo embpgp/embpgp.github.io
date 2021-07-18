@@ -1,39 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>C语言宏定义小试</title>
-    <url>/embpgp.github.io/2016/09/06/C%E8%AF%AD%E8%A8%80%E5%AE%8F%E5%AE%9A%E4%B9%89%E5%B0%8F%E8%AF%95/</url>
-    <content><![CDATA[<blockquote>
-<p>今天方小白童鞋笔试了CVTE，遇到了很多Linux开发的问题，其实不乏有关于内核配置，boot启动分析相关试题等等，在这里主要分析一下C语言中宏定义的问题.主要侧重于实战了，具体的还是要根据标准来。我用的实验平台是ubuntu 16.04 i386。</p>
-</blockquote>
-<hr>
-<h1 id="gcc编译过程分析"><a href="#gcc编译过程分析" class="headerlink" title="gcc编译过程分析"></a>gcc编译过程分析</h1><p><img src="/images/gcc_program.png" alt="gcc_program"></p>
-<p>如上图所示，上图是在<strong>《程序员自我修养》</strong>这本书里面看到的，首先头文件和源文件在预处理阶段会融合在一起，生成.i文件。然后经过编译会生成.s文件，内容是汇编语言形式，之后经过汇编过程后变成.o的目标文件，这个文件其实已经成为了机器码了，但是缺乏加载地址以及函数符号问题未解决等，最后经过和库文件等进行链接生成可执行的二进制文件。在Linux下为elf格式，Windows下为PE格式。执行的时候将由各自的加载器对可执行文件中的代码和数据等进行解析并加载至内存中相应的属性页。当然如果直接一步<code>gcc sources -o target</code>是看不到这些过程的，gcc会一次性完成这些操作。下面我们就来实战一下吧。测试的源代码如下，有兴趣的还可以改用<code>++a</code>看看结果。</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> F(x) ((x)*(x))</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">4</span>;</span><br><span class="line">	<span class="comment">//printf(&quot;%d\n&quot;, F(++a));</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, F(a++));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="预处理"><a href="#预处理" class="headerlink" title="预处理"></a>预处理</h1><p>首先我们看下图的源文件，其中就是涉及到了主要矛盾，<strong>宏定义</strong>。这个在C语言中用得相当多的一个技巧。在C++中会推荐使用<strong>const</strong>。具体缘由请自行搜索。像这种运算会产生问题的地方就是将变量填充为单目运算符的时候会发生问题。<br><img src="/images/compile.png" alt="compile"><br>接下来我们键入</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">gcc -E mocro_define.c -o mocro_define.i</span><br></pre></td></tr></table></figure>
-<p><img src="/images/define_E.png" alt="define_E"><br>我们可以看到在生在.i文件之后，最后的几行代码被改变了，其中就是define被展开了。而且gcc在.i文件中插入了大量的外部引用和声明。总计有800多行。接下来我们看怎么编译。</p>
-<h1 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h1><p>我们键入以下命令，其中的<code>-masm=intel</code>选项是让生成的汇编代码为intel格式的而非AT&amp;T格式的，个人还是习惯看intel格式的。</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">gcc -S mocro_define.i -o mocro_define.s -masm=intel</span><br></pre></td></tr></table></figure>
-<p><img src="/images/define_S.png" alt="define_S"><br>主要的部分如下图所示，其中很多.开头的都是一些符号，不必在意。程序段在开辟新的空间之后直接将4赋值给了<code>[ebp-12]</code>,即a。然后再将它的值送到<code>edx</code>寄存器，之后编译器利用<code>lea</code>指令优化使得<code>a++</code>执行，而后立即回送至内存中的a。之后又使得<code>a++</code>执行并回送至内存中。但是注意到，<code>imul</code>指令执行的时候仍然用的是<code>edx</code>和<code>eax</code>的值，即4*5,而<code>ecx</code>值虽然为6(最后的a)但是并不参与运算。最后直接将<code>eax</code>压栈<code>call printf</code>即可打印出来结果。在这里可以看出两个<code>a++</code>仅仅只有一个值是参与了乘法运算，详情可以参考优先级策略，可以深刻地理解编译器是如何处理这个类似<code>a++</code>运算符的。<br><img src="/images/define_S_main.png" alt="define_S_main"></p>
-<h1 id="汇编"><a href="#汇编" class="headerlink" title="汇编"></a>汇编</h1><p>之后我们键入以下命令继续这个过程：</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">gcc -c mocro_define.s -o mocro_define.o</span><br></pre></td></tr></table></figure>
-<p><img src="/images/define_c.png" alt="define_c"><br>我们用readelf工具可以知道已经生成了与平台相关的目标代码了，这一步gcc内部封装的是as工具，当然我们也可以单独用as命令来执行汇编过程。特别是开发asm程序的时候可能会用到。接下来进行最后的链接过程。</p>
-<h1 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h1><p>键入以下命令并执行可执行程序：</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">gcc mocro_define.o -o mocro_define</span><br><span class="line">./mocro_define</span><br></pre></td></tr></table></figure>
-<p><img src="/images/define_o.png" alt="define_o"><br>最后的结果就是汇编当中的代码分析过程。当然这一步也是gcc内部封装的ld工具，我们也可以手动执行，但是太麻烦，还要解决引入的库文件等问题。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这篇文章主要还是从C程序的编译过程来逐步拆解分析。<strong>宏定义</strong>本身还是不严格的直接替换式地插入,对于类型检查不严格，对于表达式不计算，才会导致问题的发生。我们稍微调试一下明白了。建议还是从C语言的运算符优先级入手，分析这个过程可能容易很多，因为编译器也是遵照标准来实现的。</p>
-]]></content>
-      <categories>
-        <category>study</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-        <tag>Linux</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Leet体验</title>
     <url>/embpgp.github.io/2017/03/18/Leet%E4%BD%93%E9%AA%8C/</url>
     <content><![CDATA[<blockquote>
@@ -52,41 +19,6 @@
       <tags>
         <tag>misc</tag>
         <tag>Sec</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Linux_Memory_Address_Mapping</title>
-    <url>/embpgp.github.io/2017/10/14/Linux-Memory-Address-Mapping/</url>
-    <content><![CDATA[<blockquote>
-<p> 主要根据<a href="http://www.ilinuxkernel.com/">www.ilinuxkernel.com</a>站点上的同名pdf文档做实验分析</p>
-</blockquote>
-<span id="more"></span>
-
-<hr>
-<p>参考:<a href="https://jin-yang.github.io/post/kernel-memory-virtual-physical-map.html">https://jin-yang.github.io/post/kernel-memory-virtual-physical-map.html</a><br><a href="https://stackoverflow.com/questions/8516021/proc-create-example-for-kernel-module">https://stackoverflow.com/questions/8516021/proc-create-example-for-kernel-module</a><br><a href="http://www.voidcn.com/article/p-zqylmcig-ty.html">http://www.voidcn.com/article/p-zqylmcig-ty.html</a><br><a href="http://www.cnblogs.com/hoys/archive/2011/04/10/2011261.html">http://www.cnblogs.com/hoys/archive/2011/04/10/2011261.html</a></p>
-<h1 id="体系架构"><a href="#体系架构" class="headerlink" title="体系架构"></a>体系架构</h1><p>首先要了解操作系统的内存管理机制,一般都是知道是段页式管理,但是各个处理器架构提供的机制有所不同,主要由处理器中mmu部件负责翻译,操作系统负责管理.特别在intel架构中,完全做到了段页式的实现.但是Linux内核在实现的时候是用技巧越过了段式的地址特性,即逻辑地址=线性地址,但是处理器对于地址转换的有效性的检查不会改变,只是说Linux内核实现比较巧妙.下面就开始实验.</p>
-<h1 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h1><p>原文给我的实验代码是Linux 2.6内核的代码,我特意从网上下载了Centos6.9,之后<code>yum install kernel-devel.x86_64</code>安装发行版内核源代码,同时查看<code>build</code>目录是否正确链接到内核源码路径,可修改实验代码的Makefile文件的路径使其正确.当然,为了能够使得我PC的Linux 4.x内核也能够做这个实验,我对比了内核代码的改动部分,其中主要是<code>proc_create</code>接口变了,然后参考网上demo代码成功实现了迁移.可参考<a href="https://github.com/Iotlab-404/ilinuxkernel/tree/master/kernel/Memory_Address_Mapping">这里</a>.</p>
-<h1 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h1><h2 id="mem-map"><a href="#mem-map" class="headerlink" title="mem_map"></a>mem_map</h2><p>编译好内核模块后insmod两个ko文件,因为我的测试环境为64位,因此修改mem_map.c的部分代码,运行如下:<br><img src="/images/ilk_mm_exam.png" alt="ilk_mm_exam.png"></p>
-<h2 id="fileview"><a href="#fileview" class="headerlink" title="fileview"></a>fileview</h2><p>这个工具跟内核模块dram.ko挂钩,通过实现了lseek和read文件操作方法来对应用层开放查询进程物理地址信息.具体操作可见代码,其中主要可以按照显示方式为8421字节感觉很有用,若需要输入指定物理地址,按回车即可.</p>
-<h2 id="开始计算"><a href="#开始计算" class="headerlink" title="开始计算"></a>开始计算</h2><h3 id="查看gdt中ds描述符"><a href="#查看gdt中ds描述符" class="headerlink" title="查看gdt中ds描述符"></a>查看gdt中ds描述符</h3><p>按照pdf教程,tmp所在段在ds数据段,查看后发现确实段基址为0.<br> <img src="/images/ilk_mm_gdtr.png" alt="ilk_mm_gdtr.png"></p>
-<h3 id="分解tmp地址为二进制"><a href="#分解tmp地址为二进制" class="headerlink" title="分解tmp地址为二进制"></a>分解tmp地址为二进制</h3><p>计算偏移的工具bc,我将其封装了一下,命名为calc.sh,代码在<a href="https://github.com/embpgp/PersonalToolKits/blob/master/shell/calc.sh">这里</a>.tmp地址分解如下:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># calc.sh -i 16 -o 2 7FFD0A1330C8</span></span><br><span class="line">11111111111110100001010000100110011000011001000</span><br><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># </span></span><br></pre></td></tr></table></figure>
-<p>应该为分成9 9 9 9 12.<br>011111111 111110100 001010000 100110011 000011001000</p>
-<h3 id="CR3-gt-一级"><a href="#CR3-gt-一级" class="headerlink" title="CR3-&gt;一级"></a>CR3-&gt;一级</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># calc.sh -i 2 -o 16 8*11111111</span></span><br><span class="line">7F8</span><br><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># </span></span><br></pre></td></tr></table></figure>
-<p>CR3=36082000,一级=36082000+8*011111111b=360827F8<br><img src="/images/ilk_mm_cr3-one.png" alt="ilk_mm_cr3-one.png"></p>
-<h3 id="一级-gt-二级"><a href="#一级-gt-二级" class="headerlink" title="一级-&gt;二级"></a>一级-&gt;二级</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># calc.sh -i 2 -o 16 8*111110100</span></span><br><span class="line">FA0</span><br><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># </span></span><br><span class="line">````</span><br><span class="line">一级=391B8000,二级=391B8000+8*111110100=391B8FA0</span><br><span class="line">![ilk_mm_one-two.png](/images/ilk_mm_one-two.png)</span><br><span class="line"><span class="comment">### 二级-&gt;三级</span></span><br><span class="line">二级=3D817000,三级=3D817000+8*001010000=3D817280</span><br><span class="line">```bash</span><br><span class="line">root@Rutk1t0r:rutk1t0r<span class="comment"># calc.sh -i 2 -o 16 8*001010000</span></span><br><span class="line">280</span><br><span class="line">root@Rutk1t0r:rutk1t0r<span class="comment">#</span></span><br></pre></td></tr></table></figure>
-<p><img src="/images/ilk_mm_two-three.png" alt="ilk_mm_two-three.png"></p>
-<h3 id="三级-gt-四级"><a href="#三级-gt-四级" class="headerlink" title="三级-&gt;四级"></a>三级-&gt;四级</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># calc.sh -i 2 -o 16 8*100110011</span></span><br><span class="line">998</span><br><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment">#</span></span><br></pre></td></tr></table></figure>
-<p>三级=3B04B000,四级=3B04B000+8*100110011=3B04B998<br><img src="/images/ilk_mm_three-four.png" alt="ilk_mm_three-four.png"></p>
-<h3 id="四级-gt-真实物理地址-值"><a href="#四级-gt-真实物理地址-值" class="headerlink" title="四级-&gt;真实物理地址(值)"></a>四级-&gt;真实物理地址(值)</h3><p>四级=27D0F000,phy_addr=27D0F000+0c8=27D0F0C8.<br><img src="/images/ilk_mm_four-phy.png" alt="ilk_mm_four-phy.png"><br> 而mem_map.c代码如下:<br> <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"> [root@localhost mm_addr]<span class="meta"># cat mem_map.c </span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> REGISTERINFO <span class="meta-string">&quot;/proc/sys_reg&quot;</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> BUFSIZE  4096</span></span><br><span class="line"></span><br><span class="line"> <span class="keyword">static</span> <span class="keyword">char</span> buf[BUFSIZE];</span><br><span class="line"> <span class="keyword">static</span> <span class="keyword">unsigned</span> <span class="keyword">long</span> addr;</span><br><span class="line"></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> FILE_TO_BUF(filename, fd) do&#123;	\</span></span><br><span class="line"><span class="meta">	static int local_n;	\</span></span><br><span class="line"><span class="meta">	<span class="meta-keyword">if</span> (fd == - 1 &amp;&amp; (fd = open(filename, O_RDONLY)) == - 1) &#123;	\</span></span><br><span class="line"><span class="meta">	fprintf(stderr, <span class="meta-string">&quot;Open /proc/register file failed! \n&quot;</span>);	\</span></span><br><span class="line"><span class="meta">	fflush(NULL);	\</span></span><br><span class="line"><span class="meta">	_exit(102);	\</span></span><br><span class="line"><span class="meta">	&#125;	\</span></span><br><span class="line"><span class="meta">	lseek(fd, 0L, SEEK_SET);	\</span></span><br><span class="line"><span class="meta">	<span class="meta-keyword">if</span> ((local_n = read(fd, buf , sizeof buf -  1)) &lt; 0) &#123;	\</span></span><br><span class="line"><span class="meta">	perror(filename);	\</span></span><br><span class="line"><span class="meta">	fflush(NULL);	\</span></span><br><span class="line"><span class="meta">	_exit(103);	\</span></span><br><span class="line"><span class="meta">	&#125;	\</span></span><br><span class="line"><span class="meta">	buf [local_n] = 0;	\</span></span><br><span class="line"><span class="meta"> &#125;while(0)</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"> </span>&#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> tmp;</span><br><span class="line">	tmp = <span class="number">0x12345678deadbeef</span>;</span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">int</span> cr_fd = - <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">asm</span>(<span class="string">&quot;movq %rbp, %rbx\n movq %rbx, addr&quot;</span>);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;\n%%rbp:0x%08lX\n&quot;</span>, addr);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;tmp address:0x%08lX\n&quot;</span>, &amp;tmp);</span><br><span class="line">	FILE_TO_BUF(REGISTERINFO, cr_fd);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;%s&quot;</span>, buf );</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span>(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">[root@localhost mm_addr]# </span><br><span class="line"></span><br></pre></td></tr></table></figure><br>成功通过段页式翻译找到tmp对应的值为0x12345678deadbeef.</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>通过实验加深理解,如有时间可再深入研究物理地址映射的实现.</p>
-]]></content>
-      <categories>
-        <category>study</category>
-      </categories>
-      <tags>
-        <tag>Linux kernel</tag>
-        <tag>LDD</tag>
       </tags>
   </entry>
   <entry>
@@ -133,8 +65,43 @@
       <tags>
         <tag>C/C++</tag>
         <tag>Linux kernel</tag>
-        <tag>LDD</tag>
         <tag>Asm</tag>
+        <tag>LDD</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux_Memory_Address_Mapping</title>
+    <url>/embpgp.github.io/2017/10/14/Linux-Memory-Address-Mapping/</url>
+    <content><![CDATA[<blockquote>
+<p> 主要根据<a href="http://www.ilinuxkernel.com/">www.ilinuxkernel.com</a>站点上的同名pdf文档做实验分析</p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<p>参考:<a href="https://jin-yang.github.io/post/kernel-memory-virtual-physical-map.html">https://jin-yang.github.io/post/kernel-memory-virtual-physical-map.html</a><br><a href="https://stackoverflow.com/questions/8516021/proc-create-example-for-kernel-module">https://stackoverflow.com/questions/8516021/proc-create-example-for-kernel-module</a><br><a href="http://www.voidcn.com/article/p-zqylmcig-ty.html">http://www.voidcn.com/article/p-zqylmcig-ty.html</a><br><a href="http://www.cnblogs.com/hoys/archive/2011/04/10/2011261.html">http://www.cnblogs.com/hoys/archive/2011/04/10/2011261.html</a></p>
+<h1 id="体系架构"><a href="#体系架构" class="headerlink" title="体系架构"></a>体系架构</h1><p>首先要了解操作系统的内存管理机制,一般都是知道是段页式管理,但是各个处理器架构提供的机制有所不同,主要由处理器中mmu部件负责翻译,操作系统负责管理.特别在intel架构中,完全做到了段页式的实现.但是Linux内核在实现的时候是用技巧越过了段式的地址特性,即逻辑地址=线性地址,但是处理器对于地址转换的有效性的检查不会改变,只是说Linux内核实现比较巧妙.下面就开始实验.</p>
+<h1 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h1><p>原文给我的实验代码是Linux 2.6内核的代码,我特意从网上下载了Centos6.9,之后<code>yum install kernel-devel.x86_64</code>安装发行版内核源代码,同时查看<code>build</code>目录是否正确链接到内核源码路径,可修改实验代码的Makefile文件的路径使其正确.当然,为了能够使得我PC的Linux 4.x内核也能够做这个实验,我对比了内核代码的改动部分,其中主要是<code>proc_create</code>接口变了,然后参考网上demo代码成功实现了迁移.可参考<a href="https://github.com/Iotlab-404/ilinuxkernel/tree/master/kernel/Memory_Address_Mapping">这里</a>.</p>
+<h1 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h1><h2 id="mem-map"><a href="#mem-map" class="headerlink" title="mem_map"></a>mem_map</h2><p>编译好内核模块后insmod两个ko文件,因为我的测试环境为64位,因此修改mem_map.c的部分代码,运行如下:<br><img src="/images/ilk_mm_exam.png" alt="ilk_mm_exam.png"></p>
+<h2 id="fileview"><a href="#fileview" class="headerlink" title="fileview"></a>fileview</h2><p>这个工具跟内核模块dram.ko挂钩,通过实现了lseek和read文件操作方法来对应用层开放查询进程物理地址信息.具体操作可见代码,其中主要可以按照显示方式为8421字节感觉很有用,若需要输入指定物理地址,按回车即可.</p>
+<h2 id="开始计算"><a href="#开始计算" class="headerlink" title="开始计算"></a>开始计算</h2><h3 id="查看gdt中ds描述符"><a href="#查看gdt中ds描述符" class="headerlink" title="查看gdt中ds描述符"></a>查看gdt中ds描述符</h3><p>按照pdf教程,tmp所在段在ds数据段,查看后发现确实段基址为0.<br> <img src="/images/ilk_mm_gdtr.png" alt="ilk_mm_gdtr.png"></p>
+<h3 id="分解tmp地址为二进制"><a href="#分解tmp地址为二进制" class="headerlink" title="分解tmp地址为二进制"></a>分解tmp地址为二进制</h3><p>计算偏移的工具bc,我将其封装了一下,命名为calc.sh,代码在<a href="https://github.com/embpgp/PersonalToolKits/blob/master/shell/calc.sh">这里</a>.tmp地址分解如下:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># calc.sh -i 16 -o 2 7FFD0A1330C8</span></span><br><span class="line">11111111111110100001010000100110011000011001000</span><br><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+<p>应该为分成9 9 9 9 12.<br>011111111 111110100 001010000 100110011 000011001000</p>
+<h3 id="CR3-gt-一级"><a href="#CR3-gt-一级" class="headerlink" title="CR3-&gt;一级"></a>CR3-&gt;一级</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># calc.sh -i 2 -o 16 8*11111111</span></span><br><span class="line">7F8</span><br><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+<p>CR3=36082000,一级=36082000+8*011111111b=360827F8<br><img src="/images/ilk_mm_cr3-one.png" alt="ilk_mm_cr3-one.png"></p>
+<h3 id="一级-gt-二级"><a href="#一级-gt-二级" class="headerlink" title="一级-&gt;二级"></a>一级-&gt;二级</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># calc.sh -i 2 -o 16 8*111110100</span></span><br><span class="line">FA0</span><br><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># </span></span><br><span class="line">````</span><br><span class="line">一级=391B8000,二级=391B8000+8*111110100=391B8FA0</span><br><span class="line">![ilk_mm_one-two.png](/images/ilk_mm_one-two.png)</span><br><span class="line"><span class="comment">### 二级-&gt;三级</span></span><br><span class="line">二级=3D817000,三级=3D817000+8*001010000=3D817280</span><br><span class="line">```bash</span><br><span class="line">root@Rutk1t0r:rutk1t0r<span class="comment"># calc.sh -i 2 -o 16 8*001010000</span></span><br><span class="line">280</span><br><span class="line">root@Rutk1t0r:rutk1t0r<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+<p><img src="/images/ilk_mm_two-three.png" alt="ilk_mm_two-three.png"></p>
+<h3 id="三级-gt-四级"><a href="#三级-gt-四级" class="headerlink" title="三级-&gt;四级"></a>三级-&gt;四级</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># calc.sh -i 2 -o 16 8*100110011</span></span><br><span class="line">998</span><br><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+<p>三级=3B04B000,四级=3B04B000+8*100110011=3B04B998<br><img src="/images/ilk_mm_three-four.png" alt="ilk_mm_three-four.png"></p>
+<h3 id="四级-gt-真实物理地址-值"><a href="#四级-gt-真实物理地址-值" class="headerlink" title="四级-&gt;真实物理地址(值)"></a>四级-&gt;真实物理地址(值)</h3><p>四级=27D0F000,phy_addr=27D0F000+0c8=27D0F0C8.<br><img src="/images/ilk_mm_four-phy.png" alt="ilk_mm_four-phy.png"><br> 而mem_map.c代码如下:<br> <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"> [root@localhost mm_addr]<span class="meta"># cat mem_map.c </span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> REGISTERINFO <span class="meta-string">&quot;/proc/sys_reg&quot;</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> BUFSIZE  4096</span></span><br><span class="line"></span><br><span class="line"> <span class="keyword">static</span> <span class="keyword">char</span> buf[BUFSIZE];</span><br><span class="line"> <span class="keyword">static</span> <span class="keyword">unsigned</span> <span class="keyword">long</span> addr;</span><br><span class="line"></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> FILE_TO_BUF(filename, fd) do&#123;	\</span></span><br><span class="line"><span class="meta">	static int local_n;	\</span></span><br><span class="line"><span class="meta">	<span class="meta-keyword">if</span> (fd == - 1 &amp;&amp; (fd = open(filename, O_RDONLY)) == - 1) &#123;	\</span></span><br><span class="line"><span class="meta">	fprintf(stderr, <span class="meta-string">&quot;Open /proc/register file failed! \n&quot;</span>);	\</span></span><br><span class="line"><span class="meta">	fflush(NULL);	\</span></span><br><span class="line"><span class="meta">	_exit(102);	\</span></span><br><span class="line"><span class="meta">	&#125;	\</span></span><br><span class="line"><span class="meta">	lseek(fd, 0L, SEEK_SET);	\</span></span><br><span class="line"><span class="meta">	<span class="meta-keyword">if</span> ((local_n = read(fd, buf , sizeof buf -  1)) &lt; 0) &#123;	\</span></span><br><span class="line"><span class="meta">	perror(filename);	\</span></span><br><span class="line"><span class="meta">	fflush(NULL);	\</span></span><br><span class="line"><span class="meta">	_exit(103);	\</span></span><br><span class="line"><span class="meta">	&#125;	\</span></span><br><span class="line"><span class="meta">	buf [local_n] = 0;	\</span></span><br><span class="line"><span class="meta"> &#125;while(0)</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"> </span>&#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> tmp;</span><br><span class="line">	tmp = <span class="number">0x12345678deadbeef</span>;</span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">int</span> cr_fd = - <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">asm</span>(<span class="string">&quot;movq %rbp, %rbx\n movq %rbx, addr&quot;</span>);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;\n%%rbp:0x%08lX\n&quot;</span>, addr);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;tmp address:0x%08lX\n&quot;</span>, &amp;tmp);</span><br><span class="line">	FILE_TO_BUF(REGISTERINFO, cr_fd);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;%s&quot;</span>, buf );</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span>(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">[root@localhost mm_addr]# </span><br><span class="line"></span><br></pre></td></tr></table></figure><br>成功通过段页式翻译找到tmp对应的值为0x12345678deadbeef.</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>通过实验加深理解,如有时间可再深入研究物理地址映射的实现.</p>
+]]></content>
+      <categories>
+        <category>study</category>
+      </categories>
+      <tags>
+        <tag>Linux kernel</tag>
+        <tag>LDD</tag>
       </tags>
   </entry>
   <entry>
@@ -164,8 +131,41 @@
       <tags>
         <tag>C/C++</tag>
         <tag>Linux kernel</tag>
-        <tag>LDD</tag>
         <tag>Asm</tag>
+        <tag>LDD</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>C语言宏定义小试</title>
+    <url>/embpgp.github.io/2016/09/06/C%E8%AF%AD%E8%A8%80%E5%AE%8F%E5%AE%9A%E4%B9%89%E5%B0%8F%E8%AF%95/</url>
+    <content><![CDATA[<blockquote>
+<p>今天方小白童鞋笔试了CVTE，遇到了很多Linux开发的问题，其实不乏有关于内核配置，boot启动分析相关试题等等，在这里主要分析一下C语言中宏定义的问题.主要侧重于实战了，具体的还是要根据标准来。我用的实验平台是ubuntu 16.04 i386。</p>
+</blockquote>
+<hr>
+<h1 id="gcc编译过程分析"><a href="#gcc编译过程分析" class="headerlink" title="gcc编译过程分析"></a>gcc编译过程分析</h1><p><img src="/images/gcc_program.png" alt="gcc_program"></p>
+<p>如上图所示，上图是在<strong>《程序员自我修养》</strong>这本书里面看到的，首先头文件和源文件在预处理阶段会融合在一起，生成.i文件。然后经过编译会生成.s文件，内容是汇编语言形式，之后经过汇编过程后变成.o的目标文件，这个文件其实已经成为了机器码了，但是缺乏加载地址以及函数符号问题未解决等，最后经过和库文件等进行链接生成可执行的二进制文件。在Linux下为elf格式，Windows下为PE格式。执行的时候将由各自的加载器对可执行文件中的代码和数据等进行解析并加载至内存中相应的属性页。当然如果直接一步<code>gcc sources -o target</code>是看不到这些过程的，gcc会一次性完成这些操作。下面我们就来实战一下吧。测试的源代码如下，有兴趣的还可以改用<code>++a</code>看看结果。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> F(x) ((x)*(x))</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">4</span>;</span><br><span class="line">	<span class="comment">//printf(&quot;%d\n&quot;, F(++a));</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, F(a++));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="预处理"><a href="#预处理" class="headerlink" title="预处理"></a>预处理</h1><p>首先我们看下图的源文件，其中就是涉及到了主要矛盾，<strong>宏定义</strong>。这个在C语言中用得相当多的一个技巧。在C++中会推荐使用<strong>const</strong>。具体缘由请自行搜索。像这种运算会产生问题的地方就是将变量填充为单目运算符的时候会发生问题。<br><img src="/images/compile.png" alt="compile"><br>接下来我们键入</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">gcc -E mocro_define.c -o mocro_define.i</span><br></pre></td></tr></table></figure>
+<p><img src="/images/define_E.png" alt="define_E"><br>我们可以看到在生在.i文件之后，最后的几行代码被改变了，其中就是define被展开了。而且gcc在.i文件中插入了大量的外部引用和声明。总计有800多行。接下来我们看怎么编译。</p>
+<h1 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h1><p>我们键入以下命令，其中的<code>-masm=intel</code>选项是让生成的汇编代码为intel格式的而非AT&amp;T格式的，个人还是习惯看intel格式的。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">gcc -S mocro_define.i -o mocro_define.s -masm=intel</span><br></pre></td></tr></table></figure>
+<p><img src="/images/define_S.png" alt="define_S"><br>主要的部分如下图所示，其中很多.开头的都是一些符号，不必在意。程序段在开辟新的空间之后直接将4赋值给了<code>[ebp-12]</code>,即a。然后再将它的值送到<code>edx</code>寄存器，之后编译器利用<code>lea</code>指令优化使得<code>a++</code>执行，而后立即回送至内存中的a。之后又使得<code>a++</code>执行并回送至内存中。但是注意到，<code>imul</code>指令执行的时候仍然用的是<code>edx</code>和<code>eax</code>的值，即4*5,而<code>ecx</code>值虽然为6(最后的a)但是并不参与运算。最后直接将<code>eax</code>压栈<code>call printf</code>即可打印出来结果。在这里可以看出两个<code>a++</code>仅仅只有一个值是参与了乘法运算，详情可以参考优先级策略，可以深刻地理解编译器是如何处理这个类似<code>a++</code>运算符的。<br><img src="/images/define_S_main.png" alt="define_S_main"></p>
+<h1 id="汇编"><a href="#汇编" class="headerlink" title="汇编"></a>汇编</h1><p>之后我们键入以下命令继续这个过程：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">gcc -c mocro_define.s -o mocro_define.o</span><br></pre></td></tr></table></figure>
+<p><img src="/images/define_c.png" alt="define_c"><br>我们用readelf工具可以知道已经生成了与平台相关的目标代码了，这一步gcc内部封装的是as工具，当然我们也可以单独用as命令来执行汇编过程。特别是开发asm程序的时候可能会用到。接下来进行最后的链接过程。</p>
+<h1 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h1><p>键入以下命令并执行可执行程序：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">gcc mocro_define.o -o mocro_define</span><br><span class="line">./mocro_define</span><br></pre></td></tr></table></figure>
+<p><img src="/images/define_o.png" alt="define_o"><br>最后的结果就是汇编当中的代码分析过程。当然这一步也是gcc内部封装的ld工具，我们也可以手动执行，但是太麻烦，还要解决引入的库文件等问题。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这篇文章主要还是从C程序的编译过程来逐步拆解分析。<strong>宏定义</strong>本身还是不严格的直接替换式地插入,对于类型检查不严格，对于表达式不计算，才会导致问题的发生。我们稍微调试一下明白了。建议还是从C语言的运算符优先级入手，分析这个过程可能容易很多，因为编译器也是遵照标准来实现的。</p>
+]]></content>
+      <categories>
+        <category>study</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+        <tag>Linux</tag>
       </tags>
   </entry>
   <entry>
@@ -204,8 +204,8 @@
       <tags>
         <tag>C/C++</tag>
         <tag>Linux kernel</tag>
-        <tag>LDD</tag>
         <tag>Asm</tag>
+        <tag>LDD</tag>
       </tags>
   </entry>
   <entry>
@@ -309,8 +309,8 @@
       <tags>
         <tag>C/C++</tag>
         <tag>Linux kernel</tag>
-        <tag>LDD</tag>
         <tag>Asm</tag>
+        <tag>LDD</tag>
       </tags>
   </entry>
   <entry>
@@ -333,8 +333,8 @@
       <tags>
         <tag>C/C++</tag>
         <tag>Linux kernel</tag>
-        <tag>LDD</tag>
         <tag>Asm</tag>
+        <tag>LDD</tag>
       </tags>
   </entry>
   <entry>
@@ -440,8 +440,8 @@
       <tags>
         <tag>C/C++</tag>
         <tag>Linux kernel</tag>
-        <tag>LDD</tag>
         <tag>Asm</tag>
+        <tag>LDD</tag>
       </tags>
   </entry>
   <entry>
@@ -500,42 +500,8 @@
       <tags>
         <tag>C/C++</tag>
         <tag>Linux kernel</tag>
-        <tag>LDD</tag>
         <tag>Asm</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Linux内核0.11完全注释 第六章</title>
-    <url>/embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%85%AD%E7%AB%A0/</url>
-    <content><![CDATA[<blockquote>
-<p>迷你bootloader部分</p>
-</blockquote>
-<span id="more"></span>
-
-
-<hr>
-<h1 id="从ROM-BIOS处接手过来"><a href="#从ROM-BIOS处接手过来" class="headerlink" title="从ROM BIOS处接手过来"></a>从ROM BIOS处接手过来</h1><p><img src="/images/Linux_0.11_chapter6_bootloader_seq.png" alt="Linux_0.11_chapter6_bootloader_seq.png"><br><img src="/images/Linux_0.11_chapter6_bootloader_graph.png" alt="Linux_0.11_chapter6_bootloader_graph.png"></p>
-<h1 id="加载内核代码"><a href="#加载内核代码" class="headerlink" title="加载内核代码"></a>加载内核代码</h1><ul>
-<li>需要参考ROM BIOS的中断使用手册，从硬盘加载数据以及控制显示设备等</li>
-<li>MBR的508、509偏移字节处保存根设备号</li>
-<li>参考书籍作者的<a href="http://www.oldlinux.org/Linux.old/docs/">资料</a>中《Linux内核源代码漫游》  </li>
-</ul>
-<h1 id="硬盘设备号"><a href="#硬盘设备号" class="headerlink" title="硬盘设备号"></a>硬盘设备号</h1><p><img src="/images/Linux_0.11_chapter6_disk_device_number.png" alt="Linux_0.11_chapter6_disk_device_number.png"></p>
-<h1 id="全局参数"><a href="#全局参数" class="headerlink" title="全局参数"></a>全局参数</h1><p><img src="/images/Linux_0.11_chapter6_setup_global_params.png" alt="Linux_0.11_chapter6_setup_global_params.png"></p>
-<h1 id="PIC-8295A中断芯片"><a href="#PIC-8295A中断芯片" class="headerlink" title="PIC 8295A中断芯片"></a>PIC 8295A中断芯片</h1><ul>
-<li>配置相当复杂，建议直接用现成的吧。</li>
-</ul>
-<h1 id="system模块映像"><a href="#system模块映像" class="headerlink" title="system模块映像"></a>system模块映像</h1><p><img src="/images/Linux_0.11_chapter6_system_map.png" alt="Linux_0.11_chapter6_system_map.png"></p>
-<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>本章跟以前分析的小程序大同小异，只不过开启了分页机制，但是也是很简单的换算。</p>
-]]></content>
-      <categories>
-        <category>study</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-        <tag>Linux kernel</tag>
         <tag>LDD</tag>
-        <tag>Asm</tag>
       </tags>
   </entry>
   <entry>
@@ -580,8 +546,42 @@
       <tags>
         <tag>C/C++</tag>
         <tag>Linux kernel</tag>
-        <tag>LDD</tag>
         <tag>Asm</tag>
+        <tag>LDD</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux内核0.11完全注释 第六章</title>
+    <url>/embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%85%AD%E7%AB%A0/</url>
+    <content><![CDATA[<blockquote>
+<p>迷你bootloader部分</p>
+</blockquote>
+<span id="more"></span>
+
+
+<hr>
+<h1 id="从ROM-BIOS处接手过来"><a href="#从ROM-BIOS处接手过来" class="headerlink" title="从ROM BIOS处接手过来"></a>从ROM BIOS处接手过来</h1><p><img src="/images/Linux_0.11_chapter6_bootloader_seq.png" alt="Linux_0.11_chapter6_bootloader_seq.png"><br><img src="/images/Linux_0.11_chapter6_bootloader_graph.png" alt="Linux_0.11_chapter6_bootloader_graph.png"></p>
+<h1 id="加载内核代码"><a href="#加载内核代码" class="headerlink" title="加载内核代码"></a>加载内核代码</h1><ul>
+<li>需要参考ROM BIOS的中断使用手册，从硬盘加载数据以及控制显示设备等</li>
+<li>MBR的508、509偏移字节处保存根设备号</li>
+<li>参考书籍作者的<a href="http://www.oldlinux.org/Linux.old/docs/">资料</a>中《Linux内核源代码漫游》  </li>
+</ul>
+<h1 id="硬盘设备号"><a href="#硬盘设备号" class="headerlink" title="硬盘设备号"></a>硬盘设备号</h1><p><img src="/images/Linux_0.11_chapter6_disk_device_number.png" alt="Linux_0.11_chapter6_disk_device_number.png"></p>
+<h1 id="全局参数"><a href="#全局参数" class="headerlink" title="全局参数"></a>全局参数</h1><p><img src="/images/Linux_0.11_chapter6_setup_global_params.png" alt="Linux_0.11_chapter6_setup_global_params.png"></p>
+<h1 id="PIC-8295A中断芯片"><a href="#PIC-8295A中断芯片" class="headerlink" title="PIC 8295A中断芯片"></a>PIC 8295A中断芯片</h1><ul>
+<li>配置相当复杂，建议直接用现成的吧。</li>
+</ul>
+<h1 id="system模块映像"><a href="#system模块映像" class="headerlink" title="system模块映像"></a>system模块映像</h1><p><img src="/images/Linux_0.11_chapter6_system_map.png" alt="Linux_0.11_chapter6_system_map.png"></p>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>本章跟以前分析的小程序大同小异，只不过开启了分页机制，但是也是很简单的换算。</p>
+]]></content>
+      <categories>
+        <category>study</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+        <tag>Linux kernel</tag>
+        <tag>Asm</tag>
+        <tag>LDD</tag>
       </tags>
   </entry>
   <entry>
@@ -662,84 +662,8 @@
       <tags>
         <tag>C/C++</tag>
         <tag>Linux kernel</tag>
-        <tag>LDD</tag>
         <tag>Asm</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Linux内核0.11完全注释 编译环境搭建</title>
-    <url>/embpgp.github.io/2016/12/20/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</url>
-    <content><![CDATA[<blockquote>
-<p>关于Linux 0.11源代码网上已经有很多不同程度修改的版本了，而且某些还是继续有编译链接问题的，不如站在前人的肩膀上继续”搬砖”。</p>
-</blockquote>
-<span id="more"></span>
-
-<hr>
-<p>参考资料<br><a href="http://www.tinylab.org/linux-0.11-lab/">http://www.tinylab.org/linux-0.11-lab/</a></p>
-<p>如参考资料,很丰富也很全面，用来学习和分析很有必要。</p>
-]]></content>
-      <categories>
-        <category>study</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-        <tag>Linux kernel</tag>
         <tag>LDD</tag>
-        <tag>Asm</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Linux内核0.11完全注释 第四章-番外篇</title>
-    <url>/embpgp.github.io/2016/11/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E7%95%AA%E5%A4%96%E7%AF%87/</url>
-    <content><![CDATA[<blockquote>
-<p>本篇将根据实战经验来构建这个简单的多任务内核的运行</p>
-</blockquote>
-<span id="more"></span>
-
-<hr>
-<h1 id="Bochs安装和配置"><a href="#Bochs安装和配置" class="headerlink" title="Bochs安装和配置"></a>Bochs安装和配置</h1><ul>
-<li>通过Debian或者RHEL的包管理器直接安装或者源码安装都可以，网上多建议源码安装，说可以开启调试和反汇编功能，我发现都差不多，至于Win平台的直接点击点击即可。</li>
-<li>按照网上的一些教程将拷贝一份配置文件或者直接文本新建一个，将<strong>romimage</strong>和<strong>vgaromimage</strong>的路径配置好，我的配置如下，删除了很多没啥用的。看启动文件可知道仅仅需要一个设备即可完成。<strong>Image</strong>是后面编译链接后用dd命令写入的文件。<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">romimage: file=<span class="variable">$BXSHARE</span>/BIOS-bochs-latest</span><br><span class="line">megs: 16</span><br><span class="line">vgaromimage: file=/usr/<span class="built_in">local</span>/share/bochs/VGABIOS-lgpl-latest</span><br><span class="line">floppya: 1_44=Image, status=inserted</span><br><span class="line">boot: a</span><br><span class="line"><span class="built_in">log</span>: bochsout.txt</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h1 id="生成启动文件"><a href="#生成启动文件" class="headerlink" title="生成启动文件"></a>生成启动文件</h1><ul>
-<li>首先由于我没有Get到原网站的资料，只好硬着头皮根据书本的后面章节来推敲了。<br>　<img src="/images/Linux_0.11_chapter4_make_by_heself.png" alt="Linux_0.11_chapter4_make_by_heself.png"></li>
-<li>我根据上图自己”凑合着”编写Makefile文件。<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$ cat Makefile </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Image: boot system</span><br><span class="line">	dd bs=32 <span class="keyword">if</span>=boot of=Image skip=1</span><br><span class="line">	dd bs=1 <span class="keyword">if</span>=system of=Image skip=4096 seek=512   <span class="comment">#必须指出这里的错误，skip偏移量是0x1000，不是1024</span></span><br><span class="line"></span><br><span class="line">boot: boot.o</span><br><span class="line">	ld86 -0 -s -o <span class="variable">$@</span> $&lt;</span><br><span class="line">boot.o: boot.s</span><br><span class="line">	as86 -0 -a -o <span class="variable">$@</span> $&lt;</span><br><span class="line"></span><br><span class="line">system: head.o</span><br><span class="line">	ld -m elf_i386 -Ttext 0 -e startup_32 -s -x -M $&lt; -o <span class="variable">$@</span> &gt; System.map</span><br><span class="line">head.o: head.s</span><br><span class="line">	as -32 -o <span class="variable">$@</span> $&lt;</span><br><span class="line"></span><br><span class="line">disk:</span><br><span class="line">	dd bs=8192 <span class="keyword">if</span>=Image of=/dev/fd0</span><br><span class="line">	sync;sync;sync</span><br><span class="line"></span><br><span class="line">clean:</span><br><span class="line">	-rm -rf *.o boot system System.map Image</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$ make clean</span><br><span class="line">rm -rf *.o boot system System.map Image</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$ make</span><br><span class="line">as86 -0 -a -o boot.o boot.s</span><br><span class="line">ld86 -0 -s -o boot boot.o</span><br><span class="line">as -32 -o head.o head.s</span><br><span class="line">ld -m elf_i386 -Ttext 0 -e startup_32 -s -x -M head.o -o system &gt; System.map</span><br><span class="line">dd bs=32 <span class="keyword">if</span>=boot of=Image skip=1</span><br><span class="line">记录了16+0 的读入</span><br><span class="line">记录了16+0 的写出</span><br><span class="line">512 bytes copied, 0.00025786 s, 2.0 MB/s</span><br><span class="line">dd bs=1 <span class="keyword">if</span>=system of=Image skip=4096 seek=512   <span class="comment">#必须指出这里的错误，skip偏移量是0x1000，不是1024</span></span><br><span class="line">记录了4996+0 的读入</span><br><span class="line">记录了4996+0 的写出</span><br><span class="line">4996 bytes (5.0 kB, 4.9 KiB) copied, 0.0211415 s, 236 kB/s</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$</span><br></pre></td></tr></table></figure></li>
-<li>由于我们这个<strong>多任务内核例子</strong>并不需要文件系统，仅仅只是模拟一下保护模式下的各种机制，因此bochs的配置文件可以直接设置为软盘启动并直接配置<strong>Image</strong>为启动文件。这里需要说明的是如果直接照着Makefile文件的来dd，参数skip是有问题的，我当时为了编译能够通过从网上找了很多参数，可能原文编译的情况不同吧。由于elf文件格式的缘故必须去掉它的头部,用工具查看得知代码段偏移量在0x1000，所以我为了简单好看就每次单字节的写入了4096次。不想自个儿敲以及稍微详细点的注释请参考<a href="https://github.com/embpgp/Linux_kernel_0.11_examples/tree/master/chapter4/example_for_multi_tasks">这里</a>。</li>
-</ul>
-<h1 id="奔跑吧，小内核"><a href="#奔跑吧，小内核" class="headerlink" title="奔跑吧，小内核~~~"></a>奔跑吧，小内核~~~</h1><ul>
-<li><p>首先键入类似<code>bochs -f ./$config_file</code>，如果没问题则键入6或者直接回车。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_start.png" alt="Linux_0.11_chapter4_extra_bochs_start.png"></p>
-</li>
-<li><p>遇到如下情况就表示进入了调试状态了，左边的小黑框暂时停在了ROM BIOS处等待我们输入命令，可以先输入<code>b 0x7c00</code>，让其断在我们可控的第一条指令处。具体的调试指令可参考<a href="http://www.cnblogs.com/hongzg1982/articles/2111254.html">这里</a><br><img src="/images/Linux_0.11_chapter4_extra_bochs_6.png" alt="Linux_0.11_chapter4_extra_bochs_6.png"></p>
-</li>
-<li><p>断在了物理地址0x7c00处，此时为boot.s文件代码中第一条指令，正在搭建进入保护模式的环境。后面可以根据汇编代码单步走(s)来一一对照执行。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_0x7c00.png" alt="Linux_0.11_chapter4_extra_bochs_0x7c00.png"></p>
-</li>
-<li><p>接下来看点有趣的东西，由于我多次调试已经知道了内核各个数据结构在内存中的地址(对照调试界面和源码界面，内核数据结构符号均已经变成内存地址)。我便直接下断点在<code>timer_interrupt</code>这个时钟中断处理函数的某一条语句(cmpl)来观察现象。断点地址0x0表示刚刚进入保护模式的内核代码段首地址处。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_protect_0.png" alt="Linux_0.11_chapter4_extra_bochs_protect_0.png"></p>
-</li>
-<li><p>注意观察bochs界面的左上角处，已经打印出了大约10个A。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_first_show.png" alt="Linux_0.11_chapter4_extra_bochs_first_show.png"></p>
-</li>
-<li><p>用s单步走，注意观察第一次jmp后的变化,esp已经改变,此时已经处于任务1即打印B的任务的用户空间了。由于处于调试状态的程序不能单步直接响应定时器中断，我们再次键入c继续等待下一次中断。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_first_jmp.png" alt="Linux_0.11_chapter4_extra_bochs_first_jmp.png"></p>
-</li>
-<li><p>注意观察bochs界面的左上角处，又打印了大约10B。说明此时被中断后来到了任务1(即打印B)的内核空间，esp也发生了变化。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_task0_kernel.png" alt="Linux_0.11_chapter4_extra_bochs_task0_kernel.png"></p>
-</li>
-<li><p>此时的jmp之后esp发生了变化，从tss0中恢复task0的现场，即处于上次被jmp后的地方，因此它必须得继续执行后面的指令，虽然仍然处于中断处理过程，但是CPU不管那么多，它只知道取指译码执行，不出权限问题就没啥事。等到iret指令执行后便会回到task0的用户空间继续打印A了。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_task0_kernel_resume.png" alt="Linux_0.11_chapter4_extra_bochs_task0_kernel_resume.png"></p>
-</li>
-<li><p>看到了没?这就是我所说的”三个esp”,此图说明当时被时钟中断的时候task0正在”睡眠”，B也类似的。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_task0_kernel_resume_user.png" alt="Linux_0.11_chapter4_extra_bochs_task0_kernel_resume_user.png"></p>
-</li>
-<li><p>去掉中断看全景图吧!!!瞬间被霸屏。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_running.png" alt="Linux_0.11_chapter4_extra_bochs_running.png"></p>
-</li>
-<li><p>自己新增加的任务2,其中利用了局部段描述符的第0个槽位,打印字符’0’。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_add_2_task.png" alt="Linux_0.11_chapter4_extra_bochs_add_2_task.png"></p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>能折腾总会学到很多…关于代码的分析请参见<a href="https://github.com/embpgp/Linux_kernel_0.11_examples/tree/master/chapter4/example_for_multi_tasks">这里</a>吧</p>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>study</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-        <tag>Linux kernel</tag>
-        <tag>LDD</tag>
-        <tag>Asm</tag>
       </tags>
   </entry>
   <entry>
@@ -914,8 +838,62 @@
       <tags>
         <tag>C/C++</tag>
         <tag>Linux kernel</tag>
-        <tag>LDD</tag>
         <tag>Asm</tag>
+        <tag>LDD</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux内核0.11完全注释 第四章-番外篇</title>
+    <url>/embpgp.github.io/2016/11/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E7%95%AA%E5%A4%96%E7%AF%87/</url>
+    <content><![CDATA[<blockquote>
+<p>本篇将根据实战经验来构建这个简单的多任务内核的运行</p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<h1 id="Bochs安装和配置"><a href="#Bochs安装和配置" class="headerlink" title="Bochs安装和配置"></a>Bochs安装和配置</h1><ul>
+<li>通过Debian或者RHEL的包管理器直接安装或者源码安装都可以，网上多建议源码安装，说可以开启调试和反汇编功能，我发现都差不多，至于Win平台的直接点击点击即可。</li>
+<li>按照网上的一些教程将拷贝一份配置文件或者直接文本新建一个，将<strong>romimage</strong>和<strong>vgaromimage</strong>的路径配置好，我的配置如下，删除了很多没啥用的。看启动文件可知道仅仅需要一个设备即可完成。<strong>Image</strong>是后面编译链接后用dd命令写入的文件。<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">romimage: file=<span class="variable">$BXSHARE</span>/BIOS-bochs-latest</span><br><span class="line">megs: 16</span><br><span class="line">vgaromimage: file=/usr/<span class="built_in">local</span>/share/bochs/VGABIOS-lgpl-latest</span><br><span class="line">floppya: 1_44=Image, status=inserted</span><br><span class="line">boot: a</span><br><span class="line"><span class="built_in">log</span>: bochsout.txt</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="生成启动文件"><a href="#生成启动文件" class="headerlink" title="生成启动文件"></a>生成启动文件</h1><ul>
+<li>首先由于我没有Get到原网站的资料，只好硬着头皮根据书本的后面章节来推敲了。<br>　<img src="/images/Linux_0.11_chapter4_make_by_heself.png" alt="Linux_0.11_chapter4_make_by_heself.png"></li>
+<li>我根据上图自己”凑合着”编写Makefile文件。<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$ cat Makefile </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Image: boot system</span><br><span class="line">	dd bs=32 <span class="keyword">if</span>=boot of=Image skip=1</span><br><span class="line">	dd bs=1 <span class="keyword">if</span>=system of=Image skip=4096 seek=512   <span class="comment">#必须指出这里的错误，skip偏移量是0x1000，不是1024</span></span><br><span class="line"></span><br><span class="line">boot: boot.o</span><br><span class="line">	ld86 -0 -s -o <span class="variable">$@</span> $&lt;</span><br><span class="line">boot.o: boot.s</span><br><span class="line">	as86 -0 -a -o <span class="variable">$@</span> $&lt;</span><br><span class="line"></span><br><span class="line">system: head.o</span><br><span class="line">	ld -m elf_i386 -Ttext 0 -e startup_32 -s -x -M $&lt; -o <span class="variable">$@</span> &gt; System.map</span><br><span class="line">head.o: head.s</span><br><span class="line">	as -32 -o <span class="variable">$@</span> $&lt;</span><br><span class="line"></span><br><span class="line">disk:</span><br><span class="line">	dd bs=8192 <span class="keyword">if</span>=Image of=/dev/fd0</span><br><span class="line">	sync;sync;sync</span><br><span class="line"></span><br><span class="line">clean:</span><br><span class="line">	-rm -rf *.o boot system System.map Image</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$ make clean</span><br><span class="line">rm -rf *.o boot system System.map Image</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$ make</span><br><span class="line">as86 -0 -a -o boot.o boot.s</span><br><span class="line">ld86 -0 -s -o boot boot.o</span><br><span class="line">as -32 -o head.o head.s</span><br><span class="line">ld -m elf_i386 -Ttext 0 -e startup_32 -s -x -M head.o -o system &gt; System.map</span><br><span class="line">dd bs=32 <span class="keyword">if</span>=boot of=Image skip=1</span><br><span class="line">记录了16+0 的读入</span><br><span class="line">记录了16+0 的写出</span><br><span class="line">512 bytes copied, 0.00025786 s, 2.0 MB/s</span><br><span class="line">dd bs=1 <span class="keyword">if</span>=system of=Image skip=4096 seek=512   <span class="comment">#必须指出这里的错误，skip偏移量是0x1000，不是1024</span></span><br><span class="line">记录了4996+0 的读入</span><br><span class="line">记录了4996+0 的写出</span><br><span class="line">4996 bytes (5.0 kB, 4.9 KiB) copied, 0.0211415 s, 236 kB/s</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$</span><br></pre></td></tr></table></figure></li>
+<li>由于我们这个<strong>多任务内核例子</strong>并不需要文件系统，仅仅只是模拟一下保护模式下的各种机制，因此bochs的配置文件可以直接设置为软盘启动并直接配置<strong>Image</strong>为启动文件。这里需要说明的是如果直接照着Makefile文件的来dd，参数skip是有问题的，我当时为了编译能够通过从网上找了很多参数，可能原文编译的情况不同吧。由于elf文件格式的缘故必须去掉它的头部,用工具查看得知代码段偏移量在0x1000，所以我为了简单好看就每次单字节的写入了4096次。不想自个儿敲以及稍微详细点的注释请参考<a href="https://github.com/embpgp/Linux_kernel_0.11_examples/tree/master/chapter4/example_for_multi_tasks">这里</a>。</li>
+</ul>
+<h1 id="奔跑吧，小内核"><a href="#奔跑吧，小内核" class="headerlink" title="奔跑吧，小内核~~~"></a>奔跑吧，小内核~~~</h1><ul>
+<li><p>首先键入类似<code>bochs -f ./$config_file</code>，如果没问题则键入6或者直接回车。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_start.png" alt="Linux_0.11_chapter4_extra_bochs_start.png"></p>
+</li>
+<li><p>遇到如下情况就表示进入了调试状态了，左边的小黑框暂时停在了ROM BIOS处等待我们输入命令，可以先输入<code>b 0x7c00</code>，让其断在我们可控的第一条指令处。具体的调试指令可参考<a href="http://www.cnblogs.com/hongzg1982/articles/2111254.html">这里</a><br><img src="/images/Linux_0.11_chapter4_extra_bochs_6.png" alt="Linux_0.11_chapter4_extra_bochs_6.png"></p>
+</li>
+<li><p>断在了物理地址0x7c00处，此时为boot.s文件代码中第一条指令，正在搭建进入保护模式的环境。后面可以根据汇编代码单步走(s)来一一对照执行。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_0x7c00.png" alt="Linux_0.11_chapter4_extra_bochs_0x7c00.png"></p>
+</li>
+<li><p>接下来看点有趣的东西，由于我多次调试已经知道了内核各个数据结构在内存中的地址(对照调试界面和源码界面，内核数据结构符号均已经变成内存地址)。我便直接下断点在<code>timer_interrupt</code>这个时钟中断处理函数的某一条语句(cmpl)来观察现象。断点地址0x0表示刚刚进入保护模式的内核代码段首地址处。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_protect_0.png" alt="Linux_0.11_chapter4_extra_bochs_protect_0.png"></p>
+</li>
+<li><p>注意观察bochs界面的左上角处，已经打印出了大约10个A。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_first_show.png" alt="Linux_0.11_chapter4_extra_bochs_first_show.png"></p>
+</li>
+<li><p>用s单步走，注意观察第一次jmp后的变化,esp已经改变,此时已经处于任务1即打印B的任务的用户空间了。由于处于调试状态的程序不能单步直接响应定时器中断，我们再次键入c继续等待下一次中断。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_first_jmp.png" alt="Linux_0.11_chapter4_extra_bochs_first_jmp.png"></p>
+</li>
+<li><p>注意观察bochs界面的左上角处，又打印了大约10B。说明此时被中断后来到了任务1(即打印B)的内核空间，esp也发生了变化。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_task0_kernel.png" alt="Linux_0.11_chapter4_extra_bochs_task0_kernel.png"></p>
+</li>
+<li><p>此时的jmp之后esp发生了变化，从tss0中恢复task0的现场，即处于上次被jmp后的地方，因此它必须得继续执行后面的指令，虽然仍然处于中断处理过程，但是CPU不管那么多，它只知道取指译码执行，不出权限问题就没啥事。等到iret指令执行后便会回到task0的用户空间继续打印A了。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_task0_kernel_resume.png" alt="Linux_0.11_chapter4_extra_bochs_task0_kernel_resume.png"></p>
+</li>
+<li><p>看到了没?这就是我所说的”三个esp”,此图说明当时被时钟中断的时候task0正在”睡眠”，B也类似的。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_task0_kernel_resume_user.png" alt="Linux_0.11_chapter4_extra_bochs_task0_kernel_resume_user.png"></p>
+</li>
+<li><p>去掉中断看全景图吧!!!瞬间被霸屏。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_running.png" alt="Linux_0.11_chapter4_extra_bochs_running.png"></p>
+</li>
+<li><p>自己新增加的任务2,其中利用了局部段描述符的第0个槽位,打印字符’0’。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_add_2_task.png" alt="Linux_0.11_chapter4_extra_bochs_add_2_task.png"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>能折腾总会学到很多…关于代码的分析请参见<a href="https://github.com/embpgp/Linux_kernel_0.11_examples/tree/master/chapter4/example_for_multi_tasks">这里</a>吧</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>study</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+        <tag>Linux kernel</tag>
+        <tag>Asm</tag>
+        <tag>LDD</tag>
       </tags>
   </entry>
   <entry>
@@ -997,6 +975,28 @@
       </tags>
   </entry>
   <entry>
+    <title>Linux内核0.11完全注释 编译环境搭建</title>
+    <url>/embpgp.github.io/2016/12/20/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<blockquote>
+<p>关于Linux 0.11源代码网上已经有很多不同程度修改的版本了，而且某些还是继续有编译链接问题的，不如站在前人的肩膀上继续”搬砖”。</p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<p>参考资料<br><a href="http://www.tinylab.org/linux-0.11-lab/">http://www.tinylab.org/linux-0.11-lab/</a></p>
+<p>如参考资料,很丰富也很全面，用来学习和分析很有必要。</p>
+]]></content>
+      <categories>
+        <category>study</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+        <tag>Linux kernel</tag>
+        <tag>Asm</tag>
+        <tag>LDD</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>compile VLC for Linux</title>
     <url>/embpgp.github.io/2017/08/25/compile-VLC-for-Linux/</url>
     <content><![CDATA[<p>参考资料：<br>依赖项：<a href="http://www.cnblogs.com/oloroso/p/4595136.html">http://www.cnblogs.com/oloroso/p/4595136.html</a><br>Aclocal版本重新校正：<a href="https://github.com/threatstack/libmagic/issues/3">https://github.com/threatstack/libmagic/issues/3</a><br>临时卸载QT5：<a href="https://forum.videolan.org/viewtopic.php?t=124188&start=20">https://forum.videolan.org/viewtopic.php?t=124188&amp;start=20</a></p>
@@ -1028,40 +1028,6 @@
       </categories>
       <tags>
         <tag>Linux</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>gentoo_install</title>
-    <url>/embpgp.github.io/2017/08/04/gentoo-install/</url>
-    <content><![CDATA[<p>参考资料:<br><a href="https://wiki.gentoo.org/wiki/Handbook:AMD64/zh-cn">https://wiki.gentoo.org/wiki/Handbook:AMD64/zh-cn</a>等等搜索引擎能够解决的问题链接</p>
-<blockquote>
-<p>今年三月份的时候就着手准备，无奈时间一直不连续，到近期下决心装好桌面版本，遂今日成．</p>
-</blockquote>
-<span id="more"></span>
-<hr>
-<h1 id="gentoo是啥？"><a href="#gentoo是啥？" class="headerlink" title="gentoo是啥？"></a>gentoo是啥？</h1><p>  跟Arch差不多的可供闲着的人折腾的定制化版的GNU/Linux．滚动更新和源码安装等是其和其他普遍的发行版最大的区别．成功安装gentoo，最起码使得初学者对GNU/Linux操作系统的大体构成有一定了解．</p>
-<h1 id="安装环境"><a href="#安装环境" class="headerlink" title="安装环境"></a>安装环境</h1><p>  我个人的情况是已经安装了个GNU/Linux了且boot选项移交给了其gurb管理器，同时我是安装在物理机上的，因此后续的安装bootloader部分我就可以跳过了．简单点说就是在rootfs没有问题的情况下只要把内核源码编译出来的镜像放在指定位置同时新增前者的grub内容选项即可．我为rootfs分配了大概35G的磁盘空间，为boot分配了100M,而swap可以借用前者的，由于没有为/usr和/home分区因此其内容均挂载在rootfs下，其影响就是容灾性降低了．具体分区可用fdisk等分区工具．</p>
-<h1 id="下载镜像"><a href="#下载镜像" class="headerlink" title="下载镜像"></a>下载镜像</h1><p>  网络上建议下载minimal版本的，其跟live主要区别就是全部都是黑框框．而后下载stage3和portage.可以在<a href="http://mirrors.163.com/gentoo/releases/">这里</a>下载.portage得下载最新版的，便于后期处理．而后可以用dd或者其他烧录工具将iso镜像烧录到u盘中，将其他两个文件包直接放在rootfs里面即可(portage包是在stage3解压之后再解压到/usr目录)．</p>
-<h1 id="配置gentoo"><a href="#配置gentoo" class="headerlink" title="配置gentoo"></a>配置gentoo</h1><p>根据wiki里面的handbook先配置好大部分，其中需要主要的是网卡驱动部分．现在shell里面键入<code>lspci -k</code>即可，如下所示:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101/2/6E PCI Express Fast/Gigabit Ethernet controller (rev 05)</span><br><span class="line">	Subsystem: Dell RTL8101/2/6E PCI Express Fast/Gigabit Ethernet controller</span><br><span class="line">	Kernel driver <span class="keyword">in</span> use: r8169</span><br><span class="line">	Kernel modules: r8169</span><br><span class="line">02:00.0 Network controller: Broadcom Corporation BCM43142 802.11b/g/n (rev 01)</span><br><span class="line">	Subsystem: Dell Wireless 1704 802.11n + BT 4.0</span><br><span class="line">	Kernel driver <span class="keyword">in</span> use: wl</span><br><span class="line">	Kernel modules: bcma, wl</span><br><span class="line">	</span><br></pre></td></tr></table></figure>
-
-<p>根据下面的提示可以找到相应的网卡驱动，在<code>make menuconfig</code>之后直接键入<code>/</code>进行模块的搜索，例如<code>r8169</code>而后选中后即可将内核模块编译进来，同时需要注意网卡命名是否类似于<code>eth0</code>，如果不是则需要在网络配置的时候更改，例如<code>enp1s0</code>建立软链接，这样网络才能起来．其他部分也可以先让系统起来之后再去重新编译内核再加．如果没有挂载boot分区则需要手动将压缩后的内核镜像和符号表等复制到boot分区．我的grub.cfg新增的内容如下:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">menuentry <span class="string">&#x27;Gentoo/Linux 4.9.34&#x27;</span>&#123;</span><br><span class="line">	insmod ext2</span><br><span class="line">	<span class="built_in">set</span> root=<span class="string">&#x27;hd0,msdos10&#x27;</span></span><br><span class="line">	linux /vmlinuz-4.9.34-gentoo root=/dev/sda16</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-<p>其中<code>set root=</code>部分是boot所在的分区，我这里是sda10.<code>linux ...</code>里面的vmlinuz-4.9.34-gentoo是内核镜像名称，其文件就在sda10分区．而root=后面的内容则是rootfs所在分区．而后exit处chroot环境，reboot准备进入物理环境了．</p>
-<h1 id="装桌面"><a href="#装桌面" class="headerlink" title="装桌面"></a>装桌面</h1><p>先不着急在eselect里面选择，首先利用网络先<code>emerge --sync</code>同步portage树，而后可以选择安装一些需要的软件例如vim等．之前一直卡在这里，解决不了依赖性问题，首先搜索到了xorg的安装方式，参考<a href="https://wiki.gentoo.org/wiki/Xorg/Guide/zh-cn">这里</a>将显卡的驱动安装好，之后便可操作eselect选项，可先做轻便的desktop的选项，而后搜索到xfce4的安装方法，照葫芦画瓢的我便从昨天装到今天中午终于完工了．之后的APP的安装应该都不是什么大问题，装上chrome几乎能够解决很多需求问题．<br><img src="/images/gentoo_desktop.png" alt="gentoo_desktop.png"></p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>换个酷炫点的桌面还是继续折腾BLFS…</p>
-<h2 id="issue"><a href="#issue" class="headerlink" title="issue"></a>issue</h2><ul>
-<li>提示<code>The emerge option --autounmask-write writes autounmask features into the corresponding config files.</code>，重复上次的命令加上参数，然后使用自带的<code>dispatch-conf</code>命令自动写入配置，而后再执行最开始的命令即可解决软件安装版本以及依赖性问题．</li>
-</ul>
-]]></content>
-      <categories>
-        <category>study</category>
-      </categories>
-      <tags>
-        <tag>GNU/Linux</tag>
-        <tag>gentoo</tag>
       </tags>
   </entry>
   <entry>
@@ -1125,6 +1091,33 @@
       </tags>
   </entry>
   <entry>
+    <title>求职艰辛路</title>
+    <url>/embpgp.github.io/2016/10/17/job-summary/</url>
+    <content><![CDATA[<blockquote>
+<p>经过一个多月的奋战,昨天终于签约了,个人也算结束了校招吧,一路走来,倍感心酸.</p>
+</blockquote>
+<span id="more"></span>
+
+<p>老吴去年心得:<a href="http://www.nephen.com/2015/11/job-summary">http://www.nephen.com/2015/11/job-summary</a></p>
+<hr>
+<h2 id="个人技术体系"><a href="#个人技术体系" class="headerlink" title="个人技术体系"></a>个人技术体系</h2><p>大学三年来主要的学习方向是嵌入式，编程语言主要为Asm,C/C++，用shell和python脚本开发过树莓派等的相关功能。操作系统平台为Linux,做过STM32,TI等芯片的开发，2015-2016学年在嵌入式创新基地主要学习四轴飞行器，目前开发平台为外国开源之王Pixhawk；在物联网实验室主要学习物联网作品相关技术体系，包括ZigBee，RFID，QT上位机等。对于信息安全、网络安全和软件安全亦有涉猎。</p>
+<h3 id="为什么选择了嵌入式"><a href="#为什么选择了嵌入式" class="headerlink" title="为什么选择了嵌入式?"></a>为什么选择了嵌入式?</h3><p>个人对于计算机领域的起步较晚,高中及之前一直只会开关机等.大一恍恍惚惚地过了一年,基本没学啥,C和C++课程开得等于没学,数据结构和算法没好好听课….好在自己对于技术的热衷度不减,尤其是H4ck技术.大一的时候就买了<em>加密与解密</em>,<em>Windows PE权威指南</em>,<em>黑客大曝光</em>等,各种幻想,但是眼高手低,几乎看不懂里面的原理…,到大二开了数字电路的课程,瞬时间感觉底层在召唤我,所以在大二下结束的时候毅然决定加入嵌入式实验室学习.一进去直接上手stm32,买的正点原子的开发板,看着各个模块的介绍,照着提供的例程逐个地跑代码,修改代码,调试代码等.后期加入了四轴飞行器小组,担任软件组主攻手.到后来参与物联网实验室的建设,学习物联网相关技术,算是大致使得自己对整个计算机体系有了基本的认识.</p>
+<h3 id="为什么涉猎安全技术"><a href="#为什么涉猎安全技术" class="headerlink" title="为什么涉猎安全技术?"></a>为什么涉猎安全技术?</h3><p>相信每个学习计算机的或多或少地对于H4ck3r有所耳闻或是冲着这个来的,但是到了大学发现实际情况并非如此.如果高校开的课程还算综合的话确实什么都会接触一点,但是都不能深入了解(谁说读大学就是学技术找工作的,详情搜索<strong>教育</strong>二字).因此如果有兴趣,你肯定会自己主动去索取相关资料的,这样学起来也是很快,当然要记得多动手.在今天这个信息化时代,安全问题已经成了普遍问题了,而非各个国家特殊组织所专有的.当然也不排除某些商业公司逆向工程竞争对手的产品来Get功能或者渗透测试对方信息系统达到某种目的.信息对抗及攻防延伸了到前所未有的高度,大型互联网公司脱裤,撞库事件层出不穷…随便去@n网搜一下,H3i产有多赚钱?未来安全产业估值不可限量,有兴趣的你还是好好学基础吧.</p>
+<h3 id="为什么看起来有些xjbg"><a href="#为什么看起来有些xjbg" class="headerlink" title="为什么看起来有些xjbg"></a>为什么看起来有些xjbg</h3><p>据说计算机类相关专业考研的专业课包括<strong>数据结构</strong>,<strong>计算机组成原理</strong>,<strong>操作系统</strong>,<strong>计算机网络</strong>.我觉得挺合理的,这几门课程基本上能够概括计算机基本技术.有人会说,学那么多有用吗?企业到时候把人招进公司还不只是把一样做好就行了.现实可能是这样,但是作为一个计算机类相关专业的大学生,如果不懂原理,出了问题不知如何解决不会tm很尴尬吗?作为研究者就更加要有凡事都需要探索的精神.如果再给我一次机会重来大学的机会,我还是会贪婪地学习这么多,但是很会注重某个点.如果我架不起这个技术体系,我就会感到心虚(恨只恨起步太晚).对于面试官的问题<strong>你觉得你的优点和缺点是什么</strong>我就是实情这样回答的.因此我觉得,只要认真去搞过,那些东西都会是你的.</p>
+<h2 id="如何校招"><a href="#如何校招" class="headerlink" title="如何校招?"></a>如何校招?</h2><p>首先概括:大三暑假最好去实习,或者提前批,9-10月份的校招很吃亏.都是有很鲜明的例子,具体原因可自行推理,当然类似于我们专业的神哥这样的人物除外咯.9-10月份是各大企业来校招的高峰期,期间可能会冲突很多,但是简历一定要投.模板可参考乔布,知页等(虽然泄露个人信息).内容可参考企业对相关岗位的要求照葫芦画瓢.校招来的企业可参考各大高校的就业网,最好去省会知名高校的官网看,或者直接去心仪的企业官网查看,以及各大就业网站(毕竟很多企业都是委托第三方来制作招聘网站的)等.用文字图表编辑工具记录下校招行程,包括宣讲会,笔试面试发放offer等流程的具体日期.不清楚的可以咨询自己的学长学姐,他们是过来人,不会坑你的,否则就是你请他们的饭只有一顿…</p>
+<h2 id="笔试"><a href="#笔试" class="headerlink" title="笔试"></a>笔试</h2><p>关于技术岗和非技术岗的情况还是相差很远的.一般非技术岗位不需要笔试而直接进入群面环节.而技术岗一般会进行一轮笔试,内容几乎都是基础,当然也不排除大型公司提高难度.一定要把那些<strong>套路</strong>搞明白,笔试和面试都有<strong>套路</strong>.此处会省略很多字,因为在互联网上能够匹配到.把能够做的一定都做了,一般会结合笔试成绩和简历来决定是否进入下一轮环节.建议建立一个找工作的讨论组,每天发布新消息,讨论和总结相关试题等.毕竟赶场也不容易,可以多吃点儿了…</p>
+<h2 id="面试"><a href="#面试" class="headerlink" title="面试"></a>面试</h2><p>笔试中不会做的题目考完之后一定要弄懂!!!这个坑不填几乎就可以直接See You Again了.一面的面试官一般还是喜欢问一些基础,比如<strong>指针和引用的异同</strong>,<strong>线程和进程的区别</strong>,<strong>#define用法</strong>,<strong>static,const用法</strong>,<strong>C++多态的实现方法</strong>,<strong>TCP时序图</strong>,<strong>各种排序,查找,遍历等的算法原理</strong>,<strong>网络编程中IO复用的情况</strong>等等,Linux的后台开发可以参考这个<a href="http://blog.csdn.net/huangjm_13/article/details/8799595">链接</a>.搞熟了就会了.技术嘛,就是不断学习和应用的过程.二面一般是压力测试,讲一些自己做过的项目,怎么做的,怎么解决问题的等,可以搞一搞<strong>剑指offer</strong>和<strong>程序员面试宝典</strong>等书籍.在和面试官交流的过程可以稍微引导一下,体现出一个循序渐进的过程.在最后,一般面试官会说:<strong>“你有什么需要问我的吗?”</strong>,这个时候很重要,或<strong>削发明志</strong>,或<strong>力挽狂澜</strong>.一定不要傻乎乎地啥都不问就走了.所以有些技巧还是需要把握的,技术能力是一个很重要的因素,但是也要注意细节.可能某些企业不怎么想去,但是也可以去笔试面试,亲身收获面经,为更好的做准备.不打无准备的仗!!!</p>
+<h2 id="HR约谈"><a href="#HR约谈" class="headerlink" title="HR约谈"></a>HR约谈</h2><p>一般过了两面就会跟人力资源的HR姐姐约谈待遇和薪水问题,某些企业都是明码标价的.我是觉得应届毕业生还是应该多关注行业和自己感兴趣的技术,不能太过于强求金子,当然食宿也得考虑.找到工作仅仅只是一个开始,后面还需要不断学习新的技术和沉淀,这么早确定自己的未来有意思不?</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>感谢诸位背后的支持,在这段日子里一直有一群小伙伴一起为公共交通事业作出卓越贡献,大家能够抗住周围的压力并发挥出自己的实力,是一个成熟的过程.祝愿小伙伴们早日找到心仪的工作,继续加油!!!</p>
+]]></content>
+      <categories>
+        <category>misc</category>
+      </categories>
+      <tags>
+        <tag>misc</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>getshell on Win7 x64</title>
     <url>/embpgp.github.io/2017/04/27/getshell-on-Win7-x64/</url>
     <content><![CDATA[<blockquote>
@@ -1157,33 +1150,6 @@
         <tag>NSA</tag>
         <tag>msf</tag>
         <tag>shadowbroker</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>求职艰辛路</title>
-    <url>/embpgp.github.io/2016/10/17/job-summary/</url>
-    <content><![CDATA[<blockquote>
-<p>经过一个多月的奋战,昨天终于签约了,个人也算结束了校招吧,一路走来,倍感心酸.</p>
-</blockquote>
-<span id="more"></span>
-
-<p>老吴去年心得:<a href="http://www.nephen.com/2015/11/job-summary">http://www.nephen.com/2015/11/job-summary</a></p>
-<hr>
-<h2 id="个人技术体系"><a href="#个人技术体系" class="headerlink" title="个人技术体系"></a>个人技术体系</h2><p>大学三年来主要的学习方向是嵌入式，编程语言主要为Asm,C/C++，用shell和python脚本开发过树莓派等的相关功能。操作系统平台为Linux,做过STM32,TI等芯片的开发，2015-2016学年在嵌入式创新基地主要学习四轴飞行器，目前开发平台为外国开源之王Pixhawk；在物联网实验室主要学习物联网作品相关技术体系，包括ZigBee，RFID，QT上位机等。对于信息安全、网络安全和软件安全亦有涉猎。</p>
-<h3 id="为什么选择了嵌入式"><a href="#为什么选择了嵌入式" class="headerlink" title="为什么选择了嵌入式?"></a>为什么选择了嵌入式?</h3><p>个人对于计算机领域的起步较晚,高中及之前一直只会开关机等.大一恍恍惚惚地过了一年,基本没学啥,C和C++课程开得等于没学,数据结构和算法没好好听课….好在自己对于技术的热衷度不减,尤其是H4ck技术.大一的时候就买了<em>加密与解密</em>,<em>Windows PE权威指南</em>,<em>黑客大曝光</em>等,各种幻想,但是眼高手低,几乎看不懂里面的原理…,到大二开了数字电路的课程,瞬时间感觉底层在召唤我,所以在大二下结束的时候毅然决定加入嵌入式实验室学习.一进去直接上手stm32,买的正点原子的开发板,看着各个模块的介绍,照着提供的例程逐个地跑代码,修改代码,调试代码等.后期加入了四轴飞行器小组,担任软件组主攻手.到后来参与物联网实验室的建设,学习物联网相关技术,算是大致使得自己对整个计算机体系有了基本的认识.</p>
-<h3 id="为什么涉猎安全技术"><a href="#为什么涉猎安全技术" class="headerlink" title="为什么涉猎安全技术?"></a>为什么涉猎安全技术?</h3><p>相信每个学习计算机的或多或少地对于H4ck3r有所耳闻或是冲着这个来的,但是到了大学发现实际情况并非如此.如果高校开的课程还算综合的话确实什么都会接触一点,但是都不能深入了解(谁说读大学就是学技术找工作的,详情搜索<strong>教育</strong>二字).因此如果有兴趣,你肯定会自己主动去索取相关资料的,这样学起来也是很快,当然要记得多动手.在今天这个信息化时代,安全问题已经成了普遍问题了,而非各个国家特殊组织所专有的.当然也不排除某些商业公司逆向工程竞争对手的产品来Get功能或者渗透测试对方信息系统达到某种目的.信息对抗及攻防延伸了到前所未有的高度,大型互联网公司脱裤,撞库事件层出不穷…随便去@n网搜一下,H3i产有多赚钱?未来安全产业估值不可限量,有兴趣的你还是好好学基础吧.</p>
-<h3 id="为什么看起来有些xjbg"><a href="#为什么看起来有些xjbg" class="headerlink" title="为什么看起来有些xjbg"></a>为什么看起来有些xjbg</h3><p>据说计算机类相关专业考研的专业课包括<strong>数据结构</strong>,<strong>计算机组成原理</strong>,<strong>操作系统</strong>,<strong>计算机网络</strong>.我觉得挺合理的,这几门课程基本上能够概括计算机基本技术.有人会说,学那么多有用吗?企业到时候把人招进公司还不只是把一样做好就行了.现实可能是这样,但是作为一个计算机类相关专业的大学生,如果不懂原理,出了问题不知如何解决不会tm很尴尬吗?作为研究者就更加要有凡事都需要探索的精神.如果再给我一次机会重来大学的机会,我还是会贪婪地学习这么多,但是很会注重某个点.如果我架不起这个技术体系,我就会感到心虚(恨只恨起步太晚).对于面试官的问题<strong>你觉得你的优点和缺点是什么</strong>我就是实情这样回答的.因此我觉得,只要认真去搞过,那些东西都会是你的.</p>
-<h2 id="如何校招"><a href="#如何校招" class="headerlink" title="如何校招?"></a>如何校招?</h2><p>首先概括:大三暑假最好去实习,或者提前批,9-10月份的校招很吃亏.都是有很鲜明的例子,具体原因可自行推理,当然类似于我们专业的神哥这样的人物除外咯.9-10月份是各大企业来校招的高峰期,期间可能会冲突很多,但是简历一定要投.模板可参考乔布,知页等(虽然泄露个人信息).内容可参考企业对相关岗位的要求照葫芦画瓢.校招来的企业可参考各大高校的就业网,最好去省会知名高校的官网看,或者直接去心仪的企业官网查看,以及各大就业网站(毕竟很多企业都是委托第三方来制作招聘网站的)等.用文字图表编辑工具记录下校招行程,包括宣讲会,笔试面试发放offer等流程的具体日期.不清楚的可以咨询自己的学长学姐,他们是过来人,不会坑你的,否则就是你请他们的饭只有一顿…</p>
-<h2 id="笔试"><a href="#笔试" class="headerlink" title="笔试"></a>笔试</h2><p>关于技术岗和非技术岗的情况还是相差很远的.一般非技术岗位不需要笔试而直接进入群面环节.而技术岗一般会进行一轮笔试,内容几乎都是基础,当然也不排除大型公司提高难度.一定要把那些<strong>套路</strong>搞明白,笔试和面试都有<strong>套路</strong>.此处会省略很多字,因为在互联网上能够匹配到.把能够做的一定都做了,一般会结合笔试成绩和简历来决定是否进入下一轮环节.建议建立一个找工作的讨论组,每天发布新消息,讨论和总结相关试题等.毕竟赶场也不容易,可以多吃点儿了…</p>
-<h2 id="面试"><a href="#面试" class="headerlink" title="面试"></a>面试</h2><p>笔试中不会做的题目考完之后一定要弄懂!!!这个坑不填几乎就可以直接See You Again了.一面的面试官一般还是喜欢问一些基础,比如<strong>指针和引用的异同</strong>,<strong>线程和进程的区别</strong>,<strong>#define用法</strong>,<strong>static,const用法</strong>,<strong>C++多态的实现方法</strong>,<strong>TCP时序图</strong>,<strong>各种排序,查找,遍历等的算法原理</strong>,<strong>网络编程中IO复用的情况</strong>等等,Linux的后台开发可以参考这个<a href="http://blog.csdn.net/huangjm_13/article/details/8799595">链接</a>.搞熟了就会了.技术嘛,就是不断学习和应用的过程.二面一般是压力测试,讲一些自己做过的项目,怎么做的,怎么解决问题的等,可以搞一搞<strong>剑指offer</strong>和<strong>程序员面试宝典</strong>等书籍.在和面试官交流的过程可以稍微引导一下,体现出一个循序渐进的过程.在最后,一般面试官会说:<strong>“你有什么需要问我的吗?”</strong>,这个时候很重要,或<strong>削发明志</strong>,或<strong>力挽狂澜</strong>.一定不要傻乎乎地啥都不问就走了.所以有些技巧还是需要把握的,技术能力是一个很重要的因素,但是也要注意细节.可能某些企业不怎么想去,但是也可以去笔试面试,亲身收获面经,为更好的做准备.不打无准备的仗!!!</p>
-<h2 id="HR约谈"><a href="#HR约谈" class="headerlink" title="HR约谈"></a>HR约谈</h2><p>一般过了两面就会跟人力资源的HR姐姐约谈待遇和薪水问题,某些企业都是明码标价的.我是觉得应届毕业生还是应该多关注行业和自己感兴趣的技术,不能太过于强求金子,当然食宿也得考虑.找到工作仅仅只是一个开始,后面还需要不断学习新的技术和沉淀,这么早确定自己的未来有意思不?</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>感谢诸位背后的支持,在这段日子里一直有一群小伙伴一起为公共交通事业作出卓越贡献,大家能够抗住周围的压力并发挥出自己的实力,是一个成熟的过程.祝愿小伙伴们早日找到心仪的工作,继续加油!!!</p>
-]]></content>
-      <categories>
-        <category>misc</category>
-      </categories>
-      <tags>
-        <tag>misc</tag>
       </tags>
   </entry>
   <entry>
@@ -1281,30 +1247,37 @@
       </tags>
   </entry>
   <entry>
-    <title>raspberry pi xrdp error</title>
-    <url>/embpgp.github.io/2016/11/07/raspberry-pi-xrdp-error/</url>
-    <content><![CDATA[<p>参考资料:<br><a href="http://askubuntu.com/questions/648819/couldnt-start-xtightvnc-trying-default-font-path-vncserver">http://askubuntu.com/questions/648819/couldnt-start-xtightvnc-trying-default-font-path-vncserver</a></p>
+    <title>gentoo_install</title>
+    <url>/embpgp.github.io/2017/08/04/gentoo-install/</url>
+    <content><![CDATA[<p>参考资料:<br><a href="https://wiki.gentoo.org/wiki/Handbook:AMD64/zh-cn">https://wiki.gentoo.org/wiki/Handbook:AMD64/zh-cn</a>等等搜索引擎能够解决的问题链接</p>
 <blockquote>
-<p>关于树莓派的介绍以及使用可参考官方网站  </p>
+<p>今年三月份的时候就着手准备，无奈时间一直不连续，到近期下决心装好桌面版本，遂今日成．</p>
 </blockquote>
 <span id="more"></span>
+<hr>
+<h1 id="gentoo是啥？"><a href="#gentoo是啥？" class="headerlink" title="gentoo是啥？"></a>gentoo是啥？</h1><p>  跟Arch差不多的可供闲着的人折腾的定制化版的GNU/Linux．滚动更新和源码安装等是其和其他普遍的发行版最大的区别．成功安装gentoo，最起码使得初学者对GNU/Linux操作系统的大体构成有一定了解．</p>
+<h1 id="安装环境"><a href="#安装环境" class="headerlink" title="安装环境"></a>安装环境</h1><p>  我个人的情况是已经安装了个GNU/Linux了且boot选项移交给了其gurb管理器，同时我是安装在物理机上的，因此后续的安装bootloader部分我就可以跳过了．简单点说就是在rootfs没有问题的情况下只要把内核源码编译出来的镜像放在指定位置同时新增前者的grub内容选项即可．我为rootfs分配了大概35G的磁盘空间，为boot分配了100M,而swap可以借用前者的，由于没有为/usr和/home分区因此其内容均挂载在rootfs下，其影响就是容灾性降低了．具体分区可用fdisk等分区工具．</p>
+<h1 id="下载镜像"><a href="#下载镜像" class="headerlink" title="下载镜像"></a>下载镜像</h1><p>  网络上建议下载minimal版本的，其跟live主要区别就是全部都是黑框框．而后下载stage3和portage.可以在<a href="http://mirrors.163.com/gentoo/releases/">这里</a>下载.portage得下载最新版的，便于后期处理．而后可以用dd或者其他烧录工具将iso镜像烧录到u盘中，将其他两个文件包直接放在rootfs里面即可(portage包是在stage3解压之后再解压到/usr目录)．</p>
+<h1 id="配置gentoo"><a href="#配置gentoo" class="headerlink" title="配置gentoo"></a>配置gentoo</h1><p>根据wiki里面的handbook先配置好大部分，其中需要主要的是网卡驱动部分．现在shell里面键入<code>lspci -k</code>即可，如下所示:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101/2/6E PCI Express Fast/Gigabit Ethernet controller (rev 05)</span><br><span class="line">	Subsystem: Dell RTL8101/2/6E PCI Express Fast/Gigabit Ethernet controller</span><br><span class="line">	Kernel driver <span class="keyword">in</span> use: r8169</span><br><span class="line">	Kernel modules: r8169</span><br><span class="line">02:00.0 Network controller: Broadcom Corporation BCM43142 802.11b/g/n (rev 01)</span><br><span class="line">	Subsystem: Dell Wireless 1704 802.11n + BT 4.0</span><br><span class="line">	Kernel driver <span class="keyword">in</span> use: wl</span><br><span class="line">	Kernel modules: bcma, wl</span><br><span class="line">	</span><br></pre></td></tr></table></figure>
+
+<p>根据下面的提示可以找到相应的网卡驱动，在<code>make menuconfig</code>之后直接键入<code>/</code>进行模块的搜索，例如<code>r8169</code>而后选中后即可将内核模块编译进来，同时需要注意网卡命名是否类似于<code>eth0</code>，如果不是则需要在网络配置的时候更改，例如<code>enp1s0</code>建立软链接，这样网络才能起来．其他部分也可以先让系统起来之后再去重新编译内核再加．如果没有挂载boot分区则需要手动将压缩后的内核镜像和符号表等复制到boot分区．我的grub.cfg新增的内容如下:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">menuentry <span class="string">&#x27;Gentoo/Linux 4.9.34&#x27;</span>&#123;</span><br><span class="line">	insmod ext2</span><br><span class="line">	<span class="built_in">set</span> root=<span class="string">&#x27;hd0,msdos10&#x27;</span></span><br><span class="line">	linux /vmlinuz-4.9.34-gentoo root=/dev/sda16</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 
-<h1 id="单板Linux"><a href="#单板Linux" class="headerlink" title="单板Linux"></a>单板Linux</h1><p>随着嵌入式Linux越来越流行,目前很多厂商都在致力于做单板主机,因此市面上也有很多产品可供选择.其中最具有活力的便是树莓派了,连在<strong>Mr Robot</strong>一剧中都被主人公拿来”打广告”.其他诸如香蕉派,香橙派,菠萝派等等pi都有开发团队在开发和维护,有兴趣的可以逐个折腾或者吊的自己绘制PCB制作.</p>
-<h1 id="访问方式"><a href="#访问方式" class="headerlink" title="访问方式"></a>访问方式</h1><p>毫无疑问Web是目前最流行的可视化途径,但是在Linux中最最适合的还是属于console.一般默认在刷入固件之后会默认开启sshd服务,此时便可以通过网络接口ssh连接工具访问树莓派.当然,如果没有开启或者没有通过扫描等方式获取到树莓派的IP地址,则可以借助显示设备或者默认的串口来查看信息,可供选择的是显示接口为HDMI和专用显示接口,一般我们会用HDMI转VGA转接口来接显示屏,此后配置好后便可以当小型服务器用了.</p>
-<h1 id="配置远程桌面"><a href="#配置远程桌面" class="headerlink" title="配置远程桌面"></a>配置远程桌面</h1><p>有些时候console解决不了的时候就必须启用rdp了.Linux中可供选择的桌面系统还是很多的,其中xfce作为流行的轻量级的桌面系统深受好评.一般我们仅仅需要开启xrdp服务即可采用微软的<strong>mstsc</strong>工具来连接Linux主机,但xrdp貌似也是在本地封装vnc服务,因此当vnc服务出现问题的时候即便3389端口处于监听状态也是没辙.无奈只好谷歌.报错信息如下:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">osmc@osmc:~$ vncserver </span><br><span class="line">Couldn<span class="string">&#x27;t start Xtightvnc; trying default font path.</span></span><br><span class="line"><span class="string">Please set correct fontPath in the vncserver script.</span></span><br><span class="line"><span class="string">Couldn&#x27;</span>t start Xtightvnc process.</span><br><span class="line"></span><br><span class="line">07/11/16 01:04:29 Xvnc version TightVNC-1.3.9</span><br><span class="line">07/11/16 01:04:29 Copyright (C) 2000-2007 TightVNC Group</span><br><span class="line">07/11/16 01:04:29 Copyright (C) 1999 AT&amp;T Laboratories Cambridge</span><br><span class="line">07/11/16 01:04:29 All Rights Reserved.</span><br><span class="line">07/11/16 01:04:29 See http://www.tightvnc.com/ <span class="keyword">for</span> information on TightVNC</span><br><span class="line">07/11/16 01:04:29 Desktop name <span class="string">&#x27;X&#x27;</span> (osmc:1)</span><br><span class="line">07/11/16 01:04:29 Protocol versions supported: 3.3, 3.7, 3.8, 3.7t, 3.8t</span><br><span class="line">07/11/16 01:04:29 Listening <span class="keyword">for</span> VNC connections on TCP port 5901</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/misc/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/Type1/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/75dpi/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/100dpi/&#x27;</span> not found - ignoring</span><br><span class="line"></span><br><span class="line">Fatal server error:</span><br><span class="line">could not open default font <span class="string">&#x27;fixed&#x27;</span></span><br><span class="line">07/11/16 01:04:30 Xvnc version TightVNC-1.3.9</span><br><span class="line">07/11/16 01:04:30 Copyright (C) 2000-2007 TightVNC Group</span><br><span class="line">07/11/16 01:04:30 Copyright (C) 1999 AT&amp;T Laboratories Cambridge</span><br><span class="line">07/11/16 01:04:30 All Rights Reserved.</span><br><span class="line">07/11/16 01:04:30 See http://www.tightvnc.com/ <span class="keyword">for</span> information on TightVNC</span><br><span class="line">07/11/16 01:04:30 Desktop name <span class="string">&#x27;X&#x27;</span> (osmc:1)</span><br><span class="line">07/11/16 01:04:30 Protocol versions supported: 3.3, 3.7, 3.8, 3.7t, 3.8t</span><br><span class="line">07/11/16 01:04:30 Listening <span class="keyword">for</span> VNC connections on TCP port 5901</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/misc/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/Speedo/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/Type1/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/75dpi/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/100dpi/&#x27;</span> not found - ignoring</span><br><span class="line"></span><br><span class="line">Fatal server error:</span><br><span class="line">could not open default font <span class="string">&#x27;fixed&#x27;</span></span><br></pre></td></tr></table></figure>
-<p>找了好几个论坛之后又装了好多貌似多余的东西,最后发现仅仅需在<a href="http://askubuntu.com/questions/648819/couldnt-start-xtightvnc-trying-default-font-path-vncserver">这里</a>键入<code>sudo apt-get install  xfonts-base</code>即可解决字体问题了.   </p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">osmc@osmc:~$ sudo vncserver </span><br><span class="line"></span><br><span class="line">New <span class="string">&#x27;X&#x27;</span> desktop is osmc:1</span><br><span class="line"></span><br><span class="line">Creating default startup script /root/.vnc/xstartup</span><br><span class="line">Starting applications specified <span class="keyword">in</span> /root/.vnc/xstartup</span><br><span class="line">Log file is /root/.vnc/osmc:1.log</span><br><span class="line"></span><br><span class="line">osmc@osmc:~$ netstat -anot</span><br><span class="line">Active Internet connections (servers and established)</span><br><span class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State       Timer</span><br><span class="line">tcp        0      0 0.0.0.0:5901            0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:111             0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:6001            0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 127.0.0.1:3350          0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:1177            0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:36666           0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:3389            0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0    180 192.168.31.132:22       10.129.95.50:33532      ESTABLISHED on (0.21/0/0)</span><br><span class="line">tcp6       0      0 :::111                  :::*                    LISTEN      off (0.00/0/0)</span><br><span class="line">tcp6       0      0 :::8080                 :::*                    LISTEN      off (0.00/0/0)</span><br><span class="line">tcp6       0      0 :::22                   :::*                    LISTEN      off (0.00/0/0)</span><br><span class="line">tcp6       0      0 :::36666                :::*                    LISTEN      off (0.00/0/0)</span><br><span class="line">tcp6       0      0 :::36667                :::*                    LISTEN      off (0.00/0/0)</span><br><span class="line">tcp6       0      0 ::1:9090                :::*                    LISTEN      off (0.00/0/0)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>可以看到服务已经开启了,5901端口处于监听状态.再次<code>mstsc</code>之后发现error没了,问题解决.</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>遇到问题还是要有折腾的情怀,虽然还不知所以然,但是能够解决这个问题也不辜负<strong>搬砖</strong>的身份…为了不犯第二次错误,便记录下了本文.</p>
+<p>其中<code>set root=</code>部分是boot所在的分区，我这里是sda10.<code>linux ...</code>里面的vmlinuz-4.9.34-gentoo是内核镜像名称，其文件就在sda10分区．而root=后面的内容则是rootfs所在分区．而后exit处chroot环境，reboot准备进入物理环境了．</p>
+<h1 id="装桌面"><a href="#装桌面" class="headerlink" title="装桌面"></a>装桌面</h1><p>先不着急在eselect里面选择，首先利用网络先<code>emerge --sync</code>同步portage树，而后可以选择安装一些需要的软件例如vim等．之前一直卡在这里，解决不了依赖性问题，首先搜索到了xorg的安装方式，参考<a href="https://wiki.gentoo.org/wiki/Xorg/Guide/zh-cn">这里</a>将显卡的驱动安装好，之后便可操作eselect选项，可先做轻便的desktop的选项，而后搜索到xfce4的安装方法，照葫芦画瓢的我便从昨天装到今天中午终于完工了．之后的APP的安装应该都不是什么大问题，装上chrome几乎能够解决很多需求问题．<br><img src="/images/gentoo_desktop.png" alt="gentoo_desktop.png"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>换个酷炫点的桌面还是继续折腾BLFS…</p>
+<h2 id="issue"><a href="#issue" class="headerlink" title="issue"></a>issue</h2><ul>
+<li>提示<code>The emerge option --autounmask-write writes autounmask features into the corresponding config files.</code>，重复上次的命令加上参数，然后使用自带的<code>dispatch-conf</code>命令自动写入配置，而后再执行最开始的命令即可解决软件安装版本以及依赖性问题．</li>
+</ul>
 ]]></content>
       <categories>
         <category>study</category>
       </categories>
       <tags>
-        <tag>Linux</tag>
-        <tag>Configure</tag>
+        <tag>GNU/Linux</tag>
+        <tag>gentoo</tag>
       </tags>
   </entry>
   <entry>
@@ -1385,47 +1358,30 @@
       </tags>
   </entry>
   <entry>
-    <title>一起来撸printf吧</title>
-    <url>/embpgp.github.io/2016/09/25/%E4%B8%80%E8%B5%B7%E6%9D%A5%E6%92%B8printf%E5%90%A7/</url>
-    <content><![CDATA[<blockquote>
-<p>printf实现还隐藏了很多参数,例如%n,printf返回值是啥你知道吗?格式化字符串漏洞成因何在?这里分析Linux内核中的printf实现,而非glibc库中的标准实现(我们用的肯定是标准库咯,不过很复杂<del>_</del>),因为这里没有%f等浮点类型的匹配,简单一些.</p>
+    <title>raspberry pi xrdp error</title>
+    <url>/embpgp.github.io/2016/11/07/raspberry-pi-xrdp-error/</url>
+    <content><![CDATA[<p>参考资料:<br><a href="http://askubuntu.com/questions/648819/couldnt-start-xtightvnc-trying-default-font-path-vncserver">http://askubuntu.com/questions/648819/couldnt-start-xtightvnc-trying-default-font-path-vncserver</a></p>
+<blockquote>
+<p>关于树莓派的介绍以及使用可参考官方网站  </p>
 </blockquote>
 <span id="more"></span>
 
 
-<p>参考资料:<br><a href="https://github.com/torvalds/linux/blob/master/arch/x86/boot/printf.c">Linus的github仓库https://github.com/torvalds/linux/blob/master/arch/x86/boot/printf.c</a></p>
-<h2 id="printf大体"><a href="#printf大体" class="headerlink" title="printf大体"></a>printf大体</h2><p>首先我们找到printf函数的实现(由于x86体系容易理解便选择了这个体系),可以看到申请了1024个字节的空间来保存要格式化串,有人会问要是我给出的参数超过了1024不就缓冲区溢出程序会crash掉吗?我觉得编译器肯定会察觉到的,有兴趣的自己鼓捣下…大体就是将传递进来的参数根据压栈的顺序逐个取出并格式化成字符串,这个是在vsprintf函数实现的,返回值是两个地址的差,即本次输出的字符串数目.最后调用puts函数向终端输出.最后后才返回本次输出字符串数目.<br><img src="/images/printf.png" alt="printf"></p>
-<h2 id="va-系类宏"><a href="#va-系类宏" class="headerlink" title="va_系类宏"></a>va_系类宏</h2><p>然后我们利用sublime的插件来jump到<code>va_list</code>的定义,发现是一个char*的typedef.干脆就一起来认识一下<code>va_</code>系列的宏.</p>
-<p><code>acpi_native_int</code>也是一个typedef,根据最开始的配置决定是s32还是s64,在x86这里肯定就是有符号的32位了,即int类型的.<code>_AUPBND</code>和<code>_ADNBND</code>两个宏的值一样.而<code>_bnd</code>这个宏在32b体系下给出的是类型X的大小的4字节对齐值.在printf里面用的时候关系不是很大,因为格式化的时候不会是很大结构体(%结构体根本没实现啊),纵然是小于4字节的char,short之类的,存的时候可能是那么多字节,但是压栈的时候编译器会毫不犹豫地安排用一个寄存器扩展并压入栈顶的指令,所以不用担心,可以认为这个宏在printf里面仅仅是4字节对齐没问题的.<code>va_start(ap, A)</code>这个宏接到A(fmt)地址,再+4赋值给ap,原因在于A(fmt)是printf的第一个参数(格式化字符串含有%的部分),+4之后才能对准第一个真正要格式化的参数.而<code>va_arg(ap, T)</code>目的是先使得ap移往后一个参数但是返回的值确实本次参数的值,比较巧妙.<code>va_end(ap)</code>仅仅为了保证安全而象征性地将ap指向NULL.<br><img src="/images/va_arg.png" alt="va_arg"></p>
-<h2 id="vsprintf"><a href="#vsprintf" class="headerlink" title="vsprintf"></a>vsprintf</h2><p>vsprintf这个函数有几个重要的局部变量需要注意,英文注释写的很清楚了,flags标志主要是关于数字对齐这一块,等到number函数被调用的时候会判断的.field_width字段主要是占用宽度计算.precision是精度计算,其实是输出个字符个数控制.qualifier是对于长整型的扩展,例如将int转为long.(x86下int=long)<br><img src="/images/vsprintf.png" alt="vsprintf"><br>在定义了局部变量之后,一个for循环遍历fmt所有的字符,取出特别的%来格式化,最后计算地址偏移便完结了.当找到第一个%的时候,首先处理flags字段,定义个标号repeat来快速跳出,虽然听说C标准不推荐使用goto语句,但是能够提高效率为什么不能用呢?代码片段如下:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> ZEROPAD	1		<span class="comment">/* pad with zero */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SIGN	2		<span class="comment">/* unsigned/signed long */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PLUS	4		<span class="comment">/* show plus */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SPACE	8		<span class="comment">/* space if plus */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LEFT	16		<span class="comment">/* left justified */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SMALL	32		<span class="comment">/* Must be 32 == 0x20 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SPECIAL	64		<span class="comment">/* 0x */</span></span></span><br><span class="line"><span class="comment">/* process flags */</span></span><br><span class="line">		flags = <span class="number">0</span>;</span><br><span class="line">	      repeat:</span><br><span class="line">		++fmt;		<span class="comment">/* this also skips first &#x27;%&#x27; */</span></span><br><span class="line">		<span class="keyword">switch</span> (*fmt) &#123;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;-&#x27;</span>:</span><br><span class="line">			flags |= LEFT;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;+&#x27;</span>:</span><br><span class="line">			flags |= PLUS;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27; &#x27;</span>:</span><br><span class="line">			flags |= SPACE;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;#&#x27;</span>:</span><br><span class="line">			flags |= SPECIAL;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;0&#x27;</span>:</span><br><span class="line">			flags |= ZEROPAD;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
-<p>某些字段就不说了,用过printf的应该都知道的,其中的<code>#</code>作用就是方便16进制和8进制的格式化,例如<code>%#x</code>就会被默认加上<code>0x</code>,而<code>%#o</code>就会被默认加上<code>0</code>,具体可以看后面number函数实现就知道了.  </p>
-<hr>
-<blockquote>
-<p>找工作太忙了,今天才得有空继续分析^~^(2016.10.17) </p>
-</blockquote>
-<hr>
-<p>接下来就会去获得宽度字段,利用<code>isdigital</code>函数一步实现字符串转整型并使得fmt指针指向后续格式符.如果用<code>*</code>代替,将直接将压入的参数转为整型赋值为宽度字段.并根据正负号置标志位采取相应的对齐方式(默认为右对齐).  </p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* get field width */</span></span><br><span class="line">		field_width = <span class="number">-1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">isdigit</span>(*fmt))</span><br><span class="line">			field_width = skip_atoi(&amp;fmt);</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (*fmt == <span class="string">&#x27;*&#x27;</span>) &#123;</span><br><span class="line">			++fmt;</span><br><span class="line">			<span class="comment">/* it&#x27;s the next argument */</span></span><br><span class="line">			field_width = va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">			<span class="keyword">if</span> (field_width &lt; <span class="number">0</span>) &#123;</span><br><span class="line">				field_width = -field_width;</span><br><span class="line">				flags |= LEFT;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
-<p>再下来就是获取精度了,一般有浮点类型的就得保留多少位的精度.首先得在串中检测到有<code>.</code>字符,之后的处理跟宽度就差不多了.先保存相关的参数然后会传到另外的函数做具体处理的.对于有<code>l</code>,<code>L</code>,<code>h</code>跟在后面的将使得<code>qualifier</code>被置为其ascii码值.</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* get the precision */</span></span><br><span class="line">		precision = <span class="number">-1</span>;</span><br><span class="line">		<span class="keyword">if</span> (*fmt == <span class="string">&#x27;.&#x27;</span>) &#123;</span><br><span class="line">			++fmt;</span><br><span class="line">			<span class="keyword">if</span> (<span class="built_in">isdigit</span>(*fmt))</span><br><span class="line">				precision = skip_atoi(&amp;fmt);</span><br><span class="line">			<span class="keyword">else</span> <span class="keyword">if</span> (*fmt == <span class="string">&#x27;*&#x27;</span>) &#123;</span><br><span class="line">				++fmt;</span><br><span class="line">				<span class="comment">/* it&#x27;s the next argument */</span></span><br><span class="line">				precision = va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (precision &lt; <span class="number">0</span>)</span><br><span class="line">				precision = <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">/* get the conversion qualifier */</span></span><br><span class="line">		qualifier = <span class="number">-1</span>;</span><br><span class="line">		<span class="keyword">if</span> (*fmt == <span class="string">&#x27;h&#x27;</span> || *fmt == <span class="string">&#x27;l&#x27;</span> || *fmt == <span class="string">&#x27;L&#x27;</span>) &#123;</span><br><span class="line">			qualifier = *fmt;</span><br><span class="line">			++fmt;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
-<p>之后就进入最后的格式化匹配了,根据提供的格式化类型对压入的参数进行相应操作.首先会使得base默认为10进制,如果类似%c的话,直接根据左右对齐方式填充空白符,中间以<code>int</code>类型为地址单元取得参数的值直接强制转化为<code>unsigned char</code>类型的字符.为什么呢?详情参考我的另外一篇<a href="http://www.rutk1t0r.cn/2016/08/21/memory-align/">文章</a>,我们需要知道这个是编译器自己这么压进去的就得这么去接收就行了.对于类似%s,首先取得参数首地址,然后调用安全的<code>strnlen</code>函数获取填充空白的长度.之后逐字符地拷贝,若非右对齐后续还需继续填充空白,<code>if</code>和<code>while</code>没有加<code>&#123;&#125;</code>可能看得不太清楚.建议源代码中的风格严谨一点好.对于%p如果没有字段宽度值则默认为2个指针大小的宽度,并使得flags的ZEROPAD置位.而后直接送往number函数继续处理.%n可是一个很生疏的东西,我猜测这个参数最初的目的是用于调试用的,可以检查本次printf调用在%n之前输出的字符个数,并将这个值赋给调用者传递进来的参数地址处,但是如果使用不当,就可能会造成<code>任意地址读写任意数据</code>的格式化字符串漏洞.<br>之后的几个参数大都是置位相应标志位而已,后期直接送往number函数处理,需要注意的是之前这几个参数后面完成后用的是<code>continue</code>,意思是直接跳转到最外面的<code>for</code>循环进行下一个字符的匹配,而%xXdiu后面接的是<code>break</code>,表示退出<code>switch</code>,转而进行后面的<code>h,L,l</code>的长类型的处理去了.还要注意在<code>switch case break</code>的结构中,如果<code>case</code>了第一个条件,之后如果没有遇到<code>break</code>,程序的控制流程将忽略后面的<code>case</code>条件,直接执行语句部分,直到遇见结束的<code>break</code>.因为这里已经出现了这种用法(匹配x的时候),所以应该注意一下,某些笔试题也会考察这个知识点.</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* default base */</span></span><br><span class="line">		base = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">switch</span> (*fmt) &#123;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;c&#x27;</span>:</span><br><span class="line">			<span class="keyword">if</span> (!(flags &amp; LEFT))</span><br><span class="line">				<span class="keyword">while</span> (--field_width &gt; <span class="number">0</span>)</span><br><span class="line">					*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			*str++ = (<span class="keyword">unsigned</span> <span class="keyword">char</span>)va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">			<span class="keyword">while</span> (--field_width &gt; <span class="number">0</span>)</span><br><span class="line">				*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;s&#x27;</span>:</span><br><span class="line">			s = va_arg(args, <span class="keyword">char</span> *);</span><br><span class="line">			len = strnlen(s, precision);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (!(flags &amp; LEFT))</span><br><span class="line">				<span class="keyword">while</span> (len &lt; field_width--)</span><br><span class="line">					*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; len; ++i)</span><br><span class="line">				*str++ = *s++;</span><br><span class="line">			<span class="keyword">while</span> (len &lt; field_width--)</span><br><span class="line">				*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;p&#x27;</span>:</span><br><span class="line">			<span class="keyword">if</span> (field_width == <span class="number">-1</span>) &#123;</span><br><span class="line">				field_width = <span class="number">2</span> * <span class="keyword">sizeof</span>(<span class="keyword">void</span> *);</span><br><span class="line">				flags |= ZEROPAD;</span><br><span class="line">			&#125;</span><br><span class="line">			str = number(str,</span><br><span class="line">				     (<span class="keyword">unsigned</span> <span class="keyword">long</span>)va_arg(args, <span class="keyword">void</span> *), <span class="number">16</span>,</span><br><span class="line">				     field_width, precision, flags);</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;n&#x27;</span>:</span><br><span class="line">			<span class="keyword">if</span> (qualifier == <span class="string">&#x27;l&#x27;</span>) &#123;</span><br><span class="line">				<span class="keyword">long</span> *ip = va_arg(args, <span class="keyword">long</span> *);</span><br><span class="line">				*ip = (str - buf);</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">int</span> *ip = va_arg(args, <span class="keyword">int</span> *);</span><br><span class="line">				*ip = (str - buf);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;%&#x27;</span>:</span><br><span class="line">			*str++ = <span class="string">&#x27;%&#x27;</span>;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">			<span class="comment">/* integer number formats - set up the flags and &quot;break&quot; */</span></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;o&#x27;</span>:</span><br><span class="line">			base = <span class="number">8</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;x&#x27;</span>:</span><br><span class="line">			flags |= SMALL;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;X&#x27;</span>:</span><br><span class="line">			base = <span class="number">16</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;d&#x27;</span>:</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;i&#x27;</span>:</span><br><span class="line">			flags |= SIGN;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;u&#x27;</span>:</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">			*str++ = <span class="string">&#x27;%&#x27;</span>;</span><br><span class="line">			<span class="keyword">if</span> (*fmt)</span><br><span class="line">				*str++ = *fmt;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				--fmt;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (qualifier == <span class="string">&#x27;l&#x27;</span>)</span><br><span class="line">			num = va_arg(args, <span class="keyword">unsigned</span> <span class="keyword">long</span>);</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (qualifier == <span class="string">&#x27;h&#x27;</span>) &#123;</span><br><span class="line">			num = (<span class="keyword">unsigned</span> <span class="keyword">short</span>)va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">			<span class="keyword">if</span> (flags &amp; SIGN)</span><br><span class="line">				num = (<span class="keyword">short</span>)num;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (flags &amp; SIGN)</span><br><span class="line">			num = va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			num = va_arg(args, <span class="keyword">unsigned</span> <span class="keyword">int</span>);</span><br><span class="line">		str = number(str, num, base, field_width, precision, flags);</span><br><span class="line">	&#125;</span><br><span class="line">	*str = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">	<span class="keyword">return</span> str - buf;</span><br></pre></td></tr></table></figure>
-
-<h2 id="number函数"><a href="#number函数" class="headerlink" title="number函数"></a>number函数</h2><p>首先分析一下这个宏定义的作用,如果先看number函数里面用到这个宏居然是放在<code>[]</code>里面的,因此可以猜测作用是用来偏移寻址的.有些人会问,C语言里面可以这样用吗?(答案很明了了,不能用怎么编译通过呢?所以还是需要多看别人写的代码,有些用法不常用的但是如果好用就可以Get到了)编译器编译的时候能够生成合适的代码即可.这个宏的作用是求出n对base余数,并使得n变为商,同时”返回”余数__res.主要用于八进制和十六进制的数值与字符的转换.(不知是否C语言的思想是一切皆为表达式,据说类*nix操作系统和shell的核心思想分别是<code>一切皆为文件</code>和<code>一切皆为表达式</code>.)</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __do_div(n, base) (&#123; \</span></span><br><span class="line"><span class="meta">int __res; \</span></span><br><span class="line"><span class="meta">__res = ((unsigned long) n) % (unsigned) base; \</span></span><br><span class="line"><span class="meta">n = ((unsigned long) n) / (unsigned) base; \</span></span><br><span class="line"><span class="meta">__res; &#125;)</span></span><br></pre></td></tr></table></figure>
-<p>再来看number函数的实现,首先分析函数的参数以及返回值,作为软件工程师应该要做到文档清晰可理解,各个接口的参数以及返回值的作用解释清楚.<code>static</code>类型的函数表明这个函数仅仅在这个文件作用域可以调用,这样减少了命名冲突问题.<code>char *</code>返回值表明能够实现链式功能,可对比<code>strcpy</code>函数的实现.再来看参数,第一个str即上层传入的str首地址,表明要对上层传进来的参数空间进行修改.第二个<code>num</code>是对%idp等格式化的栈参数的一个拷贝.第三个<code>base</code>顾名思义就是进制基数了.第四个<code>size</code>即为对齐宽度.第五个为精度,最后一个为标志位字段.<br>首先定义一个静态的常量数组保存进制转换的字符,便于直接寻址取得相应字符赋值给str.<code>tmp[66]</code>我认为目前来看是有点长,它的作用是暂存num转换之后的数据,num最大为<code>long</code>的最大值,为2^64(64bit),也就是16个F,即16个字符即可,愚以为有点多余~~~.locase探测type字段的SMALL标志,不得不说SMALL标志位也是取得合理,32-&gt;第4位置位,使得可以很轻松地<code>或</code>运算实现大写字符-&gt;小写字符(ascii码相差32).如果<code>0</code>和<code>-</code>同时置位,gcc编译器会提示<code>warning: &#39;0&#39; flag ignored with &#39;-&#39; flag in gnu_printf format [-Wformat=]</code>,表明会忽略掉<code>0</code>的作用,具体实现也是这样.首先会判断是否有左对齐标志,有的话就用经典的<code>&amp;= ~</code>运算来清除相应标志位,这个在嵌入式开发里面很常见,一般是操作外设寄存器用的.在这里的逻辑是清除<code>补零</code>标志.这里也有一个健壮性的判断,不过number函数仅限于本文件调用,一般的开发者应该不会传入错误的base.字符<code>c</code>也是用来填充的,为<code>0</code>或者空格.接下来就是检测SIGH标志,并根据正负和0填充的需求占据<code>size</code>和置位<code>sign</code>.之后判断16进制和8进制情况,16进制的<code>size</code>减2是由于要填充<code>0x</code>或者<code>0X</code>,8进制只需要填充<code>0</code>即可.之后就开始进制转换成字符了,并根据<code>locase</code>的实际情况对于16进制翻转大小写字符.而对于数字0~9,由于他们的ascii码的第4位已经置位,所以或上1并不影响自身的值,而默认的大写字母第4位没有置位,如果程序员需要转换就可以转换.这个是很巧妙的!!!值得学习的技巧.传进来的<code>precision</code>表示精度,由于这里没有浮点匹配,这里就主要用来截取串的长度.如果<code>ZEROPAD</code>和<code>LEFT</code>都没有置位,就填充空格.然后根据进制继续填充数值.如果不是左对齐,就根据<code>size</code>的剩余大小继续填充<code>c</code>,后面就根据i的情况填充了,直到满足<code>size</code>这个宽度域为0.最后返回<code>str</code>的首地址.</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">char</span> *<span class="title">number</span><span class="params">(<span class="keyword">char</span> *str, <span class="keyword">long</span> num, <span class="keyword">int</span> base, <span class="keyword">int</span> size, <span class="keyword">int</span> precision,</span></span></span><br><span class="line"><span class="params"><span class="function">		    <span class="keyword">int</span> type)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">/* we are called with base 8, 10 or 16, only, thus don&#x27;t need &quot;G...&quot;  */</span></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">char</span> digits[<span class="number">16</span>] = <span class="string">&quot;0123456789ABCDEF&quot;</span>; <span class="comment">/* &quot;GHIJKLMNOPQRSTUVWXYZ&quot;; */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">char</span> tmp[<span class="number">66</span>];</span><br><span class="line">	<span class="keyword">char</span> c, sign, locase;</span><br><span class="line">	<span class="keyword">int</span> i;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* locase = 0 or 0x20. ORing digits or letters with &#x27;locase&#x27;</span></span><br><span class="line"><span class="comment">	 * produces same digits or (maybe lowercased) letters */</span></span><br><span class="line">	locase = (type &amp; SMALL);</span><br><span class="line">	<span class="keyword">if</span> (type &amp; LEFT)</span><br><span class="line">		type &amp;= ~ZEROPAD;</span><br><span class="line">	<span class="keyword">if</span> (base &lt; <span class="number">2</span> || base &gt; <span class="number">16</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">	c = (type &amp; ZEROPAD) ? <span class="string">&#x27;0&#x27;</span> : <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">	sign = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span> (type &amp; SIGN) &#123;</span><br><span class="line">		<span class="keyword">if</span> (num &lt; <span class="number">0</span>) &#123;</span><br><span class="line">			sign = <span class="string">&#x27;-&#x27;</span>;</span><br><span class="line">			num = -num;</span><br><span class="line">			size--;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (type &amp; PLUS) &#123;</span><br><span class="line">			sign = <span class="string">&#x27;+&#x27;</span>;</span><br><span class="line">			size--;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (type &amp; SPACE) &#123;</span><br><span class="line">			sign = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			size--;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (type &amp; SPECIAL) &#123;</span><br><span class="line">		<span class="keyword">if</span> (base == <span class="number">16</span>)</span><br><span class="line">			size -= <span class="number">2</span>;</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (base == <span class="number">8</span>)</span><br><span class="line">			size--;</span><br><span class="line">	&#125;</span><br><span class="line">	i = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span> (num == <span class="number">0</span>)</span><br><span class="line">		tmp[i++] = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		<span class="keyword">while</span> (num != <span class="number">0</span>)</span><br><span class="line">			tmp[i++] = (digits[__do_div(num, base)] | locase);</span><br><span class="line">	<span class="keyword">if</span> (i &gt; precision)</span><br><span class="line">		precision = i;</span><br><span class="line">	size -= precision;</span><br><span class="line">	<span class="keyword">if</span> (!(type &amp; (ZEROPAD + LEFT)))</span><br><span class="line">		<span class="keyword">while</span> (size-- &gt; <span class="number">0</span>)</span><br><span class="line">			*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">	<span class="keyword">if</span> (sign)</span><br><span class="line">		*str++ = sign;</span><br><span class="line">	<span class="keyword">if</span> (type &amp; SPECIAL) &#123;</span><br><span class="line">		<span class="keyword">if</span> (base == <span class="number">8</span>)</span><br><span class="line">			*str++ = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (base == <span class="number">16</span>) &#123;</span><br><span class="line">			*str++ = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">			*str++ = (<span class="string">&#x27;X&#x27;</span> | locase);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (!(type &amp; LEFT))</span><br><span class="line">		<span class="keyword">while</span> (size-- &gt; <span class="number">0</span>)</span><br><span class="line">			*str++ = c;</span><br><span class="line">	<span class="keyword">while</span> (i &lt; precision--)</span><br><span class="line">		*str++ = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">	<span class="keyword">while</span> (i-- &gt; <span class="number">0</span>)</span><br><span class="line">		*str++ = tmp[i];</span><br><span class="line">	<span class="keyword">while</span> (size-- &gt; <span class="number">0</span>)</span><br><span class="line">		*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">	<span class="keyword">return</span> str;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="puts"><a href="#puts" class="headerlink" title="puts"></a>puts</h2><p>至于puts的实现应该就不难了,内核中有很多处代码.应该就是简单地逐字节地拷贝到某缓冲区,再由内核的IO调度机制向屏幕或者串口等字符驱动设备文件拷贝输出.一般在嵌入式开发里面串口输出的比较常见.而普通PC的CPU(类似以前8086时代的intel)可能是按照主板等的设计给显存预留出地址空间,只要CPU把数据送往那个地址空间(貌似是0x0B800)显示设备就能够打印出相应的字符.</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>最起初的printf实现大概就这么多吧,可能内核开发者考虑到某些CPU没有浮点体系就没有把处理浮点类型的情况加进去的,标准的printf实现还是需要参考glibc库的.后期有空继续分析.对了,前面有说到<code>格式化字符串漏洞</code>参考看雪论坛这篇<a href="http://bbs.pediy.com/showthread.php?t=213153">文章</a>,如果没注册看不了的话先<a href="http://mp.weixin.qq.com/s?__biz=MjM5NTc2MDYxMw==&mid=2458279936&idx=1&sn=2eb47265a0d170c45403d4b5d9097549&chksm=b181508a86f6d99c27d4b2c9281a573ac16284c3a7f7f6f3d9cad3a7452f3bcc22ba15616303&scene=0#wechat_redirect">戳这里吧</a></p>
+<h1 id="单板Linux"><a href="#单板Linux" class="headerlink" title="单板Linux"></a>单板Linux</h1><p>随着嵌入式Linux越来越流行,目前很多厂商都在致力于做单板主机,因此市面上也有很多产品可供选择.其中最具有活力的便是树莓派了,连在<strong>Mr Robot</strong>一剧中都被主人公拿来”打广告”.其他诸如香蕉派,香橙派,菠萝派等等pi都有开发团队在开发和维护,有兴趣的可以逐个折腾或者吊的自己绘制PCB制作.</p>
+<h1 id="访问方式"><a href="#访问方式" class="headerlink" title="访问方式"></a>访问方式</h1><p>毫无疑问Web是目前最流行的可视化途径,但是在Linux中最最适合的还是属于console.一般默认在刷入固件之后会默认开启sshd服务,此时便可以通过网络接口ssh连接工具访问树莓派.当然,如果没有开启或者没有通过扫描等方式获取到树莓派的IP地址,则可以借助显示设备或者默认的串口来查看信息,可供选择的是显示接口为HDMI和专用显示接口,一般我们会用HDMI转VGA转接口来接显示屏,此后配置好后便可以当小型服务器用了.</p>
+<h1 id="配置远程桌面"><a href="#配置远程桌面" class="headerlink" title="配置远程桌面"></a>配置远程桌面</h1><p>有些时候console解决不了的时候就必须启用rdp了.Linux中可供选择的桌面系统还是很多的,其中xfce作为流行的轻量级的桌面系统深受好评.一般我们仅仅需要开启xrdp服务即可采用微软的<strong>mstsc</strong>工具来连接Linux主机,但xrdp貌似也是在本地封装vnc服务,因此当vnc服务出现问题的时候即便3389端口处于监听状态也是没辙.无奈只好谷歌.报错信息如下:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">osmc@osmc:~$ vncserver </span><br><span class="line">Couldn<span class="string">&#x27;t start Xtightvnc; trying default font path.</span></span><br><span class="line"><span class="string">Please set correct fontPath in the vncserver script.</span></span><br><span class="line"><span class="string">Couldn&#x27;</span>t start Xtightvnc process.</span><br><span class="line"></span><br><span class="line">07/11/16 01:04:29 Xvnc version TightVNC-1.3.9</span><br><span class="line">07/11/16 01:04:29 Copyright (C) 2000-2007 TightVNC Group</span><br><span class="line">07/11/16 01:04:29 Copyright (C) 1999 AT&amp;T Laboratories Cambridge</span><br><span class="line">07/11/16 01:04:29 All Rights Reserved.</span><br><span class="line">07/11/16 01:04:29 See http://www.tightvnc.com/ <span class="keyword">for</span> information on TightVNC</span><br><span class="line">07/11/16 01:04:29 Desktop name <span class="string">&#x27;X&#x27;</span> (osmc:1)</span><br><span class="line">07/11/16 01:04:29 Protocol versions supported: 3.3, 3.7, 3.8, 3.7t, 3.8t</span><br><span class="line">07/11/16 01:04:29 Listening <span class="keyword">for</span> VNC connections on TCP port 5901</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/misc/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/Type1/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/75dpi/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/100dpi/&#x27;</span> not found - ignoring</span><br><span class="line"></span><br><span class="line">Fatal server error:</span><br><span class="line">could not open default font <span class="string">&#x27;fixed&#x27;</span></span><br><span class="line">07/11/16 01:04:30 Xvnc version TightVNC-1.3.9</span><br><span class="line">07/11/16 01:04:30 Copyright (C) 2000-2007 TightVNC Group</span><br><span class="line">07/11/16 01:04:30 Copyright (C) 1999 AT&amp;T Laboratories Cambridge</span><br><span class="line">07/11/16 01:04:30 All Rights Reserved.</span><br><span class="line">07/11/16 01:04:30 See http://www.tightvnc.com/ <span class="keyword">for</span> information on TightVNC</span><br><span class="line">07/11/16 01:04:30 Desktop name <span class="string">&#x27;X&#x27;</span> (osmc:1)</span><br><span class="line">07/11/16 01:04:30 Protocol versions supported: 3.3, 3.7, 3.8, 3.7t, 3.8t</span><br><span class="line">07/11/16 01:04:30 Listening <span class="keyword">for</span> VNC connections on TCP port 5901</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/misc/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/Speedo/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/Type1/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/75dpi/&#x27;</span> not found - ignoring</span><br><span class="line">Font directory <span class="string">&#x27;/usr/share/fonts/X11/100dpi/&#x27;</span> not found - ignoring</span><br><span class="line"></span><br><span class="line">Fatal server error:</span><br><span class="line">could not open default font <span class="string">&#x27;fixed&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>找了好几个论坛之后又装了好多貌似多余的东西,最后发现仅仅需在<a href="http://askubuntu.com/questions/648819/couldnt-start-xtightvnc-trying-default-font-path-vncserver">这里</a>键入<code>sudo apt-get install  xfonts-base</code>即可解决字体问题了.   </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">osmc@osmc:~$ sudo vncserver </span><br><span class="line"></span><br><span class="line">New <span class="string">&#x27;X&#x27;</span> desktop is osmc:1</span><br><span class="line"></span><br><span class="line">Creating default startup script /root/.vnc/xstartup</span><br><span class="line">Starting applications specified <span class="keyword">in</span> /root/.vnc/xstartup</span><br><span class="line">Log file is /root/.vnc/osmc:1.log</span><br><span class="line"></span><br><span class="line">osmc@osmc:~$ netstat -anot</span><br><span class="line">Active Internet connections (servers and established)</span><br><span class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State       Timer</span><br><span class="line">tcp        0      0 0.0.0.0:5901            0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:111             0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:6001            0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 127.0.0.1:3350          0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:1177            0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:36666           0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0      0 0.0.0.0:3389            0.0.0.0:*               LISTEN      off (0.00/0/0)</span><br><span class="line">tcp        0    180 192.168.31.132:22       10.129.95.50:33532      ESTABLISHED on (0.21/0/0)</span><br><span class="line">tcp6       0      0 :::111                  :::*                    LISTEN      off (0.00/0/0)</span><br><span class="line">tcp6       0      0 :::8080                 :::*                    LISTEN      off (0.00/0/0)</span><br><span class="line">tcp6       0      0 :::22                   :::*                    LISTEN      off (0.00/0/0)</span><br><span class="line">tcp6       0      0 :::36666                :::*                    LISTEN      off (0.00/0/0)</span><br><span class="line">tcp6       0      0 :::36667                :::*                    LISTEN      off (0.00/0/0)</span><br><span class="line">tcp6       0      0 ::1:9090                :::*                    LISTEN      off (0.00/0/0)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>可以看到服务已经开启了,5901端口处于监听状态.再次<code>mstsc</code>之后发现error没了,问题解决.</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>遇到问题还是要有折腾的情怀,虽然还不知所以然,但是能够解决这个问题也不辜负<strong>搬砖</strong>的身份…为了不犯第二次错误,便记录下了本文.</p>
 ]]></content>
       <categories>
         <category>study</category>
-        <category>misc</category>
       </categories>
       <tags>
-        <tag>C/C++</tag>
-        <tag>Linux kernel</tag>
+        <tag>Linux</tag>
+        <tag>Configure</tag>
       </tags>
   </entry>
   <entry>
@@ -1480,6 +1436,50 @@
       </tags>
   </entry>
   <entry>
+    <title>一起来撸printf吧</title>
+    <url>/embpgp.github.io/2016/09/25/%E4%B8%80%E8%B5%B7%E6%9D%A5%E6%92%B8printf%E5%90%A7/</url>
+    <content><![CDATA[<blockquote>
+<p>printf实现还隐藏了很多参数,例如%n,printf返回值是啥你知道吗?格式化字符串漏洞成因何在?这里分析Linux内核中的printf实现,而非glibc库中的标准实现(我们用的肯定是标准库咯,不过很复杂<del>_</del>),因为这里没有%f等浮点类型的匹配,简单一些.</p>
+</blockquote>
+<span id="more"></span>
+
+
+<p>参考资料:<br><a href="https://github.com/torvalds/linux/blob/master/arch/x86/boot/printf.c">Linus的github仓库https://github.com/torvalds/linux/blob/master/arch/x86/boot/printf.c</a></p>
+<h2 id="printf大体"><a href="#printf大体" class="headerlink" title="printf大体"></a>printf大体</h2><p>首先我们找到printf函数的实现(由于x86体系容易理解便选择了这个体系),可以看到申请了1024个字节的空间来保存要格式化串,有人会问要是我给出的参数超过了1024不就缓冲区溢出程序会crash掉吗?我觉得编译器肯定会察觉到的,有兴趣的自己鼓捣下…大体就是将传递进来的参数根据压栈的顺序逐个取出并格式化成字符串,这个是在vsprintf函数实现的,返回值是两个地址的差,即本次输出的字符串数目.最后调用puts函数向终端输出.最后后才返回本次输出字符串数目.<br><img src="/images/printf.png" alt="printf"></p>
+<h2 id="va-系类宏"><a href="#va-系类宏" class="headerlink" title="va_系类宏"></a>va_系类宏</h2><p>然后我们利用sublime的插件来jump到<code>va_list</code>的定义,发现是一个char*的typedef.干脆就一起来认识一下<code>va_</code>系列的宏.</p>
+<p><code>acpi_native_int</code>也是一个typedef,根据最开始的配置决定是s32还是s64,在x86这里肯定就是有符号的32位了,即int类型的.<code>_AUPBND</code>和<code>_ADNBND</code>两个宏的值一样.而<code>_bnd</code>这个宏在32b体系下给出的是类型X的大小的4字节对齐值.在printf里面用的时候关系不是很大,因为格式化的时候不会是很大结构体(%结构体根本没实现啊),纵然是小于4字节的char,short之类的,存的时候可能是那么多字节,但是压栈的时候编译器会毫不犹豫地安排用一个寄存器扩展并压入栈顶的指令,所以不用担心,可以认为这个宏在printf里面仅仅是4字节对齐没问题的.<code>va_start(ap, A)</code>这个宏接到A(fmt)地址,再+4赋值给ap,原因在于A(fmt)是printf的第一个参数(格式化字符串含有%的部分),+4之后才能对准第一个真正要格式化的参数.而<code>va_arg(ap, T)</code>目的是先使得ap移往后一个参数但是返回的值确实本次参数的值,比较巧妙.<code>va_end(ap)</code>仅仅为了保证安全而象征性地将ap指向NULL.<br><img src="/images/va_arg.png" alt="va_arg"></p>
+<h2 id="vsprintf"><a href="#vsprintf" class="headerlink" title="vsprintf"></a>vsprintf</h2><p>vsprintf这个函数有几个重要的局部变量需要注意,英文注释写的很清楚了,flags标志主要是关于数字对齐这一块,等到number函数被调用的时候会判断的.field_width字段主要是占用宽度计算.precision是精度计算,其实是输出个字符个数控制.qualifier是对于长整型的扩展,例如将int转为long.(x86下int=long)<br><img src="/images/vsprintf.png" alt="vsprintf"><br>在定义了局部变量之后,一个for循环遍历fmt所有的字符,取出特别的%来格式化,最后计算地址偏移便完结了.当找到第一个%的时候,首先处理flags字段,定义个标号repeat来快速跳出,虽然听说C标准不推荐使用goto语句,但是能够提高效率为什么不能用呢?代码片段如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> ZEROPAD	1		<span class="comment">/* pad with zero */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SIGN	2		<span class="comment">/* unsigned/signed long */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PLUS	4		<span class="comment">/* show plus */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SPACE	8		<span class="comment">/* space if plus */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LEFT	16		<span class="comment">/* left justified */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SMALL	32		<span class="comment">/* Must be 32 == 0x20 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SPECIAL	64		<span class="comment">/* 0x */</span></span></span><br><span class="line"><span class="comment">/* process flags */</span></span><br><span class="line">		flags = <span class="number">0</span>;</span><br><span class="line">	      repeat:</span><br><span class="line">		++fmt;		<span class="comment">/* this also skips first &#x27;%&#x27; */</span></span><br><span class="line">		<span class="keyword">switch</span> (*fmt) &#123;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;-&#x27;</span>:</span><br><span class="line">			flags |= LEFT;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;+&#x27;</span>:</span><br><span class="line">			flags |= PLUS;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27; &#x27;</span>:</span><br><span class="line">			flags |= SPACE;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;#&#x27;</span>:</span><br><span class="line">			flags |= SPECIAL;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;0&#x27;</span>:</span><br><span class="line">			flags |= ZEROPAD;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+<p>某些字段就不说了,用过printf的应该都知道的,其中的<code>#</code>作用就是方便16进制和8进制的格式化,例如<code>%#x</code>就会被默认加上<code>0x</code>,而<code>%#o</code>就会被默认加上<code>0</code>,具体可以看后面number函数实现就知道了.  </p>
+<hr>
+<blockquote>
+<p>找工作太忙了,今天才得有空继续分析^~^(2016.10.17) </p>
+</blockquote>
+<hr>
+<p>接下来就会去获得宽度字段,利用<code>isdigital</code>函数一步实现字符串转整型并使得fmt指针指向后续格式符.如果用<code>*</code>代替,将直接将压入的参数转为整型赋值为宽度字段.并根据正负号置标志位采取相应的对齐方式(默认为右对齐).  </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* get field width */</span></span><br><span class="line">		field_width = <span class="number">-1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">isdigit</span>(*fmt))</span><br><span class="line">			field_width = skip_atoi(&amp;fmt);</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (*fmt == <span class="string">&#x27;*&#x27;</span>) &#123;</span><br><span class="line">			++fmt;</span><br><span class="line">			<span class="comment">/* it&#x27;s the next argument */</span></span><br><span class="line">			field_width = va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">			<span class="keyword">if</span> (field_width &lt; <span class="number">0</span>) &#123;</span><br><span class="line">				field_width = -field_width;</span><br><span class="line">				flags |= LEFT;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+<p>再下来就是获取精度了,一般有浮点类型的就得保留多少位的精度.首先得在串中检测到有<code>.</code>字符,之后的处理跟宽度就差不多了.先保存相关的参数然后会传到另外的函数做具体处理的.对于有<code>l</code>,<code>L</code>,<code>h</code>跟在后面的将使得<code>qualifier</code>被置为其ascii码值.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* get the precision */</span></span><br><span class="line">		precision = <span class="number">-1</span>;</span><br><span class="line">		<span class="keyword">if</span> (*fmt == <span class="string">&#x27;.&#x27;</span>) &#123;</span><br><span class="line">			++fmt;</span><br><span class="line">			<span class="keyword">if</span> (<span class="built_in">isdigit</span>(*fmt))</span><br><span class="line">				precision = skip_atoi(&amp;fmt);</span><br><span class="line">			<span class="keyword">else</span> <span class="keyword">if</span> (*fmt == <span class="string">&#x27;*&#x27;</span>) &#123;</span><br><span class="line">				++fmt;</span><br><span class="line">				<span class="comment">/* it&#x27;s the next argument */</span></span><br><span class="line">				precision = va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (precision &lt; <span class="number">0</span>)</span><br><span class="line">				precision = <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">/* get the conversion qualifier */</span></span><br><span class="line">		qualifier = <span class="number">-1</span>;</span><br><span class="line">		<span class="keyword">if</span> (*fmt == <span class="string">&#x27;h&#x27;</span> || *fmt == <span class="string">&#x27;l&#x27;</span> || *fmt == <span class="string">&#x27;L&#x27;</span>) &#123;</span><br><span class="line">			qualifier = *fmt;</span><br><span class="line">			++fmt;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+<p>之后就进入最后的格式化匹配了,根据提供的格式化类型对压入的参数进行相应操作.首先会使得base默认为10进制,如果类似%c的话,直接根据左右对齐方式填充空白符,中间以<code>int</code>类型为地址单元取得参数的值直接强制转化为<code>unsigned char</code>类型的字符.为什么呢?详情参考我的另外一篇<a href="http://www.rutk1t0r.cn/2016/08/21/memory-align/">文章</a>,我们需要知道这个是编译器自己这么压进去的就得这么去接收就行了.对于类似%s,首先取得参数首地址,然后调用安全的<code>strnlen</code>函数获取填充空白的长度.之后逐字符地拷贝,若非右对齐后续还需继续填充空白,<code>if</code>和<code>while</code>没有加<code>&#123;&#125;</code>可能看得不太清楚.建议源代码中的风格严谨一点好.对于%p如果没有字段宽度值则默认为2个指针大小的宽度,并使得flags的ZEROPAD置位.而后直接送往number函数继续处理.%n可是一个很生疏的东西,我猜测这个参数最初的目的是用于调试用的,可以检查本次printf调用在%n之前输出的字符个数,并将这个值赋给调用者传递进来的参数地址处,但是如果使用不当,就可能会造成<code>任意地址读写任意数据</code>的格式化字符串漏洞.<br>之后的几个参数大都是置位相应标志位而已,后期直接送往number函数处理,需要注意的是之前这几个参数后面完成后用的是<code>continue</code>,意思是直接跳转到最外面的<code>for</code>循环进行下一个字符的匹配,而%xXdiu后面接的是<code>break</code>,表示退出<code>switch</code>,转而进行后面的<code>h,L,l</code>的长类型的处理去了.还要注意在<code>switch case break</code>的结构中,如果<code>case</code>了第一个条件,之后如果没有遇到<code>break</code>,程序的控制流程将忽略后面的<code>case</code>条件,直接执行语句部分,直到遇见结束的<code>break</code>.因为这里已经出现了这种用法(匹配x的时候),所以应该注意一下,某些笔试题也会考察这个知识点.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* default base */</span></span><br><span class="line">		base = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">switch</span> (*fmt) &#123;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;c&#x27;</span>:</span><br><span class="line">			<span class="keyword">if</span> (!(flags &amp; LEFT))</span><br><span class="line">				<span class="keyword">while</span> (--field_width &gt; <span class="number">0</span>)</span><br><span class="line">					*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			*str++ = (<span class="keyword">unsigned</span> <span class="keyword">char</span>)va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">			<span class="keyword">while</span> (--field_width &gt; <span class="number">0</span>)</span><br><span class="line">				*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;s&#x27;</span>:</span><br><span class="line">			s = va_arg(args, <span class="keyword">char</span> *);</span><br><span class="line">			len = strnlen(s, precision);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (!(flags &amp; LEFT))</span><br><span class="line">				<span class="keyword">while</span> (len &lt; field_width--)</span><br><span class="line">					*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; len; ++i)</span><br><span class="line">				*str++ = *s++;</span><br><span class="line">			<span class="keyword">while</span> (len &lt; field_width--)</span><br><span class="line">				*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;p&#x27;</span>:</span><br><span class="line">			<span class="keyword">if</span> (field_width == <span class="number">-1</span>) &#123;</span><br><span class="line">				field_width = <span class="number">2</span> * <span class="keyword">sizeof</span>(<span class="keyword">void</span> *);</span><br><span class="line">				flags |= ZEROPAD;</span><br><span class="line">			&#125;</span><br><span class="line">			str = number(str,</span><br><span class="line">				     (<span class="keyword">unsigned</span> <span class="keyword">long</span>)va_arg(args, <span class="keyword">void</span> *), <span class="number">16</span>,</span><br><span class="line">				     field_width, precision, flags);</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;n&#x27;</span>:</span><br><span class="line">			<span class="keyword">if</span> (qualifier == <span class="string">&#x27;l&#x27;</span>) &#123;</span><br><span class="line">				<span class="keyword">long</span> *ip = va_arg(args, <span class="keyword">long</span> *);</span><br><span class="line">				*ip = (str - buf);</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">int</span> *ip = va_arg(args, <span class="keyword">int</span> *);</span><br><span class="line">				*ip = (str - buf);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;%&#x27;</span>:</span><br><span class="line">			*str++ = <span class="string">&#x27;%&#x27;</span>;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">			<span class="comment">/* integer number formats - set up the flags and &quot;break&quot; */</span></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;o&#x27;</span>:</span><br><span class="line">			base = <span class="number">8</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;x&#x27;</span>:</span><br><span class="line">			flags |= SMALL;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;X&#x27;</span>:</span><br><span class="line">			base = <span class="number">16</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;d&#x27;</span>:</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;i&#x27;</span>:</span><br><span class="line">			flags |= SIGN;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;u&#x27;</span>:</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">			*str++ = <span class="string">&#x27;%&#x27;</span>;</span><br><span class="line">			<span class="keyword">if</span> (*fmt)</span><br><span class="line">				*str++ = *fmt;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				--fmt;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (qualifier == <span class="string">&#x27;l&#x27;</span>)</span><br><span class="line">			num = va_arg(args, <span class="keyword">unsigned</span> <span class="keyword">long</span>);</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (qualifier == <span class="string">&#x27;h&#x27;</span>) &#123;</span><br><span class="line">			num = (<span class="keyword">unsigned</span> <span class="keyword">short</span>)va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">			<span class="keyword">if</span> (flags &amp; SIGN)</span><br><span class="line">				num = (<span class="keyword">short</span>)num;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (flags &amp; SIGN)</span><br><span class="line">			num = va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			num = va_arg(args, <span class="keyword">unsigned</span> <span class="keyword">int</span>);</span><br><span class="line">		str = number(str, num, base, field_width, precision, flags);</span><br><span class="line">	&#125;</span><br><span class="line">	*str = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">	<span class="keyword">return</span> str - buf;</span><br></pre></td></tr></table></figure>
+
+<h2 id="number函数"><a href="#number函数" class="headerlink" title="number函数"></a>number函数</h2><p>首先分析一下这个宏定义的作用,如果先看number函数里面用到这个宏居然是放在<code>[]</code>里面的,因此可以猜测作用是用来偏移寻址的.有些人会问,C语言里面可以这样用吗?(答案很明了了,不能用怎么编译通过呢?所以还是需要多看别人写的代码,有些用法不常用的但是如果好用就可以Get到了)编译器编译的时候能够生成合适的代码即可.这个宏的作用是求出n对base余数,并使得n变为商,同时”返回”余数__res.主要用于八进制和十六进制的数值与字符的转换.(不知是否C语言的思想是一切皆为表达式,据说类*nix操作系统和shell的核心思想分别是<code>一切皆为文件</code>和<code>一切皆为表达式</code>.)</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __do_div(n, base) (&#123; \</span></span><br><span class="line"><span class="meta">int __res; \</span></span><br><span class="line"><span class="meta">__res = ((unsigned long) n) % (unsigned) base; \</span></span><br><span class="line"><span class="meta">n = ((unsigned long) n) / (unsigned) base; \</span></span><br><span class="line"><span class="meta">__res; &#125;)</span></span><br></pre></td></tr></table></figure>
+<p>再来看number函数的实现,首先分析函数的参数以及返回值,作为软件工程师应该要做到文档清晰可理解,各个接口的参数以及返回值的作用解释清楚.<code>static</code>类型的函数表明这个函数仅仅在这个文件作用域可以调用,这样减少了命名冲突问题.<code>char *</code>返回值表明能够实现链式功能,可对比<code>strcpy</code>函数的实现.再来看参数,第一个str即上层传入的str首地址,表明要对上层传进来的参数空间进行修改.第二个<code>num</code>是对%idp等格式化的栈参数的一个拷贝.第三个<code>base</code>顾名思义就是进制基数了.第四个<code>size</code>即为对齐宽度.第五个为精度,最后一个为标志位字段.<br>首先定义一个静态的常量数组保存进制转换的字符,便于直接寻址取得相应字符赋值给str.<code>tmp[66]</code>我认为目前来看是有点长,它的作用是暂存num转换之后的数据,num最大为<code>long</code>的最大值,为2^64(64bit),也就是16个F,即16个字符即可,愚以为有点多余~~~.locase探测type字段的SMALL标志,不得不说SMALL标志位也是取得合理,32-&gt;第4位置位,使得可以很轻松地<code>或</code>运算实现大写字符-&gt;小写字符(ascii码相差32).如果<code>0</code>和<code>-</code>同时置位,gcc编译器会提示<code>warning: &#39;0&#39; flag ignored with &#39;-&#39; flag in gnu_printf format [-Wformat=]</code>,表明会忽略掉<code>0</code>的作用,具体实现也是这样.首先会判断是否有左对齐标志,有的话就用经典的<code>&amp;= ~</code>运算来清除相应标志位,这个在嵌入式开发里面很常见,一般是操作外设寄存器用的.在这里的逻辑是清除<code>补零</code>标志.这里也有一个健壮性的判断,不过number函数仅限于本文件调用,一般的开发者应该不会传入错误的base.字符<code>c</code>也是用来填充的,为<code>0</code>或者空格.接下来就是检测SIGH标志,并根据正负和0填充的需求占据<code>size</code>和置位<code>sign</code>.之后判断16进制和8进制情况,16进制的<code>size</code>减2是由于要填充<code>0x</code>或者<code>0X</code>,8进制只需要填充<code>0</code>即可.之后就开始进制转换成字符了,并根据<code>locase</code>的实际情况对于16进制翻转大小写字符.而对于数字0~9,由于他们的ascii码的第4位已经置位,所以或上1并不影响自身的值,而默认的大写字母第4位没有置位,如果程序员需要转换就可以转换.这个是很巧妙的!!!值得学习的技巧.传进来的<code>precision</code>表示精度,由于这里没有浮点匹配,这里就主要用来截取串的长度.如果<code>ZEROPAD</code>和<code>LEFT</code>都没有置位,就填充空格.然后根据进制继续填充数值.如果不是左对齐,就根据<code>size</code>的剩余大小继续填充<code>c</code>,后面就根据i的情况填充了,直到满足<code>size</code>这个宽度域为0.最后返回<code>str</code>的首地址.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">char</span> *<span class="title">number</span><span class="params">(<span class="keyword">char</span> *str, <span class="keyword">long</span> num, <span class="keyword">int</span> base, <span class="keyword">int</span> size, <span class="keyword">int</span> precision,</span></span></span><br><span class="line"><span class="params"><span class="function">		    <span class="keyword">int</span> type)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">/* we are called with base 8, 10 or 16, only, thus don&#x27;t need &quot;G...&quot;  */</span></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">char</span> digits[<span class="number">16</span>] = <span class="string">&quot;0123456789ABCDEF&quot;</span>; <span class="comment">/* &quot;GHIJKLMNOPQRSTUVWXYZ&quot;; */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">char</span> tmp[<span class="number">66</span>];</span><br><span class="line">	<span class="keyword">char</span> c, sign, locase;</span><br><span class="line">	<span class="keyword">int</span> i;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* locase = 0 or 0x20. ORing digits or letters with &#x27;locase&#x27;</span></span><br><span class="line"><span class="comment">	 * produces same digits or (maybe lowercased) letters */</span></span><br><span class="line">	locase = (type &amp; SMALL);</span><br><span class="line">	<span class="keyword">if</span> (type &amp; LEFT)</span><br><span class="line">		type &amp;= ~ZEROPAD;</span><br><span class="line">	<span class="keyword">if</span> (base &lt; <span class="number">2</span> || base &gt; <span class="number">16</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">	c = (type &amp; ZEROPAD) ? <span class="string">&#x27;0&#x27;</span> : <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">	sign = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span> (type &amp; SIGN) &#123;</span><br><span class="line">		<span class="keyword">if</span> (num &lt; <span class="number">0</span>) &#123;</span><br><span class="line">			sign = <span class="string">&#x27;-&#x27;</span>;</span><br><span class="line">			num = -num;</span><br><span class="line">			size--;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (type &amp; PLUS) &#123;</span><br><span class="line">			sign = <span class="string">&#x27;+&#x27;</span>;</span><br><span class="line">			size--;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (type &amp; SPACE) &#123;</span><br><span class="line">			sign = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			size--;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (type &amp; SPECIAL) &#123;</span><br><span class="line">		<span class="keyword">if</span> (base == <span class="number">16</span>)</span><br><span class="line">			size -= <span class="number">2</span>;</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (base == <span class="number">8</span>)</span><br><span class="line">			size--;</span><br><span class="line">	&#125;</span><br><span class="line">	i = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span> (num == <span class="number">0</span>)</span><br><span class="line">		tmp[i++] = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		<span class="keyword">while</span> (num != <span class="number">0</span>)</span><br><span class="line">			tmp[i++] = (digits[__do_div(num, base)] | locase);</span><br><span class="line">	<span class="keyword">if</span> (i &gt; precision)</span><br><span class="line">		precision = i;</span><br><span class="line">	size -= precision;</span><br><span class="line">	<span class="keyword">if</span> (!(type &amp; (ZEROPAD + LEFT)))</span><br><span class="line">		<span class="keyword">while</span> (size-- &gt; <span class="number">0</span>)</span><br><span class="line">			*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">	<span class="keyword">if</span> (sign)</span><br><span class="line">		*str++ = sign;</span><br><span class="line">	<span class="keyword">if</span> (type &amp; SPECIAL) &#123;</span><br><span class="line">		<span class="keyword">if</span> (base == <span class="number">8</span>)</span><br><span class="line">			*str++ = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (base == <span class="number">16</span>) &#123;</span><br><span class="line">			*str++ = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">			*str++ = (<span class="string">&#x27;X&#x27;</span> | locase);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (!(type &amp; LEFT))</span><br><span class="line">		<span class="keyword">while</span> (size-- &gt; <span class="number">0</span>)</span><br><span class="line">			*str++ = c;</span><br><span class="line">	<span class="keyword">while</span> (i &lt; precision--)</span><br><span class="line">		*str++ = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">	<span class="keyword">while</span> (i-- &gt; <span class="number">0</span>)</span><br><span class="line">		*str++ = tmp[i];</span><br><span class="line">	<span class="keyword">while</span> (size-- &gt; <span class="number">0</span>)</span><br><span class="line">		*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">	<span class="keyword">return</span> str;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="puts"><a href="#puts" class="headerlink" title="puts"></a>puts</h2><p>至于puts的实现应该就不难了,内核中有很多处代码.应该就是简单地逐字节地拷贝到某缓冲区,再由内核的IO调度机制向屏幕或者串口等字符驱动设备文件拷贝输出.一般在嵌入式开发里面串口输出的比较常见.而普通PC的CPU(类似以前8086时代的intel)可能是按照主板等的设计给显存预留出地址空间,只要CPU把数据送往那个地址空间(貌似是0x0B800)显示设备就能够打印出相应的字符.</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>最起初的printf实现大概就这么多吧,可能内核开发者考虑到某些CPU没有浮点体系就没有把处理浮点类型的情况加进去的,标准的printf实现还是需要参考glibc库的.后期有空继续分析.对了,前面有说到<code>格式化字符串漏洞</code>参考看雪论坛这篇<a href="http://bbs.pediy.com/showthread.php?t=213153">文章</a>,如果没注册看不了的话先<a href="http://mp.weixin.qq.com/s?__biz=MjM5NTc2MDYxMw==&mid=2458279936&idx=1&sn=2eb47265a0d170c45403d4b5d9097549&chksm=b181508a86f6d99c27d4b2c9281a573ac16284c3a7f7f6f3d9cad3a7452f3bcc22ba15616303&scene=0#wechat_redirect">戳这里吧</a></p>
+]]></content>
+      <categories>
+        <category>study</category>
+        <category>misc</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+        <tag>Linux kernel</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>常用VPN服务器配置</title>
     <url>/embpgp.github.io/2016/10/27/%E5%B8%B8%E7%94%A8VPN%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AE/</url>
     <content><![CDATA[<span id="more"></span>
@@ -1513,6 +1513,28 @@
       </tags>
   </entry>
   <entry>
+    <title>没这么好的&quot;馅饼&quot;</title>
+    <url>/embpgp.github.io/2016/10/28/%E6%B2%A1%E8%BF%99%E4%B9%88%E5%A5%BD%E7%9A%84%E9%A6%85%E9%A5%BC/</url>
+    <content><![CDATA[<blockquote>
+<p>自己本来想买个路由器来着,想着几十块钱也是钱,一直到同学跟我说某东上有推销,而鹅厂的丘丘广告栏居然也有,抱着试了的心态购了一台斐讯K2.</p>
+</blockquote>
+  <span id="more"></span>
+<p>  参考资料:<br>  <a href="http://bbs.newifi.com/thread-3351-1-1.html">http://bbs.newifi.com/thread-3351-1-1.html</a><br>  <a href="http://www.shaoit.com/feixunshuaji.html">http://www.shaoit.com/feixunshuaji.html</a><br>  <a href="http://www.qqgzs.com/archives/k2-v22-148.html">http://www.qqgzs.com/archives/k2-v22-148.html</a><br>  <a href="http://www.openwrt.org.cn/bbs/thread-60-1-1.html">http://www.openwrt.org.cn/bbs/thread-60-1-1.html</a><br>  <a href="http://soundrain.net/2016/04/25/%E6%96%90%E8%AE%AFK2%E8%B7%AF%E7%94%B1%E5%88%B7openwrt%E5%AE%9E%E8%B7%B5%E6%95%99%E7%A8%8B/">http://soundrain.net/2016/04/25/%E6%96%90%E8%AE%AFK2%E8%B7%AF%E7%94%B1%E5%88%B7openwrt%E5%AE%9E%E8%B7%B5%E6%95%99%E7%A8%8B/</a><br>  <a href="http://wiki.openwrt.org/zh-cn/doc/start">OpenWrt官方文档:http://wiki.openwrt.org/zh-cn/doc/start</a></p>
+<hr>
+<h2 id="到货"><a href="#到货" class="headerlink" title="到货"></a>到货</h2><p>看起来很不错的样子,包装很漂亮.先不说返现的事情咯,根据基本的教程大概知道该路由器比一般的路由器功能还是丰富一些.从网上一查才知道居然带有<a href="http://soundrain.net/2016/04/25/%E6%96%90%E8%AE%AFK2%E8%B7%AF%E7%94%B1%E5%88%B7openwrt%E5%AE%9E%E8%B7%B5%E6%95%99%E7%A8%8B/">后门</a>,吓得我赶紧连开机都不试了就开始找各种固件.</p>
+<h2 id="刷刷刷"><a href="#刷刷刷" class="headerlink" title="刷刷刷"></a>刷刷刷</h2><p>根据上述链接基本的一些教程一步一步来,首先知道了原生固件也阉割了很多功能(ssh和telnet服务被禁),估计也是为了加大一般发烧友DIY的难度.我猜测有很多路由器厂商做的路由器都有漏洞的,不管是无意的还是有意的硬编码的后门,还是用开源的东西安全一些,毕竟有社区在维护,当然自己也可以贡献力量.就如近期炒得很火热的米国一半的互联网企业遭受DDOS攻击致使互联网企业域名无法解析而瘫痪,研究称是祖国某几家生产监控设备的厂商的监控产品受到Mirai恶意软件(蠕虫)等的劫持和感染而加入了僵尸网络同时对米国各大互联网企业进行”测试”…为了安全,我决定还是刷<strong>OpenWrt</strong>.当然也有同学刷其他固件的,也不错.从<a href="http://soundrain.net/2016/04/25/%E6%96%90%E8%AE%AFK2%E8%B7%AF%E7%94%B1%E5%88%B7openwrt%E5%AE%9E%E8%B7%B5%E6%95%99%E7%A8%8B/">这里</a>提供的云盘链接下载的K2配置文件发现不能恢复,后来从<a href="http://www.qqgzs.com/archives/k2-v22-148.html">这里</a>下载的配置文件就可以用了,当然,我也不能打包票地说breed没有问题,毕竟目前也还没有实力去逆向工程分析.只能选择信任网友们了.某些教程提供的一件刷机不知是否可行,我的不行,看URL应该是直接从另外一个URL Wget一个脚本到本地执行,但是我的居然报404错误…后来还是果断选择了先解决breed,而后再刷OpenWrt固件,如果不信任上述百度云盘的文件,可以去<a href="https://downloads.openwrt.org/chaos_calmer/15.05.1/ramips/mt7620/">官网这里</a>(注意型号配对)去查md5和sha校验值,我已经查过了,没有问题,至于使用的过程中仍被强行注入广告应该是运营商的问题了.<br><img src="/images/OpenWrt.png" alt="OpenWrt"><br><img src="/images/Openwrt_sha256_compare.png" alt="Openwrt_sha256_compare.png"></p>
+<h2 id="测试玩玩"><a href="#测试玩玩" class="headerlink" title="测试玩玩"></a>测试玩玩</h2><p>关于OpenWrt在开源社区应该很知名,因此文档和使用手册也应该俱全.具体的可以多学习下高级用法和某些服务器的配置以及一些常见的开发.首先进入Web端设置好登录密码和root密码,同时使能ssh服务,把自己的公钥证书复制到相应的地方保存和应用.接下来通过PC的以太网口或者Wifi(保证先配置好)<code>ssh root@IP_Address</code>即可直接免密钥登录OpenWrt了,瞬间又找到了Linux的感觉,可以知道这里的shell是用的busybox,因为/bin/sh是busybox的一个软链接(其实/bin目录下绝大部分的命令都指向了busybox,足以见得它的强大),在嵌入式Linux中很常见.建议只允许从局域网中登录和管理,提高安全性.<br><img src="/images/OpenWrt_ssh.png" alt="OpenWrt_ssh"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>东西不是白送的,除了泄露个人理财信息之外技术上还进行了一些限制和”数据采集”,作为小白鼠也得Get一些技能来保护自己,实在不放心在一台中间设备开个tcpdump或者wireshark在WAN口一直监听即可测试.</p>
+]]></content>
+      <categories>
+        <category>study</category>
+      </categories>
+      <tags>
+        <tag>Configure</tag>
+        <tag>network security</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>无人机学习概况</title>
     <url>/embpgp.github.io/2016/08/25/%E6%97%A0%E4%BA%BA%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%A6%82%E5%86%B5/</url>
     <content><![CDATA[<h1 id="Pixhawk-Ardupilot-交叉编译工具链-QGC-AP"><a href="#Pixhawk-Ardupilot-交叉编译工具链-QGC-AP" class="headerlink" title="Pixhawk + Ardupilot + 交叉编译工具链 + QGC(AP)"></a>Pixhawk + Ardupilot + 交叉编译工具链 + QGC(AP)</h1><span id="more"></span>
@@ -1536,28 +1558,6 @@
         <tag>emb</tag>
         <tag>uav</tag>
         <tag>pixhawk</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>没这么好的&quot;馅饼&quot;</title>
-    <url>/embpgp.github.io/2016/10/28/%E6%B2%A1%E8%BF%99%E4%B9%88%E5%A5%BD%E7%9A%84%E9%A6%85%E9%A5%BC/</url>
-    <content><![CDATA[<blockquote>
-<p>自己本来想买个路由器来着,想着几十块钱也是钱,一直到同学跟我说某东上有推销,而鹅厂的丘丘广告栏居然也有,抱着试了的心态购了一台斐讯K2.</p>
-</blockquote>
-  <span id="more"></span>
-<p>  参考资料:<br>  <a href="http://bbs.newifi.com/thread-3351-1-1.html">http://bbs.newifi.com/thread-3351-1-1.html</a><br>  <a href="http://www.shaoit.com/feixunshuaji.html">http://www.shaoit.com/feixunshuaji.html</a><br>  <a href="http://www.qqgzs.com/archives/k2-v22-148.html">http://www.qqgzs.com/archives/k2-v22-148.html</a><br>  <a href="http://www.openwrt.org.cn/bbs/thread-60-1-1.html">http://www.openwrt.org.cn/bbs/thread-60-1-1.html</a><br>  <a href="http://soundrain.net/2016/04/25/%E6%96%90%E8%AE%AFK2%E8%B7%AF%E7%94%B1%E5%88%B7openwrt%E5%AE%9E%E8%B7%B5%E6%95%99%E7%A8%8B/">http://soundrain.net/2016/04/25/%E6%96%90%E8%AE%AFK2%E8%B7%AF%E7%94%B1%E5%88%B7openwrt%E5%AE%9E%E8%B7%B5%E6%95%99%E7%A8%8B/</a><br>  <a href="http://wiki.openwrt.org/zh-cn/doc/start">OpenWrt官方文档:http://wiki.openwrt.org/zh-cn/doc/start</a></p>
-<hr>
-<h2 id="到货"><a href="#到货" class="headerlink" title="到货"></a>到货</h2><p>看起来很不错的样子,包装很漂亮.先不说返现的事情咯,根据基本的教程大概知道该路由器比一般的路由器功能还是丰富一些.从网上一查才知道居然带有<a href="http://soundrain.net/2016/04/25/%E6%96%90%E8%AE%AFK2%E8%B7%AF%E7%94%B1%E5%88%B7openwrt%E5%AE%9E%E8%B7%B5%E6%95%99%E7%A8%8B/">后门</a>,吓得我赶紧连开机都不试了就开始找各种固件.</p>
-<h2 id="刷刷刷"><a href="#刷刷刷" class="headerlink" title="刷刷刷"></a>刷刷刷</h2><p>根据上述链接基本的一些教程一步一步来,首先知道了原生固件也阉割了很多功能(ssh和telnet服务被禁),估计也是为了加大一般发烧友DIY的难度.我猜测有很多路由器厂商做的路由器都有漏洞的,不管是无意的还是有意的硬编码的后门,还是用开源的东西安全一些,毕竟有社区在维护,当然自己也可以贡献力量.就如近期炒得很火热的米国一半的互联网企业遭受DDOS攻击致使互联网企业域名无法解析而瘫痪,研究称是祖国某几家生产监控设备的厂商的监控产品受到Mirai恶意软件(蠕虫)等的劫持和感染而加入了僵尸网络同时对米国各大互联网企业进行”测试”…为了安全,我决定还是刷<strong>OpenWrt</strong>.当然也有同学刷其他固件的,也不错.从<a href="http://soundrain.net/2016/04/25/%E6%96%90%E8%AE%AFK2%E8%B7%AF%E7%94%B1%E5%88%B7openwrt%E5%AE%9E%E8%B7%B5%E6%95%99%E7%A8%8B/">这里</a>提供的云盘链接下载的K2配置文件发现不能恢复,后来从<a href="http://www.qqgzs.com/archives/k2-v22-148.html">这里</a>下载的配置文件就可以用了,当然,我也不能打包票地说breed没有问题,毕竟目前也还没有实力去逆向工程分析.只能选择信任网友们了.某些教程提供的一件刷机不知是否可行,我的不行,看URL应该是直接从另外一个URL Wget一个脚本到本地执行,但是我的居然报404错误…后来还是果断选择了先解决breed,而后再刷OpenWrt固件,如果不信任上述百度云盘的文件,可以去<a href="https://downloads.openwrt.org/chaos_calmer/15.05.1/ramips/mt7620/">官网这里</a>(注意型号配对)去查md5和sha校验值,我已经查过了,没有问题,至于使用的过程中仍被强行注入广告应该是运营商的问题了.<br><img src="/images/OpenWrt.png" alt="OpenWrt"><br><img src="/images/Openwrt_sha256_compare.png" alt="Openwrt_sha256_compare.png"></p>
-<h2 id="测试玩玩"><a href="#测试玩玩" class="headerlink" title="测试玩玩"></a>测试玩玩</h2><p>关于OpenWrt在开源社区应该很知名,因此文档和使用手册也应该俱全.具体的可以多学习下高级用法和某些服务器的配置以及一些常见的开发.首先进入Web端设置好登录密码和root密码,同时使能ssh服务,把自己的公钥证书复制到相应的地方保存和应用.接下来通过PC的以太网口或者Wifi(保证先配置好)<code>ssh root@IP_Address</code>即可直接免密钥登录OpenWrt了,瞬间又找到了Linux的感觉,可以知道这里的shell是用的busybox,因为/bin/sh是busybox的一个软链接(其实/bin目录下绝大部分的命令都指向了busybox,足以见得它的强大),在嵌入式Linux中很常见.建议只允许从局域网中登录和管理,提高安全性.<br><img src="/images/OpenWrt_ssh.png" alt="OpenWrt_ssh"></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>东西不是白送的,除了泄露个人理财信息之外技术上还进行了一些限制和”数据采集”,作为小白鼠也得Get一些技能来保护自己,实在不放心在一台中间设备开个tcpdump或者wireshark在WAN口一直监听即可测试.</p>
-]]></content>
-      <categories>
-        <category>study</category>
-      </categories>
-      <tags>
-        <tag>Configure</tag>
-        <tag>network security</tag>
       </tags>
   </entry>
   <entry>
