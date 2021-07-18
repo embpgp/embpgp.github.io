@@ -3,11 +3,11 @@
   <title>rutk1t0r&#39;s blog</title>
   
   <subtitle>Developer and Researcher</subtitle>
-  <link href="/atom.xml" rel="self"/>
+  <link href="/embpgp.github.io/atom.xml" rel="self"/>
   
-  <link href="http://embpgp.github.io/"/>
+  <link href="https://embpgp.github.io/"/>
   <updated>2021-07-18T07:21:27.568Z</updated>
-  <id>http://embpgp.github.io/</id>
+  <id>https://embpgp.github.io/</id>
   
   <author>
     <name>rutk1t0r</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>ln -sf target link_name</title>
-    <link href="http://embpgp.github.io/2017/12/24/ln-sf-target-link-name/"/>
-    <id>http://embpgp.github.io/2017/12/24/ln-sf-target-link-name/</id>
+    <link href="https://embpgp.github.io/2017/12/24/ln-sf-target-link-name/"/>
+    <id>https://embpgp.github.io/2017/12/24/ln-sf-target-link-name/</id>
     <published>2017-12-24T14:02:13.000Z</published>
     <updated>2021-07-18T07:21:27.568Z</updated>
     
@@ -33,17 +33,17 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="coreutils" scheme="http://embpgp.github.io/tags/coreutils/"/>
+      <category term="coreutils" scheme="https://embpgp.github.io/tags/coreutils/"/>
     
   </entry>
   
   <entry>
     <title>teardrop分析</title>
-    <link href="http://embpgp.github.io/2017/10/18/teardrop%E5%88%86%E6%9E%90/"/>
-    <id>http://embpgp.github.io/2017/10/18/teardrop分析/</id>
+    <link href="https://embpgp.github.io/2017/10/18/teardrop%E5%88%86%E6%9E%90/"/>
+    <id>https://embpgp.github.io/2017/10/18/teardrop分析/</id>
     <published>2017-10-18T07:13:09.000Z</published>
     <updated>2021-07-18T07:22:05.749Z</updated>
     
@@ -57,19 +57,19 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
-      <category term="network security" scheme="http://embpgp.github.io/tags/network-security/"/>
+      <category term="network security" scheme="https://embpgp.github.io/tags/network-security/"/>
     
   </entry>
   
   <entry>
     <title>Linux_Memory_Address_Mapping</title>
-    <link href="http://embpgp.github.io/2017/10/14/Linux-Memory-Address-Mapping/"/>
-    <id>http://embpgp.github.io/2017/10/14/Linux-Memory-Address-Mapping/</id>
+    <link href="https://embpgp.github.io/2017/10/14/Linux-Memory-Address-Mapping/"/>
+    <id>https://embpgp.github.io/2017/10/14/Linux-Memory-Address-Mapping/</id>
     <published>2017-10-14T10:49:21.000Z</published>
     <updated>2021-07-18T07:20:11.567Z</updated>
     
@@ -83,19 +83,19 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
-      <category term="LDD" scheme="http://embpgp.github.io/tags/LDD/"/>
+      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
   </entry>
   
   <entry>
     <title>compile VLC for Linux</title>
-    <link href="http://embpgp.github.io/2017/08/25/compile-VLC-for-Linux/"/>
-    <id>http://embpgp.github.io/2017/08/25/compile-VLC-for-Linux/</id>
+    <link href="https://embpgp.github.io/2017/08/25/compile-VLC-for-Linux/"/>
+    <id>https://embpgp.github.io/2017/08/25/compile-VLC-for-Linux/</id>
     <published>2017-08-25T13:26:42.000Z</published>
     <updated>2021-07-18T07:19:16.487Z</updated>
     
@@ -107,17 +107,17 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="Linux" scheme="http://embpgp.github.io/tags/Linux/"/>
+      <category term="Linux" scheme="https://embpgp.github.io/tags/Linux/"/>
     
   </entry>
   
   <entry>
     <title>gentoo_install</title>
-    <link href="http://embpgp.github.io/2017/08/04/gentoo-install/"/>
-    <id>http://embpgp.github.io/2017/08/04/gentoo-install/</id>
+    <link href="https://embpgp.github.io/2017/08/04/gentoo-install/"/>
+    <id>https://embpgp.github.io/2017/08/04/gentoo-install/</id>
     <published>2017-08-04T11:09:31.000Z</published>
     <updated>2021-07-18T07:19:37.467Z</updated>
     
@@ -132,19 +132,19 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="GNU/Linux" scheme="http://embpgp.github.io/tags/GNU-Linux/"/>
+      <category term="GNU/Linux" scheme="https://embpgp.github.io/tags/GNU-Linux/"/>
     
-      <category term="gentoo" scheme="http://embpgp.github.io/tags/gentoo/"/>
+      <category term="gentoo" scheme="https://embpgp.github.io/tags/gentoo/"/>
     
   </entry>
   
   <entry>
     <title>getshell on Win7 x64</title>
-    <link href="http://embpgp.github.io/2017/04/27/getshell-on-Win7-x64/"/>
-    <id>http://embpgp.github.io/2017/04/27/getshell-on-Win7-x64/</id>
+    <link href="https://embpgp.github.io/2017/04/27/getshell-on-Win7-x64/"/>
+    <id>https://embpgp.github.io/2017/04/27/getshell-on-Win7-x64/</id>
     <published>2017-04-27T03:49:14.000Z</published>
     <updated>2021-07-18T07:19:45.572Z</updated>
     
@@ -158,27 +158,27 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
-      <category term="misc" scheme="http://embpgp.github.io/categories/study/misc/"/>
+      <category term="misc" scheme="https://embpgp.github.io/categories/study/misc/"/>
     
     
-      <category term="exploit" scheme="http://embpgp.github.io/tags/exploit/"/>
+      <category term="exploit" scheme="https://embpgp.github.io/tags/exploit/"/>
     
-      <category term="shellcode" scheme="http://embpgp.github.io/tags/shellcode/"/>
+      <category term="shellcode" scheme="https://embpgp.github.io/tags/shellcode/"/>
     
-      <category term="NSA" scheme="http://embpgp.github.io/tags/NSA/"/>
+      <category term="NSA" scheme="https://embpgp.github.io/tags/NSA/"/>
     
-      <category term="msf" scheme="http://embpgp.github.io/tags/msf/"/>
+      <category term="msf" scheme="https://embpgp.github.io/tags/msf/"/>
     
-      <category term="shadowbroker" scheme="http://embpgp.github.io/tags/shadowbroker/"/>
+      <category term="shadowbroker" scheme="https://embpgp.github.io/tags/shadowbroker/"/>
     
   </entry>
   
   <entry>
     <title>Leet体验</title>
-    <link href="http://embpgp.github.io/2017/03/18/Leet%E4%BD%93%E9%AA%8C/"/>
-    <id>http://embpgp.github.io/2017/03/18/Leet体验/</id>
+    <link href="https://embpgp.github.io/2017/03/18/Leet%E4%BD%93%E9%AA%8C/"/>
+    <id>https://embpgp.github.io/2017/03/18/Leet体验/</id>
     <published>2017-03-18T12:07:26.000Z</published>
     <updated>2021-07-18T07:20:06.148Z</updated>
     
@@ -192,19 +192,19 @@
     
     </summary>
     
-      <category term="misc" scheme="http://embpgp.github.io/categories/misc/"/>
+      <category term="misc" scheme="https://embpgp.github.io/categories/misc/"/>
     
     
-      <category term="misc" scheme="http://embpgp.github.io/tags/misc/"/>
+      <category term="misc" scheme="https://embpgp.github.io/tags/misc/"/>
     
-      <category term="Sec" scheme="http://embpgp.github.io/tags/Sec/"/>
+      <category term="Sec" scheme="https://embpgp.github.io/tags/Sec/"/>
     
   </entry>
   
   <entry>
     <title>端到端加密IM预想</title>
-    <link href="http://embpgp.github.io/2017/03/05/%E7%AB%AF%E5%88%B0%E7%AB%AF%E5%8A%A0%E5%AF%86IM%E9%A2%84%E6%83%B3/"/>
-    <id>http://embpgp.github.io/2017/03/05/端到端加密IM预想/</id>
+    <link href="https://embpgp.github.io/2017/03/05/%E7%AB%AF%E5%88%B0%E7%AB%AF%E5%8A%A0%E5%AF%86IM%E9%A2%84%E6%83%B3/"/>
+    <id>https://embpgp.github.io/2017/03/05/端到端加密IM预想/</id>
     <published>2017-03-05T15:03:34.000Z</published>
     <updated>2021-07-18T07:22:27.917Z</updated>
     
@@ -218,17 +218,17 @@
     
     </summary>
     
-      <category term="misc" scheme="http://embpgp.github.io/categories/misc/"/>
+      <category term="misc" scheme="https://embpgp.github.io/categories/misc/"/>
     
     
-      <category term="misc" scheme="http://embpgp.github.io/tags/misc/"/>
+      <category term="misc" scheme="https://embpgp.github.io/tags/misc/"/>
     
   </entry>
   
   <entry>
     <title>r00tk1t init</title>
-    <link href="http://embpgp.github.io/2017/01/12/r00tk1t-init/"/>
-    <id>http://embpgp.github.io/2017/01/12/r00tk1t-init/</id>
+    <link href="https://embpgp.github.io/2017/01/12/r00tk1t-init/"/>
+    <id>https://embpgp.github.io/2017/01/12/r00tk1t-init/</id>
     <published>2017-01-12T13:33:55.000Z</published>
     <updated>2021-07-18T07:21:54.788Z</updated>
     
@@ -240,23 +240,23 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
-      <category term="misc" scheme="http://embpgp.github.io/categories/study/misc/"/>
+      <category term="misc" scheme="https://embpgp.github.io/categories/study/misc/"/>
     
     
-      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
-      <category term="exploit" scheme="http://embpgp.github.io/tags/exploit/"/>
+      <category term="exploit" scheme="https://embpgp.github.io/tags/exploit/"/>
     
-      <category term="r00tk1t" scheme="http://embpgp.github.io/tags/r00tk1t/"/>
+      <category term="r00tk1t" scheme="https://embpgp.github.io/tags/r00tk1t/"/>
     
   </entry>
   
   <entry>
     <title>fmt_exploit</title>
-    <link href="http://embpgp.github.io/2017/01/07/fmt-exploit/"/>
-    <id>http://embpgp.github.io/2017/01/07/fmt-exploit/</id>
+    <link href="https://embpgp.github.io/2017/01/07/fmt-exploit/"/>
+    <id>https://embpgp.github.io/2017/01/07/fmt-exploit/</id>
     <published>2017-01-07T10:38:48.000Z</published>
     <updated>2021-07-18T07:19:26.604Z</updated>
     
@@ -268,23 +268,23 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
-      <category term="misc" scheme="http://embpgp.github.io/categories/study/misc/"/>
+      <category term="misc" scheme="https://embpgp.github.io/categories/study/misc/"/>
     
     
-      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
-      <category term="exploit" scheme="http://embpgp.github.io/tags/exploit/"/>
+      <category term="exploit" scheme="https://embpgp.github.io/tags/exploit/"/>
     
-      <category term="shellcode" scheme="http://embpgp.github.io/tags/shellcode/"/>
+      <category term="shellcode" scheme="https://embpgp.github.io/tags/shellcode/"/>
     
   </entry>
   
   <entry>
     <title>Linux内核0.11完全注释 0.11的loader-&gt;execve</title>
-    <link href="http://embpgp.github.io/2016/12/30/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-0-11%E7%9A%84loader-execve/"/>
-    <id>http://embpgp.github.io/2016/12/30/Linux内核0-11完全注释-0-11的loader-execve/</id>
+    <link href="https://embpgp.github.io/2016/12/30/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-0-11%E7%9A%84loader-execve/"/>
+    <id>https://embpgp.github.io/2016/12/30/Linux内核0-11完全注释-0-11的loader-execve/</id>
     <published>2016-12-30T15:28:46.000Z</published>
     <updated>2021-07-18T07:20:16.873Z</updated>
     
@@ -298,23 +298,23 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
-      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
-      <category term="Asm" scheme="http://embpgp.github.io/tags/Asm/"/>
+      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
-      <category term="LDD" scheme="http://embpgp.github.io/tags/LDD/"/>
+      <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
   </entry>
   
   <entry>
     <title>Linux内核0.11完全注释 关于任务睡眠和唤醒的理解</title>
-    <link href="http://embpgp.github.io/2016/12/23/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E5%85%B3%E4%BA%8E%E4%BB%BB%E5%8A%A1%E7%9D%A1%E7%9C%A0%E5%92%8C%E5%94%A4%E9%86%92%E7%9A%84%E7%90%86%E8%A7%A3/"/>
-    <id>http://embpgp.github.io/2016/12/23/Linux内核0-11完全注释-关于任务睡眠和唤醒的理解/</id>
+    <link href="https://embpgp.github.io/2016/12/23/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E5%85%B3%E4%BA%8E%E4%BB%BB%E5%8A%A1%E7%9D%A1%E7%9C%A0%E5%92%8C%E5%94%A4%E9%86%92%E7%9A%84%E7%90%86%E8%A7%A3/"/>
+    <id>https://embpgp.github.io/2016/12/23/Linux内核0-11完全注释-关于任务睡眠和唤醒的理解/</id>
     <published>2016-12-23T06:07:48.000Z</published>
     <updated>2021-07-18T07:21:10.039Z</updated>
     
@@ -328,23 +328,23 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
-      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
-      <category term="Asm" scheme="http://embpgp.github.io/tags/Asm/"/>
+      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
-      <category term="LDD" scheme="http://embpgp.github.io/tags/LDD/"/>
+      <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
   </entry>
   
   <entry>
     <title>Linux内核0.11完全注释 来吧,Minix!</title>
-    <link href="http://embpgp.github.io/2016/12/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E6%9D%A5%E5%90%A7-Minix/"/>
-    <id>http://embpgp.github.io/2016/12/22/Linux内核0-11完全注释-来吧-Minix/</id>
+    <link href="https://embpgp.github.io/2016/12/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E6%9D%A5%E5%90%A7-Minix/"/>
+    <id>https://embpgp.github.io/2016/12/22/Linux内核0-11完全注释-来吧-Minix/</id>
     <published>2016-12-22T14:44:04.000Z</published>
     <updated>2021-07-18T07:21:15.969Z</updated>
     
@@ -358,23 +358,23 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
-      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
-      <category term="Asm" scheme="http://embpgp.github.io/tags/Asm/"/>
+      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
-      <category term="LDD" scheme="http://embpgp.github.io/tags/LDD/"/>
+      <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
   </entry>
   
   <entry>
     <title>Linux内核0.11完全注释 在Linix 0.11操作系统里面编译Linux 0.11内核源码</title>
-    <link href="http://embpgp.github.io/2016/12/21/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E5%9C%A8Linix-0-11%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%87%8C%E9%9D%A2%E7%BC%96%E8%AF%91Linux-0-11%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81/"/>
-    <id>http://embpgp.github.io/2016/12/21/Linux内核0-11完全注释-在Linix-0-11操作系统里面编译Linux-0-11内核源码/</id>
+    <link href="https://embpgp.github.io/2016/12/21/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E5%9C%A8Linix-0-11%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%87%8C%E9%9D%A2%E7%BC%96%E8%AF%91Linux-0-11%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81/"/>
+    <id>https://embpgp.github.io/2016/12/21/Linux内核0-11完全注释-在Linix-0-11操作系统里面编译Linux-0-11内核源码/</id>
     <published>2016-12-21T04:46:31.000Z</published>
     <updated>2021-07-18T07:21:20.251Z</updated>
     
@@ -388,23 +388,23 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
-      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
-      <category term="Asm" scheme="http://embpgp.github.io/tags/Asm/"/>
+      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
-      <category term="LDD" scheme="http://embpgp.github.io/tags/LDD/"/>
+      <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
   </entry>
   
   <entry>
     <title>Linux内核0.11完全注释 编译环境搭建</title>
-    <link href="http://embpgp.github.io/2016/12/20/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/"/>
-    <id>http://embpgp.github.io/2016/12/20/Linux内核0-11完全注释-编译环境搭建/</id>
+    <link href="https://embpgp.github.io/2016/12/20/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/"/>
+    <id>https://embpgp.github.io/2016/12/20/Linux内核0-11完全注释-编译环境搭建/</id>
     <published>2016-12-20T05:51:24.000Z</published>
     <updated>2021-07-18T07:20:22.018Z</updated>
     
@@ -418,23 +418,23 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
-      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
-      <category term="Asm" scheme="http://embpgp.github.io/tags/Asm/"/>
+      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
-      <category term="LDD" scheme="http://embpgp.github.io/tags/LDD/"/>
+      <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
   </entry>
   
   <entry>
     <title>Linux内核0.11完全注释 第七章</title>
-    <link href="http://embpgp.github.io/2016/12/15/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%83%E7%AB%A0/"/>
-    <id>http://embpgp.github.io/2016/12/15/Linux内核0-11完全注释-第七章/</id>
+    <link href="https://embpgp.github.io/2016/12/15/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%83%E7%AB%A0/"/>
+    <id>https://embpgp.github.io/2016/12/15/Linux内核0-11完全注释-第七章/</id>
     <published>2016-12-15T05:36:08.000Z</published>
     <updated>2021-07-18T07:20:40.326Z</updated>
     
@@ -448,23 +448,23 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
-      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
-      <category term="Asm" scheme="http://embpgp.github.io/tags/Asm/"/>
+      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
-      <category term="LDD" scheme="http://embpgp.github.io/tags/LDD/"/>
+      <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
   </entry>
   
   <entry>
     <title>Linux内核0.11完全注释 第六章</title>
-    <link href="http://embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%85%AD%E7%AB%A0/"/>
-    <id>http://embpgp.github.io/2016/12/14/Linux内核0-11完全注释-第六章/</id>
+    <link href="https://embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%85%AD%E7%AB%A0/"/>
+    <id>https://embpgp.github.io/2016/12/14/Linux内核0-11完全注释-第六章/</id>
     <published>2016-12-14T12:59:20.000Z</published>
     <updated>2021-07-18T07:20:35.333Z</updated>
     
@@ -478,23 +478,23 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
-      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
-      <category term="Asm" scheme="http://embpgp.github.io/tags/Asm/"/>
+      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
-      <category term="LDD" scheme="http://embpgp.github.io/tags/LDD/"/>
+      <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
   </entry>
   
   <entry>
     <title>Linux内核0.11完全注释 第五章</title>
-    <link href="http://embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%BA%94%E7%AB%A0/"/>
-    <id>http://embpgp.github.io/2016/12/14/Linux内核0-11完全注释-第五章/</id>
+    <link href="https://embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%BA%94%E7%AB%A0/"/>
+    <id>https://embpgp.github.io/2016/12/14/Linux内核0-11完全注释-第五章/</id>
     <published>2016-12-14T09:14:41.000Z</published>
     <updated>2021-07-18T07:20:58.248Z</updated>
     
@@ -508,23 +508,23 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
-      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
-      <category term="Asm" scheme="http://embpgp.github.io/tags/Asm/"/>
+      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
-      <category term="LDD" scheme="http://embpgp.github.io/tags/LDD/"/>
+      <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
   </entry>
   
   <entry>
     <title>Linux内核0.11完全注释 第四章-番外篇</title>
-    <link href="http://embpgp.github.io/2016/11/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E7%95%AA%E5%A4%96%E7%AF%87/"/>
-    <id>http://embpgp.github.io/2016/11/22/Linux内核0-11完全注释-第四章-番外篇/</id>
+    <link href="https://embpgp.github.io/2016/11/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E7%95%AA%E5%A4%96%E7%AF%87/"/>
+    <id>https://embpgp.github.io/2016/11/22/Linux内核0-11完全注释-第四章-番外篇/</id>
     <published>2016-11-22T12:19:15.000Z</published>
     <updated>2021-07-18T07:20:53.706Z</updated>
     
@@ -538,23 +538,23 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
-      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
-      <category term="Asm" scheme="http://embpgp.github.io/tags/Asm/"/>
+      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
-      <category term="LDD" scheme="http://embpgp.github.io/tags/LDD/"/>
+      <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
   </entry>
   
   <entry>
     <title>Linux内核0.11完全注释 第四章</title>
-    <link href="http://embpgp.github.io/2016/11/19/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0/"/>
-    <id>http://embpgp.github.io/2016/11/19/Linux内核0-11完全注释-第四章/</id>
+    <link href="https://embpgp.github.io/2016/11/19/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0/"/>
+    <id>https://embpgp.github.io/2016/11/19/Linux内核0-11完全注释-第四章/</id>
     <published>2016-11-19T13:36:22.000Z</published>
     <updated>2021-07-18T07:20:49.319Z</updated>
     
@@ -568,16 +568,16 @@
     
     </summary>
     
-      <category term="study" scheme="http://embpgp.github.io/categories/study/"/>
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="http://embpgp.github.io/tags/C-C/"/>
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
-      <category term="Linux kernel" scheme="http://embpgp.github.io/tags/Linux-kernel/"/>
+      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
-      <category term="Asm" scheme="http://embpgp.github.io/tags/Asm/"/>
+      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
-      <category term="LDD" scheme="http://embpgp.github.io/tags/LDD/"/>
+      <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
   </entry>
   
