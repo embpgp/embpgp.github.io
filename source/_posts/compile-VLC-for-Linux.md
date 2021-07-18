@@ -12,6 +12,7 @@ categories:
 Aclocal版本重新校正：[https://github.com/threatstack/libmagic/issues/3](https://github.com/threatstack/libmagic/issues/3)
 临时卸载QT5：[https://forum.videolan.org/viewtopic.php?t=124188&start=20](https://forum.videolan.org/viewtopic.php?t=124188&start=20)
 
+<!--more-->
 --------------------------
 # 源码下载
 * 在[官网](https://www.videolan.org/vlc/download-sources.html)或者[Github仓库](https://github.com/videolan/vlc)将源码下载到本地。

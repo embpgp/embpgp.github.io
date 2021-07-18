@@ -9,6 +9,8 @@ tags:
 
 > 经过一个多月的奋战,昨天终于签约了,个人也算结束了校招吧,一路走来,倍感心酸.
 
+<!--more-->
+
 老吴去年心得:[http://www.nephen.com/2015/11/job-summary](http://www.nephen.com/2015/11/job-summary)
 
 ----------

@@ -12,6 +12,9 @@ tags:
 
 > 迷你bootloader部分
 
+<!--more-->
+
+
 ----------
 
 # 从ROM BIOS处接手过来

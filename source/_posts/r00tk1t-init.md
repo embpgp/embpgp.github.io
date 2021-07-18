@@ -19,6 +19,7 @@ tags:
 [http://www.mallocfree.com/data/compile-linux-kernel-mallocfree.com.pdf](http://www.mallocfree.com/data/compile-linux-kernel-mallocfree.com.pdf)
 [https://ruinedsec.wordpress.com/2013/04/04/modifying-system-calls-dispatching-linux/](https://ruinedsec.wordpress.com/2013/04/04/modifying-system-calls-dispatching-linux/)
 
+<!--more-->
 
 
 # What's this?

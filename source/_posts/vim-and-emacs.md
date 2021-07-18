@@ -10,6 +10,8 @@ categories:
 
 > 在学习Linux的时候，最好从console开始，完全脱离窗体束缚，感受最原始的类DOS时代的`程序员使命感`,由于Linux下编辑器也是五花八门，不过最流行的莫过于Vim和Emacs，在这里附上它们的一些链接便于学习．
 
+<!--more-->
+
 参考资料：  
 [Vimdoc:http://vimdoc.sourceforge.net/](http://vimdoc.sourceforge.net/ "Vimdoc")
 [Vimnum:http://vimdoc.sourceforge.net/vimum.html](http://vimdoc.sourceforge.net/vimum.html)
