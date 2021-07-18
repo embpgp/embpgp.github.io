@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://embpgp.github.io/schedule/index.html</loc>
+    
+    <lastmod>2021-07-18</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://embpgp.github.io/schedule/notes.html</loc>
+    
+    <lastmod>2021-07-18</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://embpgp.github.io/2016/09/25/%E4%B8%80%E8%B5%B7%E6%9D%A5%E6%92%B8printf%E5%90%A7/</loc>
     
     <lastmod>2021-07-18</lastmod>
@@ -240,13 +254,6 @@
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/schedule/index.html</loc>
-    
-    <lastmod>2021-07-18</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://embpgp.github.io/tags/index.html</loc>
     
     <lastmod>2021-07-18</lastmod>
@@ -291,6 +298,20 @@
 
   
   <url>
+    <loc>https://embpgp.github.io/tags/C-C/</loc>
+    <lastmod>2021-07-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://embpgp.github.io/tags/Linux/</loc>
+    <lastmod>2021-07-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://embpgp.github.io/tags/misc/</loc>
     <lastmod>2021-07-18</lastmod>
     <changefreq>daily</changefreq>
@@ -299,13 +320,6 @@
   
   <url>
     <loc>https://embpgp.github.io/tags/Sec/</loc>
-    <lastmod>2021-07-18</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://embpgp.github.io/tags/C-C/</loc>
     <lastmod>2021-07-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -333,13 +347,6 @@
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/tags/Linux/</loc>
-    <lastmod>2021-07-18</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://embpgp.github.io/tags/exploit/</loc>
     <lastmod>2021-07-18</lastmod>
     <changefreq>daily</changefreq>
@@ -354,7 +361,14 @@
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/tags/Configure/</loc>
+    <loc>https://embpgp.github.io/tags/GNU-Linux/</loc>
+    <lastmod>2021-07-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://embpgp.github.io/tags/gentoo/</loc>
     <lastmod>2021-07-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -382,21 +396,14 @@
   </url>
   
   <url>
+    <loc>https://embpgp.github.io/tags/Configure/</loc>
+    <lastmod>2021-07-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://embpgp.github.io/tags/coreutils/</loc>
-    <lastmod>2021-07-18</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://embpgp.github.io/tags/GNU-Linux/</loc>
-    <lastmod>2021-07-18</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://embpgp.github.io/tags/gentoo/</loc>
     <lastmod>2021-07-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -461,14 +468,14 @@
 
   
   <url>
-    <loc>https://embpgp.github.io/categories/misc/</loc>
+    <loc>https://embpgp.github.io/categories/study/</loc>
     <lastmod>2021-07-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/categories/study/</loc>
+    <loc>https://embpgp.github.io/categories/misc/</loc>
     <lastmod>2021-07-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
