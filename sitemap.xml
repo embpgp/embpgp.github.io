@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://embpgp.github.io/2021/08/08/VPC%E7%BD%91%E7%BB%9C%E6%89%93%E9%80%9A%E7%A0%94%E7%A9%B6/</loc>
+    
+    <lastmod>2021-08-08</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://embpgp.github.io/2021/07/20/golang-init/</loc>
     
     <lastmod>2021-08-08</lastmod>
@@ -474,6 +481,20 @@
   
   <url>
     <loc>https://embpgp.github.io/tags/go/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://embpgp.github.io/tags/%E8%AE%BE%E8%AE%A1/</loc>
+    <lastmod>2021-08-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://embpgp.github.io/tags/%E7%BD%91%E7%BB%9C/</loc>
     <lastmod>2021-08-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>

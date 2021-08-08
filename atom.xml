@@ -6,7 +6,7 @@
   <link href="/embpgp.github.io/atom.xml" rel="self"/>
   
   <link href="https://embpgp.github.io/"/>
-  <updated>2021-08-08T02:20:26.901Z</updated>
+  <updated>2021-08-08T03:58:35.419Z</updated>
   <id>https://embpgp.github.io/</id>
   
   <author>
@@ -15,6 +15,34 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>VPC网络打通研究</title>
+    <link href="https://embpgp.github.io/2021/08/08/VPC%E7%BD%91%E7%BB%9C%E6%89%93%E9%80%9A%E7%A0%94%E7%A9%B6/"/>
+    <id>https://embpgp.github.io/2021/08/08/VPC网络打通研究/</id>
+    <published>2021-08-08T03:15:28.000Z</published>
+    <updated>2021-08-08T03:58:35.419Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>云内网络打通</p></blockquote><span id="more"></span><hr><p><strong>参考资料</strong></p><ul><li><a href="https://gofrp.org/docs/" title="frp">gofrp</a></li><li><a href="https://github.com/ntop/n2n" title="n2n">n2n</a></li><li><a href="https://github.com/ehang-io/nps/blob/master/README_zh.md" title="nps">nps</a></li></ul><hr><h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>在云内多VPC场景下，需要实现多NFV极简+管控+运维+部署。传统的安全管理平台采用平台侧主动推送和纳管NFV组件， 但是在VPC场景下网络打通存在中间的访问控制策略隔离，以及私有网络的暴露面问题。</p><h1 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h1><ul><li>正向打通：网络往往采用NAT技术或者代理服务器，将内网的服务暴露出来，但是这样的运维成本较大，且存在安全性问题。 采用VPN技术需要两端都外挂前置设备或者软件。</li><li>逆向打通：技术上采用将原本的服务端安装一个client_agent，通过反向的先让client_agent接入原本的客户端的server_proxy， 然后代理程序本身实现IP级别或者PORT级别的隧道数据转发，下面分析逆向打通的几个方案。</li></ul><h1 id="开源方案"><a href="#开源方案" class="headerlink" title="开源方案"></a>开源方案</h1><table><thead><tr><th align="center">技术方案</th><th align="center">优点</th><th align="center">缺点</th></tr></thead><tbody><tr><td align="center">N2N</td><td align="center">功能丰富，满足需求，实现IP2IP级别访问</td><td align="center">采用内核方案，稳定性差</td></tr><tr><td align="center">NPS</td><td align="center">功能丰富，控制面安全性较好</td><td align="center">GPL协议无法商用</td></tr><tr><td align="center">FRP</td><td align="center">功能较丰富，apache协议可以商用</td><td align="center">控制面安全性一般</td></tr></tbody></table><h1 id="FRP方案分析"><a href="#FRP方案分析" class="headerlink" title="FRP方案分析"></a>FRP方案分析</h1><p>为了满足商用需求，可以考虑采用FRP作为VPC网络打通数据面的方案，默认监听7000端口。<br>引入另外的独立的控制面来负责FRP的统一管理/升级维护/横向扩展/高可用等，以满足持续迭代的需求。</p><h1 id="配置方法"><a href="#配置方法" class="headerlink" title="配置方法"></a>配置方法</h1><p>参考<a href="https://gofrp.org/docs/examples/ssh/" title="示例">官网教程</a> 直接配置frpc.ini和frps.ini即可</p><blockquote><p>因此在client上如何管理好frpc.ini是重点.</p></blockquote><p>frps.ini</p><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[common]</span></span><br><span class="line"><span class="attr">bind_port</span> = <span class="number">7000</span></span><br></pre></td></tr></table></figure><ul><li>可以选择默认启用tls_only选项以及token。</li><li>可以启用服务端插件功能获取frpc的接入上下文来实现访问控制。</li></ul><p>frpc.ini </p><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[common]</span></span><br><span class="line"><span class="attr">server_addr</span> = x.x.x.x</span><br><span class="line"><span class="attr">server_port</span> = <span class="number">7000</span></span><br><span class="line"></span><br><span class="line"><span class="section">[ssh]</span></span><br><span class="line"><span class="attr">type</span> = tcp</span><br><span class="line"><span class="attr">local_ip</span> = <span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line"><span class="attr">local_port</span> = <span class="number">22</span></span><br><span class="line"><span class="attr">remote_port</span> = <span class="number">6000</span></span><br></pre></td></tr></table></figure><p>绝大部分的业务都是tcp。这里可以通过设置local_ip为路由可达的服务器地址，而不仅仅局限于本地通信，因为经常作为hacker的横向扩展工具使用。 具体参考<a href="https://gofrp.org/docs/reference/" title="配置">配置文件</a>。</p><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ul><li>多学习开源项目的设计思路</li><li>多看看开源代码的编码风格</li></ul>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;云内网络打通&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
+    
+    
+      <category term="go" scheme="https://embpgp.github.io/tags/go/"/>
+    
+      <category term="设计" scheme="https://embpgp.github.io/tags/%E8%AE%BE%E8%AE%A1/"/>
+    
+      <category term="网络" scheme="https://embpgp.github.io/tags/%E7%BD%91%E7%BB%9C/"/>
+    
+  </entry>
   
   <entry>
     <title>golang init</title>
@@ -528,36 +556,6 @@
     
       &lt;blockquote&gt;
 &lt;p&gt;久违的章节,简介Linux内核体系结构&lt;/p&gt;
-&lt;/blockquote&gt;
-    
-    </summary>
-    
-      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
-    
-    
-      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
-    
-      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
-    
-      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
-    
-      <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Linux内核0.11完全注释 第四章-番外篇</title>
-    <link href="https://embpgp.github.io/2016/11/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E7%95%AA%E5%A4%96%E7%AF%87/"/>
-    <id>https://embpgp.github.io/2016/11/22/Linux内核0-11完全注释-第四章-番外篇/</id>
-    <published>2016-11-22T12:19:15.000Z</published>
-    <updated>2021-07-18T07:20:53.706Z</updated>
-    
-    <content type="html"><![CDATA[<blockquote><p>本篇将根据实战经验来构建这个简单的多任务内核的运行</p></blockquote><span id="more"></span><hr><h1 id="Bochs安装和配置"><a href="#Bochs安装和配置" class="headerlink" title="Bochs安装和配置"></a>Bochs安装和配置</h1><ul><li>通过Debian或者RHEL的包管理器直接安装或者源码安装都可以，网上多建议源码安装，说可以开启调试和反汇编功能，我发现都差不多，至于Win平台的直接点击点击即可。</li><li>按照网上的一些教程将拷贝一份配置文件或者直接文本新建一个，将<strong>romimage</strong>和<strong>vgaromimage</strong>的路径配置好，我的配置如下，删除了很多没啥用的。看启动文件可知道仅仅需要一个设备即可完成。<strong>Image</strong>是后面编译链接后用dd命令写入的文件。<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">romimage: file=<span class="variable">$BXSHARE</span>/BIOS-bochs-latest</span><br><span class="line">megs: 16</span><br><span class="line">vgaromimage: file=/usr/<span class="built_in">local</span>/share/bochs/VGABIOS-lgpl-latest</span><br><span class="line">floppya: 1_44=Image, status=inserted</span><br><span class="line">boot: a</span><br><span class="line"><span class="built_in">log</span>: bochsout.txt</span><br></pre></td></tr></table></figure></li></ul><h1 id="生成启动文件"><a href="#生成启动文件" class="headerlink" title="生成启动文件"></a>生成启动文件</h1><ul><li>首先由于我没有Get到原网站的资料，只好硬着头皮根据书本的后面章节来推敲了。<br>　<img src="/images/Linux_0.11_chapter4_make_by_heself.png" alt="Linux_0.11_chapter4_make_by_heself.png"></li><li>我根据上图自己”凑合着”编写Makefile文件。<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$ cat Makefile </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Image: boot system</span><br><span class="line">dd bs=32 <span class="keyword">if</span>=boot of=Image skip=1</span><br><span class="line">dd bs=1 <span class="keyword">if</span>=system of=Image skip=4096 seek=512   <span class="comment">#必须指出这里的错误，skip偏移量是0x1000，不是1024</span></span><br><span class="line"></span><br><span class="line">boot: boot.o</span><br><span class="line">ld86 -0 -s -o <span class="variable">$@</span> $&lt;</span><br><span class="line">boot.o: boot.s</span><br><span class="line">as86 -0 -a -o <span class="variable">$@</span> $&lt;</span><br><span class="line"></span><br><span class="line">system: head.o</span><br><span class="line">ld -m elf_i386 -Ttext 0 -e startup_32 -s -x -M $&lt; -o <span class="variable">$@</span> &gt; System.map</span><br><span class="line">head.o: head.s</span><br><span class="line">as -32 -o <span class="variable">$@</span> $&lt;</span><br><span class="line"></span><br><span class="line">disk:</span><br><span class="line">dd bs=8192 <span class="keyword">if</span>=Image of=/dev/fd0</span><br><span class="line">sync;sync;sync</span><br><span class="line"></span><br><span class="line">clean:</span><br><span class="line">-rm -rf *.o boot system System.map Image</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$ make clean</span><br><span class="line">rm -rf *.o boot system System.map Image</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$ make</span><br><span class="line">as86 -0 -a -o boot.o boot.s</span><br><span class="line">ld86 -0 -s -o boot boot.o</span><br><span class="line">as -32 -o head.o head.s</span><br><span class="line">ld -m elf_i386 -Ttext 0 -e startup_32 -s -x -M head.o -o system &gt; System.map</span><br><span class="line">dd bs=32 <span class="keyword">if</span>=boot of=Image skip=1</span><br><span class="line">记录了16+0 的读入</span><br><span class="line">记录了16+0 的写出</span><br><span class="line">512 bytes copied, 0.00025786 s, 2.0 MB/s</span><br><span class="line">dd bs=1 <span class="keyword">if</span>=system of=Image skip=4096 seek=512   <span class="comment">#必须指出这里的错误，skip偏移量是0x1000，不是1024</span></span><br><span class="line">记录了4996+0 的读入</span><br><span class="line">记录了4996+0 的写出</span><br><span class="line">4996 bytes (5.0 kB, 4.9 KiB) copied, 0.0211415 s, 236 kB/s</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$</span><br></pre></td></tr></table></figure></li><li>由于我们这个<strong>多任务内核例子</strong>并不需要文件系统，仅仅只是模拟一下保护模式下的各种机制，因此bochs的配置文件可以直接设置为软盘启动并直接配置<strong>Image</strong>为启动文件。这里需要说明的是如果直接照着Makefile文件的来dd，参数skip是有问题的，我当时为了编译能够通过从网上找了很多参数，可能原文编译的情况不同吧。由于elf文件格式的缘故必须去掉它的头部,用工具查看得知代码段偏移量在0x1000，所以我为了简单好看就每次单字节的写入了4096次。不想自个儿敲以及稍微详细点的注释请参考<a href="https://github.com/embpgp/Linux_kernel_0.11_examples/tree/master/chapter4/example_for_multi_tasks">这里</a>。</li></ul><h1 id="奔跑吧，小内核"><a href="#奔跑吧，小内核" class="headerlink" title="奔跑吧，小内核~~~"></a>奔跑吧，小内核~~~</h1><ul><li><p>首先键入类似<code>bochs -f ./$config_file</code>，如果没问题则键入6或者直接回车。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_start.png" alt="Linux_0.11_chapter4_extra_bochs_start.png"></p></li><li><p>遇到如下情况就表示进入了调试状态了，左边的小黑框暂时停在了ROM BIOS处等待我们输入命令，可以先输入<code>b 0x7c00</code>，让其断在我们可控的第一条指令处。具体的调试指令可参考<a href="http://www.cnblogs.com/hongzg1982/articles/2111254.html">这里</a><br><img src="/images/Linux_0.11_chapter4_extra_bochs_6.png" alt="Linux_0.11_chapter4_extra_bochs_6.png"></p></li><li><p>断在了物理地址0x7c00处，此时为boot.s文件代码中第一条指令，正在搭建进入保护模式的环境。后面可以根据汇编代码单步走(s)来一一对照执行。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_0x7c00.png" alt="Linux_0.11_chapter4_extra_bochs_0x7c00.png"></p></li><li><p>接下来看点有趣的东西，由于我多次调试已经知道了内核各个数据结构在内存中的地址(对照调试界面和源码界面，内核数据结构符号均已经变成内存地址)。我便直接下断点在<code>timer_interrupt</code>这个时钟中断处理函数的某一条语句(cmpl)来观察现象。断点地址0x0表示刚刚进入保护模式的内核代码段首地址处。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_protect_0.png" alt="Linux_0.11_chapter4_extra_bochs_protect_0.png"></p></li><li><p>注意观察bochs界面的左上角处，已经打印出了大约10个A。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_first_show.png" alt="Linux_0.11_chapter4_extra_bochs_first_show.png"></p></li><li><p>用s单步走，注意观察第一次jmp后的变化,esp已经改变,此时已经处于任务1即打印B的任务的用户空间了。由于处于调试状态的程序不能单步直接响应定时器中断，我们再次键入c继续等待下一次中断。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_first_jmp.png" alt="Linux_0.11_chapter4_extra_bochs_first_jmp.png"></p></li><li><p>注意观察bochs界面的左上角处，又打印了大约10B。说明此时被中断后来到了任务1(即打印B)的内核空间，esp也发生了变化。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_task0_kernel.png" alt="Linux_0.11_chapter4_extra_bochs_task0_kernel.png"></p></li><li><p>此时的jmp之后esp发生了变化，从tss0中恢复task0的现场，即处于上次被jmp后的地方，因此它必须得继续执行后面的指令，虽然仍然处于中断处理过程，但是CPU不管那么多，它只知道取指译码执行，不出权限问题就没啥事。等到iret指令执行后便会回到task0的用户空间继续打印A了。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_task0_kernel_resume.png" alt="Linux_0.11_chapter4_extra_bochs_task0_kernel_resume.png"></p></li><li><p>看到了没?这就是我所说的”三个esp”,此图说明当时被时钟中断的时候task0正在”睡眠”，B也类似的。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_task0_kernel_resume_user.png" alt="Linux_0.11_chapter4_extra_bochs_task0_kernel_resume_user.png"></p></li><li><p>去掉中断看全景图吧!!!瞬间被霸屏。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_running.png" alt="Linux_0.11_chapter4_extra_bochs_running.png"></p></li><li><p>自己新增加的任务2,其中利用了局部段描述符的第0个槽位,打印字符’0’。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_add_2_task.png" alt="Linux_0.11_chapter4_extra_bochs_add_2_task.png"></p><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>能折腾总会学到很多…关于代码的分析请参见<a href="https://github.com/embpgp/Linux_kernel_0.11_examples/tree/master/chapter4/example_for_multi_tasks">这里</a>吧</p></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      &lt;blockquote&gt;
-&lt;p&gt;本篇将根据实战经验来构建这个简单的多任务内核的运行&lt;/p&gt;
 &lt;/blockquote&gt;
     
     </summary>
