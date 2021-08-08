@@ -6,7 +6,7 @@
   <link href="/embpgp.github.io/atom.xml" rel="self"/>
   
   <link href="https://embpgp.github.io/"/>
-  <updated>2021-07-18T07:21:27.568Z</updated>
+  <updated>2021-08-08T02:00:35.388Z</updated>
   <id>https://embpgp.github.io/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>golang init</title>
+    <link href="https://embpgp.github.io/2021/07/20/golang-init/"/>
+    <id>https://embpgp.github.io/2021/07/20/golang-init/</id>
+    <published>2021-07-20T15:10:04.000Z</published>
+    <updated>2021-08-08T02:00:35.388Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>拥抱云原生高效率生产地时代</p></blockquote><span id="more"></span><hr><p><strong>参考资料</strong> </p><ul><li><a href="https://github.com/unknwon/the-way-to-go_ZH_CN/blob/master/eBook/directory.md" title="go在线教程">go在线教程</a>  </li><li><a href="https://leetcode-cn.com/problems/merge-intervals/solution/go-er-wei-slicepai-xu-by-todayweather/" title="leetcode">leetcode区间合并</a></li></ul><hr><h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>此处可以直接搜索网上的教程，建议用goland+插件，可以极大地提高生产效率，试用补丁方案在<a href="https://zhile.io/2020/11/18/jetbrains-eval-reset-da33a93d.html" title="补丁">这里</a>参考。</p><h1 id="小试牛刀"><a href="#小试牛刀" class="headerlink" title="小试牛刀"></a>小试牛刀</h1><blockquote><p>采用leetcode刷题学习，题目是要求合并若干区间数组</p></blockquote><p>以数组 intervals 表示若干个区间的集合，其中单个区间为 intervals[i] = [starti, endi] 。请你合并所有重叠的区间，并返回一个不重叠的区间数组，该数组需恰好覆盖输入中的所有区间。</p><p>这道题在现实情况的工程问题可能对应着需要找出用户配置的IP端，可以合并下发到数据面。</p><h1 id="算法思路"><a href="#算法思路" class="headerlink" title="算法思路"></a>算法思路</h1><blockquote><p>所以解算法题最先要想到如果达到了目标状态，那些数据应该是什么样的</p></blockquote><p>我们用数组 merged 存储最终的答案。<br>首先，我们将列表中的区间按照左端点升序排序。然后我们将第一个区间加入 merged 数组中，并按顺序依次考虑之后的每个区间：<br>如果当前区间的左端点在数组 merged 中最后一个区间的右端点之后，那么它们不会重合，我们可以直接将这个区间加入数组 merged 的末尾；<br>否则，它们重合，我们需要用当前区间的右端点更新数组 merged 中最后一个区间的右端点，将其置为二者的较大值。<br>左端点不需要设置，因为已经排序好了。</p><h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line"><span class="string">&quot;fmt&quot;</span></span><br><span class="line"><span class="string">&quot;sort&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">min</span><span class="params">(a, b <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line"><span class="keyword">if</span> a &lt; b &#123;</span><br><span class="line"><span class="keyword">return</span> a</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> b</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">max</span><span class="params">(a, b <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line"><span class="keyword">if</span> a &lt; b &#123;</span><br><span class="line"><span class="keyword">return</span> b</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> a</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Element [][]<span class="keyword">int</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Element)</span> <span class="title">Swap</span><span class="params">(i, j <span class="keyword">int</span>)</span></span> &#123; p[i], p[j] = p[j], p[i] &#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Element)</span> <span class="title">Len</span><span class="params">()</span> <span class="title">int</span></span>      &#123; <span class="keyword">return</span> <span class="built_in">len</span>(p) &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断i位置的元素是否比j位置的元素小，如果为真，sort方法会调用swap函数交换</span></span><br><span class="line"><span class="comment">//但是sort函数本身实现是根据从后往前判断的，因此还是默认为升序</span></span><br><span class="line"><span class="comment">//参考sort.sort函数实现的源码</span></span><br><span class="line"><span class="comment">//https://golang.org/src/sort/sort.go</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Element)</span> <span class="title">Less</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line"><span class="keyword">return</span> p[i][<span class="number">0</span>] &lt; p[j][<span class="number">0</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">leetcode来源：</span></span><br><span class="line"><span class="comment">思路</span></span><br><span class="line"><span class="comment">按照最终的排序状态，肯定是连续的集合</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">merge</span><span class="params">(intervals [][]<span class="keyword">int</span>)</span> [][]<span class="title">int</span></span> &#123;</span><br><span class="line"></span><br><span class="line">ret := <span class="built_in">make</span>([][]<span class="keyword">int</span>, <span class="number">0</span>)</span><br><span class="line">sort.Sort(Element(intervals))</span><br><span class="line">retIndex := <span class="number">0</span></span><br><span class="line">ret = <span class="built_in">append</span>(ret, intervals[<span class="number">0</span>])</span><br><span class="line"><span class="keyword">for</span> i := <span class="number">1</span>; i &lt; <span class="built_in">len</span>(intervals); i++ &#123;</span><br><span class="line"><span class="keyword">if</span> ret[retIndex][<span class="number">1</span>] &lt; intervals[i][<span class="number">0</span>] &#123; <span class="comment">// 当前扫描区间和前一区间不重合，则直接添加到结果中</span></span><br><span class="line">ret = <span class="built_in">append</span>(ret, intervals[i])</span><br><span class="line">retIndex++</span><br><span class="line">&#125; <span class="keyword">else</span> &#123; <span class="comment">// 相邻两个区间重合，则合并成一个区间</span></span><br><span class="line"><span class="comment">//ret[retIndex][0] = min(ret[retIndex][0], intervals[i][0]) //左值已经排序好了</span></span><br><span class="line">ret[retIndex][<span class="number">1</span>] = max(ret[retIndex][<span class="number">1</span>], intervals[i][<span class="number">1</span>])</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> ret</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">array := [][]<span class="keyword">int</span>&#123;&#123;<span class="number">1</span>, <span class="number">3</span>&#125;, &#123;<span class="number">2</span>, <span class="number">6</span>&#125;, &#123;<span class="number">8</span>, <span class="number">10</span>&#125;, &#123;<span class="number">15</span>, <span class="number">18</span>&#125;&#125;</span><br><span class="line">out := merge(array)</span><br><span class="line">fmt.Println((out))</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>轮子好啊</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;拥抱云原生高效率生产地时代&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
+    
+    
+      <category term="go" scheme="https://embpgp.github.io/tags/go/"/>
+    
+  </entry>
   
   <entry>
     <title>ln -sf target link_name</title>
@@ -301,11 +325,11 @@
       <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
-    
       <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
       <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
+    
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
       <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
@@ -331,11 +355,11 @@
       <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
-    
       <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
       <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
+    
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
       <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
@@ -361,11 +385,11 @@
       <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
-    
       <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
       <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
+    
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
       <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
@@ -391,11 +415,11 @@
       <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
-    
       <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
       <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
+    
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
       <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
@@ -421,11 +445,11 @@
       <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
-    
       <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
       <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
+    
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
       <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
@@ -451,11 +475,11 @@
       <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
-    
       <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
       <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
+    
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
       <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
@@ -481,11 +505,11 @@
       <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
-    
       <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
       <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
+    
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
       <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
@@ -511,11 +535,11 @@
       <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
-    
       <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
       <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
+    
+      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
     
       <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
@@ -541,41 +565,11 @@
       <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
     
     
-      <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
-    
       <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
     
       <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
-      <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Linux内核0.11完全注释 第四章</title>
-    <link href="https://embpgp.github.io/2016/11/19/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0/"/>
-    <id>https://embpgp.github.io/2016/11/19/Linux内核0-11完全注释-第四章/</id>
-    <published>2016-11-19T13:36:22.000Z</published>
-    <updated>2021-07-18T07:20:49.319Z</updated>
-    
-    <content type="html"><![CDATA[<blockquote><p>介绍Intel 80X86保护模式及其编程</p></blockquote><span id="more"></span><hr><h1 id="80X86基础知识"><a href="#80X86基础知识" class="headerlink" title="80X86基础知识"></a>80X86基础知识</h1><h2 id="eflags标志寄存器"><a href="#eflags标志寄存器" class="headerlink" title="eflags标志寄存器"></a>eflags标志寄存器</h2><ul><li>几个系统标志的作用，其中需要说明的IF标志位也是可以控制的，通过汇编指令<code>sti</code>和<code>cli</code>。需要特权才能执行，否则产生异常。Intel芯片的设计者增加这几个标志位的目的是为了配合操作系统更好地管理系统资源以及安全性的提升，诚然操作系统设计者可以不用理会部分标志，但是有这些硬件机制使得程序流程执行起来更加快速。<br><img src="/images/Linux_0.11_chapter4_eflag_sys.png" alt="Linux_0.11_chapter4_eflag_sys.png">  </li></ul><h2 id="内存管理寄存器"><a href="#内存管理寄存器" class="headerlink" title="内存管理寄存器"></a>内存管理寄存器</h2><blockquote><p>由于80386及以后的CPU的主要工作状态均采用保护模式(相对于8086时代的实模式)，其实所谓的保护最主要的还是保护内存，DOS时代的病毒太过于泛滥的主要原因之一是当时8086的内存保护几乎为0。因此真正懂得程序布局和设计的早期hacker可以随意”摆弄”计算机。而保护模式便要大大提高门槛了，把恶意指令限制在CPU内部解决而不直接通过系统总线送往内存控制器。  </p></blockquote><h3 id="GDTR"><a href="#GDTR" class="headerlink" title="GDTR"></a>GDTR</h3><ul><li>全局描述符表寄存器，CPU内部，48位，保存GDT的32位线性基地址和16位表长度(字节)</li><li>使用汇编指令LGDT和SGDT来加载和保存GDTR的内容</li><li>刚刚上电初始化base为0,len为0xFFFF</li><li>boot阶段进入保护模式过程中必须被赋值,因为一旦进入保护模式便要一直用它</li></ul><h3 id="IDTR"><a href="#IDTR" class="headerlink" title="IDTR"></a>IDTR</h3><ul><li>中断描述符寄存器,CPU内部，48位，保存IDT的32位线性地址和16位表长度(字节为单位)</li><li>LIDT和SIDT</li><li>上电同上</li><li>也是必须被设置，但是初始化过程中可以关闭中断使得如同空设。而后必须填充好。</li></ul><h3 id="LDTR"><a href="#LDTR" class="headerlink" title="LDTR"></a>LDTR</h3><ul><li>不仅包含和GDTR的48位,还有段属性以及选择子</li><li>可用于任务切换的局部空间寻址</li></ul><h3 id="TR"><a href="#TR" class="headerlink" title="TR"></a>TR</h3><ul><li>同上，但描述符部分属性和内容更多</li></ul><h2 id="控制寄存器"><a href="#控制寄存器" class="headerlink" title="控制寄存器"></a>控制寄存器</h2><h3 id="CRO"><a href="#CRO" class="headerlink" title="CRO"></a>CRO</h3><ul><li>主要含有控制处理器模式和状态的系统控指标志</li><li>协处理器的相关控制(浮点计算)</li><li>保护模式开启和关闭以及分页模式的启毕 </li></ul><h3 id="CR1-Intel保留"><a href="#CR1-Intel保留" class="headerlink" title="CR1 Intel保留"></a>CR1 Intel保留</h3><h3 id="CR2"><a href="#CR2" class="headerlink" title="CR2"></a>CR2</h3><ul><li>异常的线性地址保存CR2，便于实现虚拟内存</li></ul><h3 id="CR3"><a href="#CR3" class="headerlink" title="CR3"></a>CR3</h3><ul><li>PDBR，高20位为页目录基地址，低12位暂时保留。</li><li>任务切换时被更新，分页机制的第一基点</li></ul><h1 id="保护模式内存管理"><a href="#保护模式内存管理" class="headerlink" title="保护模式内存管理"></a>保护模式内存管理</h1><h2 id="地址变换"><a href="#地址变换" class="headerlink" title="地址变换"></a>地址变换</h2><p><img src="/images/Linux_0.11_chapter4_address_convert.png" alt="Linux_0.11_chapter4_address_convert.png"></p><h2 id="段的定义"><a href="#段的定义" class="headerlink" title="段的定义"></a>段的定义</h2><blockquote><p>Intel芯片中的分段机制必须开启，但是软件开发人员可以采用平坦模式，即配置分段机制的各个选择子描述符基址为0，长度为4G，好处是便于后期编程。</p></blockquote><h3 id="段描述符"><a href="#段描述符" class="headerlink" title="段描述符"></a>段描述符</h3><ul><li>GDT </li><li>8字节,含段基址，段限长及段属性，可表示(类似继承)成各种段，包括代码段，数据段，tss段等等</li><li>由GDTR指向，一般确定后不会更改地址，可以增加项目<br>　- 第一项约定必须为空</li><li>LDT</li><li>属性差不多同上，但只能包含成任务的代码段和数据段等，不包含特殊系统段。</li><li>第一项可以用</li></ul><h3 id="段选择符"><a href="#段选择符" class="headerlink" title="段选择符"></a>段选择符</h3><p><img src="/images/Linux_0.11_chapter4_sector.png" alt="Linux_0.11_chapter4_sector.png"></p><ul><li><p>以前的段寄存器并不直接用于寻址，而是提供index，并隐含不可直接操作的Cache部分，只有在切换的时候才更新，加快处理速度。<br><img src="/images/Linux_0.11_chapter4_sector_CDEFGS.png" alt="Linux_0.11_chapter4_sector_CDEFGS.png"></p></li><li><p>各个8字节的描述符概括图，主要三个字段的段基址、段限长和段属性一般由编译器、链接器、加载器和操作系统来创建。详细定义参考Intel开发者手册等。开发者需要理解芯片设计者的本意而后根据自己的实际情况来创建。<br><img src="/images/Linux_0.11_chapter4_SD_common.png" alt="Linux_0.11_chapter4_SD_common.png"></p></li><li><p>除了代码段、数据段和堆栈段等一般的段还有系统描述符类型，包括LDT、TSS、调用门、中断门、陷阱门和任务门。</p></li></ul><h3 id="分页机制"><a href="#分页机制" class="headerlink" title="分页机制"></a>分页机制</h3><ul><li>作为分段机制的补充和”串联选择”,如果不开启则分段过程后地址将直接放在系统总线上。</li><li>提供OS高级功能虚拟内存的硬件平台。</li><li>提供加强的内存属性保护<br><img src="/images/Linux_0.11_chapter4_address_to_real_address.png" alt="Linux_0.11_chapter4_address_to_real_address.png"><h1 id="各种保护措施"><a href="#各种保护措施" class="headerlink" title="各种保护措施"></a>各种保护措施</h1><img src="/images/Linux_0.11_chapter4_protect_for_segment_and_page.png" alt="Linux_0.11_chapter4_protect_for_segment_and_page.png"><h2 id="段级保护"><a href="#段级保护" class="headerlink" title="段级保护"></a>段级保护</h2><blockquote><p>所有违反保护的操作都将导致产生一个异常，要么进行异常过程处理，要么down掉Reset。</p></blockquote></li></ul><h3 id="段界限检查"><a href="#段界限检查" class="headerlink" title="段界限检查"></a>段界限检查</h3><ul><li>主要是GDT、LDT、IDT长度限制和常规描述符的段限长控制<h3 id="段类型检查"><a href="#段类型检查" class="headerlink" title="段类型检查"></a>段类型检查</h3><blockquote><p>谈谈绕过方法的个人猜想，当不讨论分页机制时候或者说没有开启分页的时候，分段机制作为最核心的内存保护而存在于CPU内部。诸如下面的保护都是在CPU内部完成的，当我们想要修改内存中数据怎么办呢？首先需要取得所有权限，即0特权级，而后建立新的描述符指向我们想要修改的内存区域(例如某某进程的密码等等),而后即可绕过”他人的防守”径直地向系统总线上发控制信号来读写内存数据。而当其他进程再去操作的时候拿到的东西已经被”掉过包”了。这也是为什么内存攻防中能够提权的漏洞越来越得到重视的原因之一，由于shellcode等已经被”共享”得差不多了，也大同小异。为了获取系统权限，必须不断Fuzzing冲击内存，突破程序逻辑….</p></blockquote></li></ul><ul><li>根据描述符属性字段中的tpye进行匹配</li><li>当一个描述符的选择符被加进段寄存器时</li><li>CS寄存器只能被加载进一个可执行段的选择符;</li><li>不可读可执行的选择符不能加进数据段选择子;</li><li>只有可写数据段才能被加进SS寄存器  </li><li>当指令访问段时</li><li>任何指令不能写一个可执行段</li><li>任何指令不能写一个可写位没有置位的数据段</li><li>任何指令不能读一个可执行段，除非可执行段设置了可读标志</li></ul><h3 id="特权级检查"><a href="#特权级检查" class="headerlink" title="特权级检查"></a>特权级检查</h3><ul><li>CPL的值即为CS和SS寄存器的低2位(保护模式中要求任何时候代码段和堆栈段的CPL一致) </li><li>关于更详细和细致地代码段特权级检查可参考<a href="http://blog.csdn.net/trochiluses/article/details/8968386">代码一致性和非一致性</a></li><li>数据段中主要是CPL、RPL和DPL的逻辑比较</li><li>属性字段的匹配</li></ul><h3 id="指令集限制"><a href="#指令集限制" class="headerlink" title="指令集限制"></a>指令集限制</h3><ul><li>主要是非特权程序不能执行特权指令</li></ul><h2 id="页级保护"><a href="#页级保护" class="headerlink" title="页级保护"></a>页级保护</h2><p><img src="/images/Linux_0.11_chapter4_page_check.png" alt="Linux_0.11_chapter4_page_check.png"></p><h1 id="中断和异常处理"><a href="#中断和异常处理" class="headerlink" title="中断和异常处理"></a>中断和异常处理</h1><blockquote><p>硬件机制和软件处理两者完美结合才能完成一个良好的系统的设计</p></blockquote><p><img src="/images/Linux_0.11_chapter4_interrupt_vector.png" alt="Linux_0.11_chapter4_interrupt_vector.png"></p><ul><li>把中断看作是另一个控制流程即可,从逻辑上符合人类思考。</li><li>需要提前填充处理过程的地址，处理器自动加载并跳转执行。</li><li>中断源来自硬件(INTR和NMI引脚)和软件(指令各种内部错误和主动发起的int n软中断)</li><li>中断优先级规定<br><img src="/images/Linux_0.11_chapter4_interrupt_priority.png" alt="Linux_0.11_chapter4_interrupt_priority.png"> </li><li>IDT可以存放三种门描述符<blockquote><p>这些描述符相当于也只是指针，真正的过程实现不能直接找到,需要继续定位</p></blockquote></li></ul><ul><li>中断门:含有长指针，即段选择子和偏移，显式调用中断门时候的长指针偏移被忽略，因为此处才是真正的入口地址</li><li>陷阱门:同上，但进入后eflags状态寄存器IF标志位不置位</li><li>任务门:用于任务切换，作用于tss</li><li>异常和中断处理过程与以前的差不多，只是会增加更多检查以及切换的时候多压栈更多数据结构和追踪量，并还可以进行任务切换，相当于常规调度了。</li></ul><h1 id="任务管理"><a href="#任务管理" class="headerlink" title="任务管理"></a>任务管理</h1><ul><li>任务有多种叫法，也可叫进程，是相对于程序而言的。针对磁盘上(或更泛统称非易失性存储器)和内存中(CPU可直接寻址并进行取指译码执行过程的存储单元)目标文件的布局等等特性概念来划分。</li><li>在OS概念中PCB+程序=进程</li><li>Intel芯片提供硬件级别的任务切换(处理器自动保存和加载tss)</li><li>任务状态包括但不限于:</li><li>所有通用寄存器和段寄存器信息</li><li>EFLAGS、EIP、CR3、TR和LDTR</li><li>段寄存器指定的任务当前执行空间</li><li>I/0映射位图基地址和I/O位图信息(TSS)</li><li>特权级0、1和2的堆栈指针(TSS)</li><li>链接至前一个任务的链指针(TSS，主要用于嵌套中断)</li><li>详细可继续参考Intel手册…</li></ul><h1 id="保护模式编程的初始化"><a href="#保护模式编程的初始化" class="headerlink" title="保护模式编程的初始化"></a>保护模式编程的初始化</h1><blockquote><p>进入保护模式之前必须搭建起环境</p></blockquote><ul><li>IDT</li><li>GDT</li><li>TSS</li><li>LDT</li><li>若开启分页，则最少一个页目录和一个页表可用</li><li>处理器切换到保护模式运行的代码段</li><li>含有中断和异常处理的代码模块</li><li>初始化GDTR、IDTR、CR3等</li><li>而后置位CR0的PE位并jmp清空流水线即可运行在保护模式下<h1 id="一个简单的多任务内核例子"><a href="#一个简单的多任务内核例子" class="headerlink" title="一个简单的多任务内核例子"></a>一个简单的多任务内核例子</h1></li></ul><blockquote><p>先安装个环境跑一下….   </p></blockquote><h2 id="囧囧囧o（╯□╰）o"><a href="#囧囧囧o（╯□╰）o" class="headerlink" title="囧囧囧ｏ（╯□╰）ｏ"></a>囧囧囧ｏ（╯□╰）ｏ</h2><ul><li>由于这两天赵博士维护的开源网站<a href="http://www.oldlinux.org/">www.oldlinux.org</a>貌似突然down掉了，真是资料到用的时候方恨没下载。不过幸好我早期下载了一份<strong>Linux-0.11-040305</strong>。按照网上的教程手动编译源码后进入这个文件夹，翻到书最后一章，仿照并依据自身实际情况修改，如下图所示，终于跑上了系统。<br><img src="/images/Linux_0.11_chapter4_run_linux_0.11_hd.png" alt="Linux_0.11_chapter4_run_linux_0.11_hd.png"></li><li>我的配置<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">rutk1t0r@Rutk1t0r:linux-0.11-040305$ cat bochsrc-hd-new.bxrc </span><br><span class="line">romimage: file=<span class="variable">$BXSHARE</span>/BIOS-bochs-latest</span><br><span class="line">megs: 16</span><br><span class="line">vgaromimage: file=/usr/<span class="built_in">local</span>/share/bochs/VGABIOS-lgpl-latest</span><br><span class="line">floppya: 1_44=bootimage-0.11-hd.new, status=inserted</span><br><span class="line">ata0-master: <span class="built_in">type</span>=disk, path=<span class="string">&quot;hdc-0.11.img&quot;</span>, mode=flat, cylinders=121, heads=16, spt=63</span><br><span class="line">boot: a</span><br><span class="line">rutk1t0r@Rutk1t0r:linux-0.11-040305$ bochs -f ./bochsrc-hd-new.bxrc</span><br></pre></td></tr></table></figure><img src="/images/Linux_0.11_chapter4_run_linux_0.11_bochs_self.png" alt="Linux_0.11_chapter4_run_linux_0.11_bochs_self.png"></li></ul><blockquote><p>接下来应该编译这个小程序并融合进去，看是否有错误…</p></blockquote><h2 id="自个儿来折腾"><a href="#自个儿来折腾" class="headerlink" title="自个儿来折腾"></a>自个儿来折腾</h2><ul><li>由于这两天我一直在折腾这个事情，收获也颇丰富，因此决定来一个番外篇,请转<a href="http://www.rutk1t0r.org/2016/11/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E7%95%AA%E5%A4%96%E7%AF%87/">这篇文章</a>。<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1></li><li>Intel的保护模式确实很复杂，如果想要完全深入理解必须要动手鼓捣鼓捣</li><li><a href="http://www.tinylab.org/linux-0.11-lab/">泰晓科技</a>有大牛已经搭建好了平台，只需简单make即可，并且linux 0.11系统也具有gcc。</li></ul>]]></content>
-    
-    <summary type="html">
-    
-      &lt;blockquote&gt;
-&lt;p&gt;介绍Intel 80X86保护模式及其编程&lt;/p&gt;
-&lt;/blockquote&gt;
-    
-    </summary>
-    
-      <category term="study" scheme="https://embpgp.github.io/categories/study/"/>
-    
-    
       <category term="C/C++" scheme="https://embpgp.github.io/tags/C-C/"/>
-    
-      <category term="Linux kernel" scheme="https://embpgp.github.io/tags/Linux-kernel/"/>
-    
-      <category term="LDD" scheme="https://embpgp.github.io/tags/LDD/"/>
     
       <category term="Asm" scheme="https://embpgp.github.io/tags/Asm/"/>
     
