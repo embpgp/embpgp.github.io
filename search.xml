@@ -1719,4 +1719,44 @@
         <tag>网络</tag>
       </tags>
   </entry>
+  <entry>
+    <title>DIM-SUM学习</title>
+    <url>/embpgp.github.io/2022/01/16/%E5%BC%80%E5%B9%B4%E7%AC%AC%E4%B8%80%E7%AF%87%20DIM-SUM%20%E5%85%A5%E9%97%A8/</url>
+    <content><![CDATA[<blockquote>
+<p>DIM-SUM内核学习,先跑起来吧。</p>
+</blockquote>
+<span id="more"></span>
+<hr>
+<p><strong>参考资料</strong></p>
+<ul>
+<li><a href="%5Bhttps://gitee.com/xiebaoyou/dim-sum%5D" title="DIM-SUM">DIM-SUM仓库</a></li>
+</ul>
+<hr>
+<h1 id="缘由"><a href="#缘由" class="headerlink" title="缘由"></a>缘由</h1><p>之前很早有关注过作者，后面逐渐听说有设计操作系统内核的计划，今年偶然听说出了一本新书，就买来学习了。</p>
+<h1 id="跑起来"><a href="#跑起来" class="headerlink" title="跑起来"></a>跑起来</h1><p>拿到书籍后里面有读者服务的二维码，所以就从那里面先拿到了源码包以及《答案.docx》。后续可以直接参考gitee上的教程跑。</p>
+<h2 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h2><blockquote>
+<p>编译少库的问题自行搜索解决即可，我的系统是ubuntu 20.04</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rutk1t0r@ubuntu:~/dev/dim-sum/dim-sum/src$ ./build.sh </span><br><span class="line">  CHK     include/linux/version.h</span><br><span class="line">  CHK     include/generated/utsrelease.h</span><br><span class="line">  CALL    scripts/checksyscalls.sh</span><br><span class="line">grep: scripts/../arch/x86/syscalls/syscall_32.tbl: No such file or directory</span><br><span class="line">  CHK     include/generated/compile.h</span><br><span class="line">  CC      kernel/<span class="built_in">sched</span>/core.o</span><br><span class="line">  LD      kernel/<span class="built_in">sched</span>/built-in.o</span><br><span class="line">  LD      kernel/built-in.o</span><br><span class="line">  LD      vmlinux.o</span><br><span class="line">  MODPOST vmlinux.o</span><br><span class="line">WARNING: modpost: Found 20 section mismatch(es).</span><br><span class="line">To see full details build your kernel with:</span><br><span class="line"><span class="string">&#x27;make CONFIG_DEBUG_SECTION_MISMATCH=y&#x27;</span></span><br><span class="line">  GEN     .version</span><br><span class="line">  CHK     include/generated/compile.h</span><br><span class="line">  UPD     include/generated/compile.h</span><br><span class="line">  CC      init/version.o</span><br><span class="line">  LD      init/built-in.o</span><br><span class="line">  LD      .tmp_vmlinux1</span><br><span class="line">  KSYM    .tmp_kallsyms1.S</span><br><span class="line">  AS      .tmp_kallsyms1.o</span><br><span class="line">  LD      .tmp_vmlinux2</span><br><span class="line">  KSYM    .tmp_kallsyms2.S</span><br><span class="line">  AS      .tmp_kallsyms2.o</span><br><span class="line">  LD      vmlinux</span><br><span class="line">  SYSMAP  System.map</span><br><span class="line">  SYSMAP  .tmp_System.map</span><br><span class="line">  OBJCOPY arch/arm64/boot/Image</span><br><span class="line">  Kernel: arch/arm64/boot/Image is ready</span><br><span class="line">rutk1t0r@ubuntu:~/dev/dim-sum/dim-sum/src$ </span><br></pre></td></tr></table></figure>
+<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rutk1t0r@ubuntu:~/dev/dim-sum/dim-sum/src$ ./run.sh </span><br><span class="line">WARNING: Image format was not specified <span class="keyword">for</span> <span class="string">&#x27;./dim-sum.img&#x27;</span> and probing guessed raw.</span><br><span class="line">         Automatically detecting the format is dangerous <span class="keyword">for</span> raw images, write operations on block 0 will be restricted.</span><br><span class="line">         Specify the <span class="string">&#x27;raw&#x27;</span> format explicitly to remove the restrictions.</span><br><span class="line">W: /etc/qemu-ifup: no bridge <span class="keyword">for</span> guest interface found</span><br><span class="line">simple console is ready.</span><br><span class="line">timer_rate is 62500000.</span><br><span class="line">io scheduler noop registered(default)</span><br><span class="line">xby_debug <span class="keyword">in</span> virtio_mmio_setup, 1, 554d4551.</span><br><span class="line">xby_debug <span class="keyword">in</span> virtio_mmio_setup, 2, 554d4551.</span><br><span class="line">xby_debug <span class="keyword">in</span> virtio_dev_match, id-&gt;vendor:-1, id-&gt;device:2.</span><br><span class="line">xby_debug <span class="keyword">in</span> virtio_dev_match, dev-&gt;vendor:1431127377, dev-&gt;device:2.</span><br><span class="line">xby_debug <span class="keyword">in</span> virtblk_probe, vda</span><br><span class="line">......</span><br><span class="line">LWIP-1.4.1 TCP/IP initialized.</span><br><span class="line">xby_debug <span class="keyword">in</span> __cpu_launch, 1.</span><br><span class="line">xby_debug <span class="keyword">in</span> psci_launch_cpu, pa is 0000000040158020.</span><br><span class="line">xby_debug <span class="keyword">in</span> __cpu_launch, 2.</span><br><span class="line">xby_debug <span class="keyword">in</span> psci_launch_cpu, pa is 0000000040158020.</span><br><span class="line">xby_debug <span class="keyword">in</span> __cpu_launch, 3.</span><br><span class="line">xby_debug <span class="keyword">in</span> psci_launch_cpu, pa is 0000000040158020.</span><br><span class="line">	                                                    </span><br><span class="line">	<span class="comment">##############################################</span></span><br><span class="line">	<span class="comment">#                                            #</span></span><br><span class="line">	<span class="comment">#  *   *   ***   *****  ****    ***   *****  #</span></span><br><span class="line">	<span class="comment">#  *   *  *   *    *    *   *  *   *    *    #</span></span><br><span class="line">	<span class="comment">#  *   *  *   *    *    *   *  *   *    *    #</span></span><br><span class="line">	<span class="comment">#  *****  *   *    *    ****   *   *    *    #</span></span><br><span class="line">	<span class="comment">#  *   *  *   *    *    *      *   *    *    #</span></span><br><span class="line">	<span class="comment">#  *   *  *   *    *    *      *   *    *    #</span></span><br><span class="line">	<span class="comment">#  *   *   ***     *    *       ***     *    #</span></span><br><span class="line">	<span class="comment">#                                            #</span></span><br><span class="line">	<span class="comment">##############################################</span></span><br><span class="line">	                                              </span><br><span class="line">[dim-sum@hot pot]<span class="comment"># xby_debug in task2, enter</span></span><br><span class="line">xby_debug <span class="keyword">in</span> task1, enter</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><img src="/images/DIM-SUM_shell_ps.png" alt="DIM-SUM_shell_ps.png"></p>
+<blockquote>
+<p>这里是修改过后的代码，将通过creat_process实现执行子命令</p>
+</blockquote>
+<h1 id="展望"><a href="#展望" class="headerlink" title="展望"></a>展望</h1><ul>
+<li>实现sys_wait4回收task_struct等更丰富的接口实现</li>
+<li>支持x86等更丰富的arch</li>
+<li>用户态程序</li>
+<li>理解作者的问题和《答案.docx》</li>
+<li>…</li>
+</ul>
+]]></content>
+      <categories>
+        <category>study</category>
+      </categories>
+      <tags>
+        <tag>DIM-SUM</tag>
+        <tag>OS内核</tag>
+      </tags>
+  </entry>
 </search>
