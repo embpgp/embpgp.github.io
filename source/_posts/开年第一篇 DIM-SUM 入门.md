@@ -13,7 +13,7 @@ tags:
 <!--more-->
 --- 
 **参考资料**
-- [DIM-SUM仓库]([https://gitee.com/xiebaoyou/dim-sum] "DIM-SUM")
+- [DIM-SUM仓库](https://gitee.com/xiebaoyou/dim-sum)
 ---
 
 # 缘由
