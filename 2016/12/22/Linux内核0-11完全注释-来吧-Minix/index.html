@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="认真学习Minix文件系统!通过一个实例手动分析Minix。具体源码实现由于考虑其他情况将很复杂。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核0.11完全注释 来吧,Minix!">
+<meta property="og:url" content="https://embpgp.github.io/2016/12/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E6%9D%A5%E5%90%A7-Minix/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="认真学习Minix文件系统!通过一个实例手动分析Minix。具体源码实现由于考虑其他情况将很复杂。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_mkfs_dev_fd1_360.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_mkfs_dev_fd1_360_do.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_360K_fd_layout.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_360K_Boot.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_360K_super_block.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_360K_super_block_data.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_1.0_inode_struct.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_1.0_inode_struct_do.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_1.0_inode_struct_imode.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_1.0_dir_entry_struct.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_1.0_find_file_by_name.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_1.0_find_file_by_name_words.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_fs_hard_links_not_allow.png">
+<meta property="og:image" content="https://embpgp.github.io/images/linux_0.11_fs_usr_root_dir.png">
+<meta property="og:image" content="https://embpgp.github.io/images/linux_0.11_fs_hard_link_not_allow.png">
+<meta property="og:image" content="https://embpgp.github.io/images/linux_0.11_fs_hard_link_allow_codes.png">
+<meta property="og:image" content="https://embpgp.github.io/images/linux_0.11_fs_hard_link_allow_test.png">
+<meta property="og:image" content="https://embpgp.github.io/images/linux_0.11_fs_hard_link_allow_new_file.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_fs_hard_link_error.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_fs_no_symbolic_link.png">
+<meta property="article:published_time" content="2016-12-22T14:44:04.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.963Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="Linux kernel">
+<meta property="article:tag" content="LDD">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta property="article:tag" content="Asm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/Linux_0.11_Minix_mkfs_dev_fd1_360.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2016/12/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E6%9D%A5%E5%90%A7-Minix/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Linux内核0.11完全注释 来吧,Minix! | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2016/12/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E6%9D%A5%E5%90%A7-Minix/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux内核0.11完全注释 来吧,Minix!
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-12-22 22:44:04" itemprop="dateCreated datePublished" datetime="2016-12-22T22:44:04+08:00">2016-12-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>5.4k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>5 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>认真学习Minix文件系统!通过一个实例手动分析Minix。具体源码实现由于考虑其他情况将很复杂。</p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<h1 id="mkfs-a-minix"><a href="#mkfs-a-minix" class="headerlink" title="mkfs a minix"></a>mkfs a minix</h1><p>如下图所示,先不考虑什么是i节点等等，我们只需要知道目前手动创建了一个文件系统，大小为360KB,并且拷贝了一个hello.c文件到其根目录下。<br><img src="/images/Linux_0.11_Minix_mkfs_dev_fd1_360.png" alt="Linux_0.11_Minix_mkfs_dev_fd1_360.png"><br><img src="/images/Linux_0.11_Minix_mkfs_dev_fd1_360_do.png" alt="Linux_0.11_Minix_mkfs_dev_fd1_360_do.png"></p>
+<h1 id="再来简介Minix文件系统格式"><a href="#再来简介Minix文件系统格式" class="headerlink" title="再来简介Minix文件系统格式"></a>再来简介Minix文件系统格式</h1><h2 id="引导块"><a href="#引导块" class="headerlink" title="引导块"></a>引导块</h2><p>根据Minix文件系统的设计，我们上面创建的360KB的软盘总共分为6个部分，图中的块是以1KB为单位的，这是设计需求，注意区别于硬盘中的扇区。其中约定第一个块为引导块，虽然引导区约定为512字节但是在这里最小单位为1K,浪费也就不在乎了。即使不引导也得有引导标志以符合标准。<br><img src="/images/Linux_0.11_Minix_360K_fd_layout.png" alt="Linux_0.11_Minix_360K_fd_layout.png"></p>
+<ul>
+<li>注意0x200偏移前面的0xaa55。<br><img src="/images/Linux_0.11_Minix_360K_Boot.png" alt="Linux_0.11_Minix_360K_Boot.png"><h2 id="超级块"><a href="#超级块" class="headerlink" title="超级块"></a>超级块</h2>仅仅知道这是一块可用的软盘还是不够的，必须还得知道到底我们需要的数据存在什么地方。因此Minix文件系统在设计的时候用一个数据结构来描述整个可用设备的具体情况。<br><img src="/images/Linux_0.11_Minix_360K_super_block.png" alt="Linux_0.11_Minix_360K_super_block.png"><br>为什么要分内存中字段和磁盘中字段呢?本应该磁盘中存储这些数据结构是够了，但是操作系统为了更快更好地管理文件系统便用”以空间来换时间”的思想来操作数据。下面继续分析我们自己创建的360KB的软盘。在bochs终端键入<code>hexdump /dev/fd1 | more</code>。加more是由于终端不支持拉屏只能一帧帧看了。我们按空格键快速定位到偏移0x400。刚好是1KB后的块，即第1个块(引导区约定为0块)。对照着上面的数据结构照葫芦画瓢来解析各个字段(注意intel小端格式的显示)。</li>
+<li>0x0078 short 16位 对应文件系统中i节点总数目 十进制为120 刚好对应创建文件系统的时候显示的结果。</li>
+<li>0x0168 short 16位 逻辑块的数目　十进制为360 实质上在Minix 1.0设计的时候逻辑块大小等于磁盘块大小</li>
+<li>0x0001 short 16位 i节点位图占块数目　1表示仅仅用一个块就可以描述所有i就节点映射情况</li>
+<li>0x0001 short 16位 逻辑块位图占块数目 同上</li>
+<li>0x0008　short 16位 表示数据区第一个块号 真正保存文件内容的块区</li>
+<li>0x0000 short 16位 在Minix 1.0中恒等于0，为后期改版做准备。</li>
+<li>0x10081c00 long 32位 最大文件长度，书中注释到”显然有误”,此字段应该是mkfs程序填充的，但是后面学习了i节点后进过计算个人认为没有那么”显然”,mkfs程序仅仅是用双重间接块号来计算的，即512*512*1KB = 256MB=268966912=0x10081c00字节。但是实际情况是可以再存多一点的。加上前面的直接块号和一次间接块号。但是从内存字段的定义来看答案又不一样…(不触碰原则就没事儿,灵活点儿)</li>
+<li>0x137f short 16位 Magic Number　约定值，类似于本版本文件系统的标志。<br><img src="/images/Linux_0.11_Minix_360K_super_block_data.png" alt="Linux_0.11_Minix_360K_super_block_data.png"></li>
+<li>关于内存中的字段含义参见原书或者Minix文件系统原理，对照着功能实现源码分析更好。</li>
+<li>超级块在内核初始化的时候会被加载并分析，主要是为了加载根文件系统，或者mount其他文件系统和设备。</li>
+</ul>
+<h2 id="i节点位图和逻辑块位图"><a href="#i节点位图和逻辑块位图" class="headerlink" title="i节点位图和逻辑块位图"></a>i节点位图和逻辑块位图</h2><p>图中偏移量0x800和0xc00分别表示，均为0x0007,表示有三个块被占用，当然约定第0比特不能用，直接被设置为1。所以文件系统中有两个块被使用。</p>
+<h2 id="i节点"><a href="#i节点" class="headerlink" title="i节点"></a>i节点</h2><p>文件系统中最重要的数据结构!!!和超级块类似，磁盘中仅仅保存最精简的字段，内存中其他字段将经常被使用。<br><img src="/images/Linux_0.11_Minix_1.0_inode_struct.png" alt="Linux_0.11_Minix_1.0_inode_struct.png"><br>看下图我们开始时候创建的360KB的软盘。<br><img src="/images/Linux_0.11_Minix_1.0_inode_struct_do.png" alt="Linux_0.11_Minix_1.0_inode_struct_do.png"><br>继续照葫芦画瓢~由上述定义可以知道,inode在磁盘空间大小为32字节，所以一个块(1024字节)能够存1024/32=32个数据结构，因此4个块就刚好是128个i节点。其中的4是块4、5、6、7。块0引导,块1为super_block。块2、3分别是位图。块8就是真正的数据部分了。找到偏移为0x1000(第4块)。</p>
+<ul>
+<li>0x41ed 表示目录文件权限为755。</li>
+<li>0x0000 表示uid为0，即root用户</li>
+<li>0x00000030 表示文件长度为0x30</li>
+<li>0x585d223b 时间戳</li>
+<li>0x00 gid为0,表示root用户组</li>
+<li>0x02 链接数</li>
+<li>0x08　数据区域的第一个块位置，后续均为0表示没有更多数据块了。<br><img src="/images/Linux_0.11_Minix_1.0_inode_struct_imode.png" alt="Linux_0.11_Minix_1.0_inode_struct_imode.png"><br>我们根据目录项的数据结构定义跳到第8块逻辑块继续追踪。即偏移量为0x2000处。</li>
+<li>第一项</li>
+<li>0x0001 为i节点号(刚刚才跳过来的地方)</li>
+<li>0x2e 即为’.’，表示当前目录</li>
+<li>第二项</li>
+<li>0x0001 为i节点号</li>
+<li>0x2e2e 即为”..”，表示上层目录，因为这是根目录，因此”..”=”.”</li>
+<li>第三项</li>
+<li>0x0002 为i节点号(待会儿分析）</li>
+<li>一波ascii码，表示”hello.c”</li>
+</ul>
+<p>关于如何根据文件名称定位一个具体文件算法可以参见源码，原理参见书。<br><img src="/images/Linux_0.11_Minix_1.0_dir_entry_struct.png" alt="Linux_0.11_Minix_1.0_dir_entry_struct.png"></p>
+<p>然后接着上面把hello.c文件也分析一下,如果已经定位了到刚刚的第三项，根据inode为2定位到其inode数据结构。</p>
+<ul>
+<li>0x8180 表示普通文件权限为600,注意文件类型定义为8进制数</li>
+<li>0x0000 root</li>
+<li>0x0000004a 表示文件大小为74字节</li>
+<li>0x585d223b 时间戳</li>
+<li>0x01 链接数</li>
+<li>0x00 root</li>
+<li>0x09 数据部分第一个块区，内容不多因此一个块足够。</li>
+</ul>
+<p>定位到偏移量为0x2400处，将这一大串ascii码翻译过来就是hello.c文件的具体内容。</p>
+<h1 id="定位文件基本原理"><a href="#定位文件基本原理" class="headerlink" title="定位文件基本原理"></a>定位文件基本原理</h1><p><img src="/images/Linux_0.11_Minix_1.0_find_file_by_name.png" alt="Linux_0.11_Minix_1.0_find_file_by_name.png"><br><img src="/images/Linux_0.11_Minix_1.0_find_file_by_name_words.png" alt="Linux_0.11_Minix_1.0_find_file_by_name_words.png"></p>
+<blockquote>
+<p>现在来分析为什么说硬链接不能是目录以及不能跨文件系统而软链接就可以呢…</p>
+</blockquote>
+<h1 id="sys-link系统调用"><a href="#sys-link系统调用" class="headerlink" title="sys_link系统调用"></a>sys_link系统调用</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//// 为文件建立一个文件名目录项</span></span><br><span class="line"><span class="comment">// 为一个已存在的文件创建一个新链接(也称为硬链接 - hard link)</span></span><br><span class="line"><span class="comment">// 参数：oldname - 原路径名；newname - 新的路径名</span></span><br><span class="line"><span class="comment">// 返回：若成功则返回0，否则返回出错号。</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sys_link</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> * oldname, <span class="keyword">const</span> <span class="keyword">char</span> * newname)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dir_entry</span> * <span class="title">de</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">m_inode</span> * <span class="title">oldinode</span>, * <span class="title">dir</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">buffer_head</span> * <span class="title">bh</span>;</span></span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">char</span> * basename;</span><br><span class="line">	<span class="keyword">int</span> namelen;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 首先对原文件名进行有效性验证，它应该存在并且不是一个目录名。所以我们先取得原文件</span></span><br><span class="line">    <span class="comment">// 路径名对应的i节点oldnode.若果为0，则表示出错，返回出错号。若果原路径名对应的是</span></span><br><span class="line">    <span class="comment">// 一个目录名，则放回该i节点，也返回出错号。</span></span><br><span class="line">	oldinode=namei(oldname);</span><br><span class="line">	<span class="keyword">if</span> (!oldinode)</span><br><span class="line">		<span class="keyword">return</span> -ENOENT;</span><br><span class="line">	<span class="keyword">if</span> (S_ISDIR(oldinode-&gt;i_mode)) &#123;</span><br><span class="line">		iput(oldinode);</span><br><span class="line">		<span class="keyword">return</span> -EPERM;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 然后查找新路径名的最顶层目录的i节点dir，并返回最后的文件名及其长度。如果目录的</span></span><br><span class="line">    <span class="comment">// i节点没有找到，则放回原路径名的i节点，返回出错号。如果新路径名中不包括文件名，</span></span><br><span class="line">    <span class="comment">// 则放回原路径名i节点和新路径名目录的i节点，返回出错号。</span></span><br><span class="line">	dir = dir_namei(newname,&amp;namelen,&amp;basename);</span><br><span class="line">	<span class="keyword">if</span> (!dir) &#123;</span><br><span class="line">		iput(oldinode);</span><br><span class="line">		<span class="keyword">return</span> -EACCES;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (!namelen) &#123;</span><br><span class="line">		iput(oldinode);</span><br><span class="line">		iput(dir);</span><br><span class="line">		<span class="keyword">return</span> -EPERM;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 我们不能跨设备建立硬链接。因此如果新路径名顶层目录的设备号与原路径名的设备号不</span></span><br><span class="line">    <span class="comment">// 一样，则放回新路径名目录的i节点和原路径名的i节点，返回出错号。另外，如果用户没</span></span><br><span class="line">    <span class="comment">// 有在新目录中写的权限，则也不能建立连接，于是放回新路径名目录的i节点和原路径名</span></span><br><span class="line">    <span class="comment">// 的i节点，返回出错号。</span></span><br><span class="line">	<span class="keyword">if</span> (dir-&gt;i_dev != oldinode-&gt;i_dev) &#123;</span><br><span class="line">		iput(dir);</span><br><span class="line">		iput(oldinode);</span><br><span class="line">		<span class="keyword">return</span> -EXDEV;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (!permission(dir,MAY_WRITE)) &#123;</span><br><span class="line">		iput(dir);</span><br><span class="line">		iput(oldinode);</span><br><span class="line">		<span class="keyword">return</span> -EACCES;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 现在查询该新路径名是否已经存在，如果存在则也不能建立链接。于是释放包含该已存在</span></span><br><span class="line">    <span class="comment">// 目录项的高速缓冲块，放回新路径名目录的i节点和原路径名的i节点，返回出错号。</span></span><br><span class="line">	bh = find_entry(&amp;dir,basename,namelen,&amp;de);</span><br><span class="line">	<span class="keyword">if</span> (bh) &#123;</span><br><span class="line">		brelse(bh);</span><br><span class="line">		iput(dir);</span><br><span class="line">		iput(oldinode);</span><br><span class="line">		<span class="keyword">return</span> -EEXIST;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 现在所有条件都满足了，于是我们在新目录中添加一个目录项。若失败则放回该目录的</span></span><br><span class="line">    <span class="comment">// i节点和原路径名的i节点，返回出错号。否则初始设置该目录项的i节点号等于原路径名的</span></span><br><span class="line">    <span class="comment">// i节点号，并置包含该新添加目录项的缓冲块已修改标志，释放该缓冲块，放回目录的i节点。</span></span><br><span class="line">	bh = add_entry(dir,basename,namelen,&amp;de);</span><br><span class="line">	<span class="keyword">if</span> (!bh) &#123;</span><br><span class="line">		iput(dir);</span><br><span class="line">		iput(oldinode);</span><br><span class="line">		<span class="keyword">return</span> -ENOSPC;</span><br><span class="line">	&#125;</span><br><span class="line">	de-&gt;inode = oldinode-&gt;i_num;</span><br><span class="line">	bh-&gt;b_dirt = <span class="number">1</span>;</span><br><span class="line">	brelse(bh);</span><br><span class="line">	iput(dir);</span><br><span class="line">    <span class="comment">// 再将原节点的链接计数加1，修改其改变时间为当前时间，并设置i节点已修改标志。最后</span></span><br><span class="line">    <span class="comment">// 放回原路径名的i节点，并返回0（成功）。</span></span><br><span class="line">	oldinode-&gt;i_nlinks++;</span><br><span class="line">	oldinode-&gt;i_ctime = CURRENT_TIME;</span><br><span class="line">	oldinode-&gt;i_dirt = <span class="number">1</span>;</span><br><span class="line">	iput(oldinode);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>根据源代码分析程序首先获取源(old)文件inode，如果不存在就直接返回了，如果存在则继续判断是否为目录，如果是则放回inode并返回。那么到这里几乎就可以回答为什么不能为目录了(因为源码实现不允许呀),但是仍然要刨根问底，假定有”开发者”绕过了这么策略操作系统将如何处理呢?先继续看。</li>
+<li>之后就是检查目的(new)文件的顶层目录权限了，如果没问题将继续往下走</li>
+<li>再后就是说的不能进行跨文件系统的硬链接…</li>
+<li>如果没问题的话就在目的文件的目录下建立一个链接文件–&gt;本质上仅仅在其目录下新增了一个dir_entry结构体并使得其inode字段指向源文件m_inode的i_num字段,将inode的i_nlinkds字段++。</li>
+<li>现在我们假设某”开发者”先绕过这个检查策略(自己修改这段源码然后创建目录硬链接或者二进制大牛自己手动输入都可)，看程序会发生什么…</li>
+</ul>
+<ul>
+<li><p>可以看到至少shell是不允许我们创建的<br><img src="/images/Linux_0.11_fs_hard_links_not_allow.png" alt="Linux_0.11_fs_hard_links_not_allow.png"></p>
+</li>
+<li><p>开始建立一些测试文件,由于忘了linux 0.11版本仅仅允许最多14个字符的文件名字，导致有些名字不全。删除也出类似前面的问题，说不是owner。在写下这段文字之前我做的测试成功了但我自己建立的是根目录的硬链接，导致切换新的内核rm的时候把根文件系统删掉了。。。又重新复制了一个hdc文件过来。<br>图中的<code>dir_for_hard_l</code>(其实是dir_for_hard_link)是我们想要链接的目录(为了保险起见了，怕忘了又把根目录删了…)。<code>hard_link_not_</code>是C语言源程序，但是gcc编译的时候报错，因此我重定向了一个短的.c文件。<br><img src="/images/linux_0.11_fs_usr_root_dir.png" alt="linux_0.11_fs_usr_root_dir.png"></p>
+</li>
+<li><p>用来测试没有修改内核代码的时候能否创建目录硬链接。为了简单我也没有检测main函数的具体参数合法性了。看结果没有创建成功，而返回值-1恰恰是宏定义EPERM的负数，说明内核检测到了目录问题。<br><img src="/images/linux_0.11_fs_hard_link_not_allow.png" alt="linux_0.11_fs_hard_link_not_allow.png"></p>
+</li>
+<li><p>我修改了这段代码，然后重新编译内核代码看看吧。<br><img src="/images/linux_0.11_fs_hard_link_allow_codes.png" alt="linux_0.11_fs_hard_link_allow_codes.png"></p>
+</li>
+<li><p>用bash修改失败了，猜测在bash的实现中提前加入了检测，我们用C语言来就成功了。可以看到确实可以创建硬链接的，在这种情况下也没有出问题。<br><img src="/images/linux_0.11_fs_hard_link_allow_test.png" alt="linux_0.11_fs_hard_link_allow_test.png"><br><img src="/images/linux_0.11_fs_hard_link_allow_new_file.png" alt="linux_0.11_fs_hard_link_allow_new_file.png"></p>
+</li>
+</ul>
+<ul>
+<li><p>为了建立”有向循环图”测试之后删除的时候又把文件系统给删了…</p>
+</li>
+<li><p>以下为bash自带bc计算器快速进制转换命令，可以结合hexdump用于自己计算inode偏移自己解析数据结构啥的</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">&quot;obase=10;ibase=16;50BA&quot;</span> | bc -l</span><br><span class="line">20666</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>下面为硬链接为目录出现的问题，我建立了一个指向自己父目录的目录,仅仅cd命令就”吃不消”了，若其他遍历目录树的工具的算法逃不出这个坑的话就死机了估计。因此文件系统的设计要求不能建立目录的硬链接，否则<strong>有可能</strong>导致循环图。<br><img src="/images/Linux_0.11_fs_hard_link_error.png" alt="Linux_0.11_fs_hard_link_error.png"></p>
+</li>
+</ul>
+<ul>
+<li>至于为什么不能跨文件系统，由于link的本质是在建立一个inode指针计数增加的目录项，而inode是各个文件系统分布不一致的，因此不能进行跨文件系统寻址，超级块都不一定一致。</li>
+<li>而软链接在本版本的内核貌似没有实现，其具体实现是在软链接文件的数据块放置真正链接文件的路径字符串，因此系统拿到一个软链接的时候再用文件内容的路径去寻址，因此可以跨文件系统以及目录。<br><img src="/images/Linux_0.11_fs_no_symbolic_link.png" alt="Linux_0.11_fs_no_symbolic_link.png"></li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>当然不可能每次都需要人来手动计算，计算机内部实现了更多算法来存取数据，大概的基本原理就这些，当然内存里面关于缓存和文件表等后期会稍微提一下。刨根问底还是很重要的。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/Linux-kernel/" rel="tag"># Linux kernel</a>
+              <a href="/embpgp.github.io/tags/LDD/" rel="tag"># LDD</a>
+              <a href="/embpgp.github.io/tags/C-C/" rel="tag"># C/C++</a>
+              <a href="/embpgp.github.io/tags/Asm/" rel="tag"># Asm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/12/21/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E5%9C%A8Linix-0-11%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%87%8C%E9%9D%A2%E7%BC%96%E8%AF%91Linux-0-11%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81/" rel="prev" title="Linux内核0.11完全注释 在Linix 0.11操作系统里面编译Linux 0.11内核源码">
+      <i class="fa fa-chevron-left"></i> Linux内核0.11完全注释 在Linix 0.11操作系统里面编译Linux 0.11内核源码
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/12/23/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E5%85%B3%E4%BA%8E%E4%BB%BB%E5%8A%A1%E7%9D%A1%E7%9C%A0%E5%92%8C%E5%94%A4%E9%86%92%E7%9A%84%E7%90%86%E8%A7%A3/" rel="next" title="Linux内核0.11完全注释 关于任务睡眠和唤醒的理解">
+      Linux内核0.11完全注释 关于任务睡眠和唤醒的理解 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#mkfs-a-minix"><span class="nav-number">1.</span> <span class="nav-text">mkfs a minix</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%8D%E6%9D%A5%E7%AE%80%E4%BB%8BMinix%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E6%A0%BC%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">再来简介Minix文件系统格式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E5%AF%BC%E5%9D%97"><span class="nav-number">2.1.</span> <span class="nav-text">引导块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B6%85%E7%BA%A7%E5%9D%97"><span class="nav-number">2.2.</span> <span class="nav-text">超级块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#i%E8%8A%82%E7%82%B9%E4%BD%8D%E5%9B%BE%E5%92%8C%E9%80%BB%E8%BE%91%E5%9D%97%E4%BD%8D%E5%9B%BE"><span class="nav-number">2.3.</span> <span class="nav-text">i节点位图和逻辑块位图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#i%E8%8A%82%E7%82%B9"><span class="nav-number">2.4.</span> <span class="nav-text">i节点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9A%E4%BD%8D%E6%96%87%E4%BB%B6%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">定位文件基本原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#sys-link%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">sys_link系统调用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

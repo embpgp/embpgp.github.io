@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="主要根据www.ilinuxkernel.com站点上的同名pdf文档做实验分析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux_Memory_Address_Mapping">
+<meta property="og:url" content="https://embpgp.github.io/2017/10/14/Linux-Memory-Address-Mapping/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="主要根据www.ilinuxkernel.com站点上的同名pdf文档做实验分析">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/ilk_mm_exam.png">
+<meta property="og:image" content="https://embpgp.github.io/images/ilk_mm_gdtr.png">
+<meta property="og:image" content="https://embpgp.github.io/images/ilk_mm_cr3-one.png">
+<meta property="og:image" content="https://embpgp.github.io/images/ilk_mm_two-three.png">
+<meta property="og:image" content="https://embpgp.github.io/images/ilk_mm_three-four.png">
+<meta property="og:image" content="https://embpgp.github.io/images/ilk_mm_four-phy.png">
+<meta property="article:published_time" content="2017-10-14T10:49:21.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.960Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="Linux kernel">
+<meta property="article:tag" content="LDD">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/ilk_mm_exam.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2017/10/14/Linux-Memory-Address-Mapping/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Linux_Memory_Address_Mapping | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2017/10/14/Linux-Memory-Address-Mapping/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux_Memory_Address_Mapping
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-10-14 18:49:21" itemprop="dateCreated datePublished" datetime="2017-10-14T18:49:21+08:00">2017-10-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3.1k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p> 主要根据<a target="_blank" rel="noopener" href="http://www.ilinuxkernel.com/">www.ilinuxkernel.com</a>站点上的同名pdf文档做实验分析</p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<p>参考:<a target="_blank" rel="noopener" href="https://jin-yang.github.io/post/kernel-memory-virtual-physical-map.html">https://jin-yang.github.io/post/kernel-memory-virtual-physical-map.html</a><br><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/8516021/proc-create-example-for-kernel-module">https://stackoverflow.com/questions/8516021/proc-create-example-for-kernel-module</a><br><a target="_blank" rel="noopener" href="http://www.voidcn.com/article/p-zqylmcig-ty.html">http://www.voidcn.com/article/p-zqylmcig-ty.html</a><br><a target="_blank" rel="noopener" href="http://www.cnblogs.com/hoys/archive/2011/04/10/2011261.html">http://www.cnblogs.com/hoys/archive/2011/04/10/2011261.html</a></p>
+<h1 id="体系架构"><a href="#体系架构" class="headerlink" title="体系架构"></a>体系架构</h1><p>首先要了解操作系统的内存管理机制,一般都是知道是段页式管理,但是各个处理器架构提供的机制有所不同,主要由处理器中mmu部件负责翻译,操作系统负责管理.特别在intel架构中,完全做到了段页式的实现.但是Linux内核在实现的时候是用技巧越过了段式的地址特性,即逻辑地址=线性地址,但是处理器对于地址转换的有效性的检查不会改变,只是说Linux内核实现比较巧妙.下面就开始实验.</p>
+<h1 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h1><p>原文给我的实验代码是Linux 2.6内核的代码,我特意从网上下载了Centos6.9,之后<code>yum install kernel-devel.x86_64</code>安装发行版内核源代码,同时查看<code>build</code>目录是否正确链接到内核源码路径,可修改实验代码的Makefile文件的路径使其正确.当然,为了能够使得我PC的Linux 4.x内核也能够做这个实验,我对比了内核代码的改动部分,其中主要是<code>proc_create</code>接口变了,然后参考网上demo代码成功实现了迁移.可参考<a target="_blank" rel="noopener" href="https://github.com/Iotlab-404/ilinuxkernel/tree/master/kernel/Memory_Address_Mapping">这里</a>.</p>
+<h1 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h1><h2 id="mem-map"><a href="#mem-map" class="headerlink" title="mem_map"></a>mem_map</h2><p>编译好内核模块后insmod两个ko文件,因为我的测试环境为64位,因此修改mem_map.c的部分代码,运行如下:<br><img src="/images/ilk_mm_exam.png" alt="ilk_mm_exam.png"></p>
+<h2 id="fileview"><a href="#fileview" class="headerlink" title="fileview"></a>fileview</h2><p>这个工具跟内核模块dram.ko挂钩,通过实现了lseek和read文件操作方法来对应用层开放查询进程物理地址信息.具体操作可见代码,其中主要可以按照显示方式为8421字节感觉很有用,若需要输入指定物理地址,按回车即可.</p>
+<h2 id="开始计算"><a href="#开始计算" class="headerlink" title="开始计算"></a>开始计算</h2><h3 id="查看gdt中ds描述符"><a href="#查看gdt中ds描述符" class="headerlink" title="查看gdt中ds描述符"></a>查看gdt中ds描述符</h3><p>按照pdf教程,tmp所在段在ds数据段,查看后发现确实段基址为0.<br> <img src="/images/ilk_mm_gdtr.png" alt="ilk_mm_gdtr.png"></p>
+<h3 id="分解tmp地址为二进制"><a href="#分解tmp地址为二进制" class="headerlink" title="分解tmp地址为二进制"></a>分解tmp地址为二进制</h3><p>计算偏移的工具bc,我将其封装了一下,命名为calc.sh,代码在<a target="_blank" rel="noopener" href="https://github.com/embpgp/PersonalToolKits/blob/master/shell/calc.sh">这里</a>.tmp地址分解如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># calc.sh -i 16 -o 2 7FFD0A1330C8</span></span><br><span class="line">11111111111110100001010000100110011000011001000</span><br><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+<p>应该为分成9 9 9 9 12.<br>011111111 111110100 001010000 100110011 000011001000</p>
+<h3 id="CR3-gt-一级"><a href="#CR3-gt-一级" class="headerlink" title="CR3-&gt;一级"></a>CR3-&gt;一级</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># calc.sh -i 2 -o 16 8*11111111</span></span><br><span class="line">7F8</span><br><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+<p>CR3=36082000,一级=36082000+8*011111111b=360827F8<br><img src="/images/ilk_mm_cr3-one.png" alt="ilk_mm_cr3-one.png"></p>
+<h3 id="一级-gt-二级"><a href="#一级-gt-二级" class="headerlink" title="一级-&gt;二级"></a>一级-&gt;二级</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># calc.sh -i 2 -o 16 8*111110100</span></span><br><span class="line">FA0</span><br><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># </span></span><br><span class="line">````</span><br><span class="line">一级=391B8000,二级=391B8000+8*111110100=391B8FA0</span><br><span class="line">![ilk_mm_one-two.png](/images/ilk_mm_one-two.png)</span><br><span class="line"><span class="comment">### 二级-&gt;三级</span></span><br><span class="line">二级=3D817000,三级=3D817000+8*001010000=3D817280</span><br><span class="line">```bash</span><br><span class="line">root@Rutk1t0r:rutk1t0r<span class="comment"># calc.sh -i 2 -o 16 8*001010000</span></span><br><span class="line">280</span><br><span class="line">root@Rutk1t0r:rutk1t0r<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+<p><img src="/images/ilk_mm_two-three.png" alt="ilk_mm_two-three.png"></p>
+<h3 id="三级-gt-四级"><a href="#三级-gt-四级" class="headerlink" title="三级-&gt;四级"></a>三级-&gt;四级</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment"># calc.sh -i 2 -o 16 8*100110011</span></span><br><span class="line">998</span><br><span class="line">root@Rutk1t0r:Memory_Address_Mapping<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+<p>三级=3B04B000,四级=3B04B000+8*100110011=3B04B998<br><img src="/images/ilk_mm_three-four.png" alt="ilk_mm_three-four.png"></p>
+<h3 id="四级-gt-真实物理地址-值"><a href="#四级-gt-真实物理地址-值" class="headerlink" title="四级-&gt;真实物理地址(值)"></a>四级-&gt;真实物理地址(值)</h3><p>四级=27D0F000,phy_addr=27D0F000+0c8=27D0F0C8.<br><img src="/images/ilk_mm_four-phy.png" alt="ilk_mm_four-phy.png"><br> 而mem_map.c代码如下:<br> <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"> [root@localhost mm_addr]<span class="meta"># cat mem_map.c </span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> REGISTERINFO <span class="meta-string">&quot;/proc/sys_reg&quot;</span></span></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> BUFSIZE  4096</span></span><br><span class="line"></span><br><span class="line"> <span class="keyword">static</span> <span class="keyword">char</span> buf[BUFSIZE];</span><br><span class="line"> <span class="keyword">static</span> <span class="keyword">unsigned</span> <span class="keyword">long</span> addr;</span><br><span class="line"></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> FILE_TO_BUF(filename, fd) do&#123;	\</span></span><br><span class="line"><span class="meta">	static int local_n;	\</span></span><br><span class="line"><span class="meta">	<span class="meta-keyword">if</span> (fd == - 1 &amp;&amp; (fd = open(filename, O_RDONLY)) == - 1) &#123;	\</span></span><br><span class="line"><span class="meta">	fprintf(stderr, <span class="meta-string">&quot;Open /proc/register file failed! \n&quot;</span>);	\</span></span><br><span class="line"><span class="meta">	fflush(NULL);	\</span></span><br><span class="line"><span class="meta">	_exit(102);	\</span></span><br><span class="line"><span class="meta">	&#125;	\</span></span><br><span class="line"><span class="meta">	lseek(fd, 0L, SEEK_SET);	\</span></span><br><span class="line"><span class="meta">	<span class="meta-keyword">if</span> ((local_n = read(fd, buf , sizeof buf -  1)) &lt; 0) &#123;	\</span></span><br><span class="line"><span class="meta">	perror(filename);	\</span></span><br><span class="line"><span class="meta">	fflush(NULL);	\</span></span><br><span class="line"><span class="meta">	_exit(103);	\</span></span><br><span class="line"><span class="meta">	&#125;	\</span></span><br><span class="line"><span class="meta">	buf [local_n] = 0;	\</span></span><br><span class="line"><span class="meta"> &#125;while(0)</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"> </span>&#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> tmp;</span><br><span class="line">	tmp = <span class="number">0x12345678deadbeef</span>;</span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">int</span> cr_fd = - <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">asm</span>(<span class="string">&quot;movq %rbp, %rbx\n movq %rbx, addr&quot;</span>);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;\n%%rbp:0x%08lX\n&quot;</span>, addr);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;tmp address:0x%08lX\n&quot;</span>, &amp;tmp);</span><br><span class="line">	FILE_TO_BUF(REGISTERINFO, cr_fd);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;%s&quot;</span>, buf );</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span>(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">[root@localhost mm_addr]# </span><br><span class="line"></span><br></pre></td></tr></table></figure><br>成功通过段页式翻译找到tmp对应的值为0x12345678deadbeef.</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>通过实验加深理解,如有时间可再深入研究物理地址映射的实现.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/Linux-kernel/" rel="tag"># Linux kernel</a>
+              <a href="/embpgp.github.io/tags/LDD/" rel="tag"># LDD</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2017/08/25/compile-VLC-for-Linux/" rel="prev" title="compile VLC for Linux">
+      <i class="fa fa-chevron-left"></i> compile VLC for Linux
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2017/10/18/teardrop%E5%88%86%E6%9E%90/" rel="next" title="teardrop分析">
+      teardrop分析 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">体系架构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83"><span class="nav-number">2.</span> <span class="nav-text">环境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C"><span class="nav-number">3.</span> <span class="nav-text">实验</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#mem-map"><span class="nav-number">3.1.</span> <span class="nav-text">mem_map</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fileview"><span class="nav-number">3.2.</span> <span class="nav-text">fileview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E5%A7%8B%E8%AE%A1%E7%AE%97"><span class="nav-number">3.3.</span> <span class="nav-text">开始计算</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8Bgdt%E4%B8%ADds%E6%8F%8F%E8%BF%B0%E7%AC%A6"><span class="nav-number">3.3.1.</span> <span class="nav-text">查看gdt中ds描述符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E8%A7%A3tmp%E5%9C%B0%E5%9D%80%E4%B8%BA%E4%BA%8C%E8%BF%9B%E5%88%B6"><span class="nav-number">3.3.2.</span> <span class="nav-text">分解tmp地址为二进制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CR3-gt-%E4%B8%80%E7%BA%A7"><span class="nav-number">3.3.3.</span> <span class="nav-text">CR3-&gt;一级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E7%BA%A7-gt-%E4%BA%8C%E7%BA%A7"><span class="nav-number">3.3.4.</span> <span class="nav-text">一级-&gt;二级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%89%E7%BA%A7-gt-%E5%9B%9B%E7%BA%A7"><span class="nav-number">3.3.5.</span> <span class="nav-text">三级-&gt;四级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%9B%E7%BA%A7-gt-%E7%9C%9F%E5%AE%9E%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80-%E5%80%BC"><span class="nav-number">3.3.6.</span> <span class="nav-text">四级-&gt;真实物理地址(值)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

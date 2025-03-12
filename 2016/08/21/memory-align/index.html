@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="关于C&#x2F;C++中结构体(类)内存对齐问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="memory_align">
+<meta property="og:url" content="https://embpgp.github.io/2016/08/21/memory-align/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="关于C&#x2F;C++中结构体(类)内存对齐问题">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/1.png">
+<meta property="og:image" content="https://embpgp.github.io/images/2.png">
+<meta property="og:image" content="https://embpgp.github.io/images/3.png">
+<meta property="og:image" content="https://embpgp.github.io/images/4.png">
+<meta property="og:image" content="https://embpgp.github.io/images/5.png">
+<meta property="og:image" content="https://embpgp.github.io/images/6.png">
+<meta property="og:image" content="https://embpgp.github.io/images/7.png">
+<meta property="og:image" content="https://embpgp.github.io/images/8.png">
+<meta property="og:image" content="https://embpgp.github.io/images/gcc-st-1.png">
+<meta property="og:image" content="https://embpgp.github.io/images/gcc-st-2.png">
+<meta property="og:image" content="https://embpgp.github.io/images/gcc-st-3.png">
+<meta property="og:image" content="https://embpgp.github.io/images/gcc-st-4.png">
+<meta property="og:image" content="https://embpgp.github.io/images/gcc-st-5.png">
+<meta property="og:image" content="https://embpgp.github.io/images/gcc-st-6.png">
+<meta property="og:image" content="https://embpgp.github.io/images/gcc-st-7.png">
+<meta property="article:published_time" content="2016-08-21T13:24:53.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.966Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/1.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2016/08/21/memory-align/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>memory_align | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2016/08/21/memory-align/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          memory_align
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-08-21 21:24:53" itemprop="dateCreated datePublished" datetime="2016-08-21T21:24:53+08:00">2016-08-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3.5k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="关于C-C-中结构体-类-内存对齐问题"><a href="#关于C-C-中结构体-类-内存对齐问题" class="headerlink" title="关于C/C++中结构体(类)内存对齐问题"></a>关于C/C++中结构体(类)内存对齐问题</h2><span id="more"></span>
+
+<hr>
+<blockquote>
+<p>各种笔试面试都会涉及的问题，具体的可以查阅相关标准(如C99,C11等)或者翻阅国外知名论坛<a target="_blank" rel="noopener" href="http://stackoverflow.com/" title="Stack Overflow">stackoverflow</a>等寻找相关资料进一步分析，我个人的一些总结如下，如有不对之处，还请诸位不吝赐教．</p>
+</blockquote>
+<hr>
+<p>可参考资料：<br><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Data_structure_alignment#Problems" title="维基百科">维基百科</a><br><a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/2554229/memory-alignment-within-gcc-structs">StackOverflow GCC Structure</a><br><a target="_blank" rel="noopener" href="https://gcc.gnu.org/onlinedocs/gcc/Type-Attributes.html">GCC文档</a></p>
+<h3 id="1-首先放出现代PC编译器在实现的时候对于字长的一些典型约定"><a href="#1-首先放出现代PC编译器在实现的时候对于字长的一些典型约定" class="headerlink" title="1. 首先放出现代PC编译器在实现的时候对于字长的一些典型约定:"></a>1. 首先放出现代PC编译器在实现的时候对于字长的一些典型约定:</h3><h4 id="32位编译器："><a href="#32位编译器：" class="headerlink" title="32位编译器："></a>32位编译器：</h4><pre><code>  char ：1个字节
+  char*（即指针变量）: 4个字节（32位的寻址空间是2^32, 即32个bit，也就是4个字节。同理64位编译器）
+  short int : 2个字节
+  int：  4个字节
+  unsigned int : 4个字节
+  float:  4个字节
+  double:   8个字节
+  long:   4个字节
+  long long:  8个字节
+  unsigned long:  4个字节
+</code></pre>
+<h4 id="64位编译器："><a href="#64位编译器：" class="headerlink" title="64位编译器："></a>64位编译器：</h4><pre><code>  char ：1个字节
+  char* (即指针变量): 8个字节
+  short int : 2个字节
+  int：  4个字节
+  unsigned int : 4个字节
+  float:  4个字节
+  double:   8个字节
+  long:   8个字节
+  long long:  8个字节
+  unsigned long:  8个字节  
+</code></pre>
+<p>其中特别需要说明的一点就是指针类型的，任何类型的指针字长(当然包括结构体和类等复合类型)几乎应该只与编译器平台或者说是处理器地址总线长度有关(当然类似8086这种16位的处理器20根地址线的CPU等就另当别论了).关于这一点我认为学过体系结构和组成原理的同学应该会有深刻体会(我们组成原理课有实验就是按照教程实现一个简单的CPU)．在C语言中直接使用操作符sizeof(type)就可以得到字节大小，注意这个sizeof不是一个函数而是一个操作符．操作符的话表明结果已经在编译的时候确定了，而函数的话如果编译器不进行优化则等到运行时被调用才会返回值．关于这一点sizeof在有数组的参数中会发生一些奇妙的事情．</p>
+<hr>
+<h3 id="2-变量排放规则-自己的见解"><a href="#2-变量排放规则-自己的见解" class="headerlink" title="2. 变量排放规则(自己的见解)"></a>2. 变量排放规则(自己的见解)</h3><h4 id="1-内置类型对象-如char-lt-1字节-gt-、int-lt-现代PC编译器普遍为4字节-gt-等-的对齐起始地址为其本身大小和编译器默认大小（或用-pragma-pack（n-指定的n，一般编译器默认为8字节，可用菜单等命令修改，n一般为1-2-4-8等2的幂值）中最小的一个的整数倍"><a href="#1-内置类型对象-如char-lt-1字节-gt-、int-lt-现代PC编译器普遍为4字节-gt-等-的对齐起始地址为其本身大小和编译器默认大小（或用-pragma-pack（n-指定的n，一般编译器默认为8字节，可用菜单等命令修改，n一般为1-2-4-8等2的幂值）中最小的一个的整数倍" class="headerlink" title="1. 内置类型对象(如char&lt;1字节&gt;、int&lt;现代PC编译器普遍为4字节&gt;等)的对齐起始地址为其本身大小和编译器默认大小（或用#pragma pack（n)指定的n，一般编译器默认为8字节，可用菜单等命令修改，n一般为1,2,4,8等2的幂值）中最小的一个的整数倍."></a>1. 内置类型对象(如char&lt;1字节&gt;、int&lt;现代PC编译器普遍为4字节&gt;等)的<strong>对齐起始地址</strong>为其本身大小和编译器默认大小（或用#pragma pack（n)指定的n，一般编译器默认为8字节，可用菜单等命令修改，n一般为1,2,4,8等2的幂值）中最小的一个的整数倍.</h4><h4 id="2-整个结构体或者类的大小为它们中的内置类型大小最大的那一个和编译器默认大小（或用-pragma-pack-n-指定的n中两者较小的那个的整数倍-而当结构体或者类为定义对象的自定义类型定义时，其对齐方式参照其本身内置的最大的那个的然后再和编译器默认或声明比较中小的那个，意思说由它们中最小的那个代表它们来进行上述操作。"><a href="#2-整个结构体或者类的大小为它们中的内置类型大小最大的那一个和编译器默认大小（或用-pragma-pack-n-指定的n中两者较小的那个的整数倍-而当结构体或者类为定义对象的自定义类型定义时，其对齐方式参照其本身内置的最大的那个的然后再和编译器默认或声明比较中小的那个，意思说由它们中最小的那个代表它们来进行上述操作。" class="headerlink" title="2. 整个结构体或者类的大小为它们中的内置类型大小最大的那一个和编译器默认大小（或用#pragma pack (n)指定的n中两者较小的那个的整数倍,而当结构体或者类为定义对象的自定义类型定义时，其对齐方式参照其本身内置的最大的那个的然后再和编译器默认或声明比较中小的那个，意思说由它们中最小的那个代表它们来进行上述操作。"></a>2. 整个结构体或者类的<strong>大小</strong>为它们中的内置类型大小最大的那一个和编译器默认大小（或用#pragma pack (n)指定的n中两者较小的那个的整数倍,而当结构体或者类为定义对象的自定义类型定义时，其对齐方式参照其本身内置的最大的那个的然后再和编译器默认或声明比较中小的那个，意思说由它们中最小的那个代表它们来进行上述操作。</h4><blockquote>
+<p>可能听起来很拗口，但是一旦把握了准则在应对这些问题的时候就很轻而易举了．其实主要是两个点，一个是变量放的偏移地址，另一个是复杂类型的总的大小．首先我们要知道为什么编译器需要对变量进行内存对齐？知道内存组织的童鞋可能有些感触，我们的代码运行的时候必须首先从磁盘(或其他非易失性介质)通过外部总线加载到内存中，然后再跳转到相应处运行．基于现有的计算机运行机制不断地进行<strong>取指，译码，执行等</strong>操作，由于内存本身的半导体的物理特性使得内存并不是一次性有几个G那么多而是通过很小的介质(一般是8位)不断地”串并联”起来的，一般能够保证一个地址能够寻址一个字节的数据，其实是半导体的导通与截止表示的计算机中的”1”和”0”．打个比方，如果地址不是偶数的，要取偶数个的数据的话，CPU在硬件上可能要多花几个时钟周期来进行取数据和整合，才能保证数据不出错．因此很多算法也都是以空间换时间的思想来加快计算．还有就是在嵌入式领域，由于板子或者芯片本身的内存资源非常有限，必须要求嵌入式程序员写出几乎<code>磕碜</code>的代码才能保证运行流畅等．因此，至少在不怎么缺内存的PC或者Server领域，为了加快计算，还是可以采用编译器进行的优化的．(可能还有其他技术比如缓存啥的我们先不讨论)</p>
+</blockquote>
+<h3 id="3-Win栗子如下："><a href="#3-Win栗子如下：" class="headerlink" title="3. Win栗子如下："></a>3. Win栗子如下：</h3><h4 id="1-这是以前我用Win的时候VC-6-0编译器的效果图"><a href="#1-这是以前我用Win的时候VC-6-0编译器的效果图" class="headerlink" title="1. 这是以前我用Win的时候VC++ 6.0编译器的效果图"></a>1. 这是以前我用Win的时候VC++ 6.0编译器的效果图</h4><p><img src="/images/1.png" alt="配置"></p>
+<h4 id="2-此处说明int类型的b在排位置的时候放到了偏移处为4的倍数，而非数据填充a剩下的"><a href="#2-此处说明int类型的b在排位置的时候放到了偏移处为4的倍数，而非数据填充a剩下的" class="headerlink" title="2. 此处说明int类型的b在排位置的时候放到了偏移处为4的倍数，而非数据填充a剩下的"></a>2. 此处说明int类型的b在排位置的时候放到了偏移处为4的倍数，而非数据填充a剩下的</h4><p><img src="/images/2.png" alt="int b"></p>
+<h4 id="3-下面这一处说明大小是按照int类型-最大呀-的整数倍来取"><a href="#3-下面这一处说明大小是按照int类型-最大呀-的整数倍来取" class="headerlink" title="3. 下面这一处说明大小是按照int类型(最大呀)的整数倍来取"></a>3. 下面这一处说明大小是按照int类型(最大呀)的整数倍来取</h4><p><img src="/images/3.png" alt="整数倍"></p>
+<h4 id="4-说明当类型为数组的时候，只按照它的类型来对齐而非整个大小"><a href="#4-说明当类型为数组的时候，只按照它的类型来对齐而非整个大小" class="headerlink" title="4. 说明当类型为数组的时候，只按照它的类型来对齐而非整个大小"></a>4. 说明当类型为数组的时候，只按照它的类型来对齐而非整个大小</h4><p><img src="/images/4.png" alt="数组"></p>
+<h4 id="5-说明第二个元素char类型的可以在任何偏移处安放-因为它是一个字节啊"><a href="#5-说明第二个元素char类型的可以在任何偏移处安放-因为它是一个字节啊" class="headerlink" title="5. 说明第二个元素char类型的可以在任何偏移处安放(因为它是一个字节啊)"></a>5. 说明第二个元素char类型的可以在任何偏移处安放(因为它是一个字节啊)</h4><p><img src="/images/5.png" alt="char"></p>
+<h4 id="6-说明-pragma-pack-n-n非2的幂的值时候无效"><a href="#6-说明-pragma-pack-n-n非2的幂的值时候无效" class="headerlink" title="6. 说明#pragma pack (n) n非2的幂的值时候无效"></a>6. 说明#pragma pack (n) n非2的幂的值时候无效</h4><p><img src="/images/6.png" alt="#pragma pack (n)"></p>
+<h4 id="7-说明结构体作为一个类型在插入时候是以它自己有的最大字节元素来参考放的偏移．然后总的大小是8的倍数"><a href="#7-说明结构体作为一个类型在插入时候是以它自己有的最大字节元素来参考放的偏移．然后总的大小是8的倍数" class="headerlink" title="7. 说明结构体作为一个类型在插入时候是以它自己有的最大字节元素来参考放的偏移．然后总的大小是8的倍数"></a>7. 说明结构体作为一个类型在插入时候是以它自己有的最大字节元素来参考放的偏移．然后总的大小是8的倍数</h4><p><img src="/images/7.png" alt="struct"></p>
+<h4 id="8-说明pragma-pack-3-没作用"><a href="#8-说明pragma-pack-3-没作用" class="headerlink" title="8. 说明pragma pack (3)没作用"></a>8. 说明pragma pack (3)没作用</h4><p><img src="/images/8.png" alt="pack (3)"></p>
+<h3 id="4-Linux栗子如下-据说gcc默认是4-bytes的对齐大小-："><a href="#4-Linux栗子如下-据说gcc默认是4-bytes的对齐大小-：" class="headerlink" title="4. Linux栗子如下(据说gcc默认是4 bytes的对齐大小)："></a>4. Linux栗子如下(据说gcc默认是4 bytes的对齐大小)：</h3><h4 id="1-这是我用ubuntu-16-04-amd64-ssh连接ubuntu-16-04-i386之后gcc版本号"><a href="#1-这是我用ubuntu-16-04-amd64-ssh连接ubuntu-16-04-i386之后gcc版本号" class="headerlink" title="1. 这是我用ubuntu 16.04 amd64 ssh连接ubuntu 16.04 i386之后gcc版本号:"></a>1. 这是我用ubuntu 16.04 amd64 ssh连接ubuntu 16.04 i386之后gcc版本号:</h4><p><img src="/images/gcc-st-1.png" alt="gcc -v"></p>
+<h4 id="2-这个应该默认是4字节的对齐，大小和元素中最大的int比还是4字节"><a href="#2-这个应该默认是4字节的对齐，大小和元素中最大的int比还是4字节" class="headerlink" title="2. 这个应该默认是4字节的对齐，大小和元素中最大的int比还是4字节"></a>2. 这个应该默认是4字节的对齐，大小和元素中最大的int比还是4字节</h4><p><img src="/images/gcc-st-2.png" alt="4 butys"></p>
+<h4 id="3-在gcc中加入功能和pragma-pack差不多的-attribute-选项即可要求编译器改变默认对齐大小，当值为1时，几乎没有空间浪费，但是用起来的时候却去坑CPU了…"><a href="#3-在gcc中加入功能和pragma-pack差不多的-attribute-选项即可要求编译器改变默认对齐大小，当值为1时，几乎没有空间浪费，但是用起来的时候却去坑CPU了…" class="headerlink" title="3. 在gcc中加入功能和pragma pack差不多的__attribute__选项即可要求编译器改变默认对齐大小，当值为1时，几乎没有空间浪费，但是用起来的时候却去坑CPU了…"></a>3. 在gcc中加入功能和pragma pack差不多的__attribute__选项即可要求编译器改变默认对齐大小，当值为1时，几乎没有空间浪费，但是用起来的时候却去坑CPU了…</h4><p><img src="/images/gcc-st-3.png" alt="attri_1"></p>
+<h4 id="4-在这里只是a之后的那一个字节是填充的-short只要是偶数偏移就可以插入咯，int在这里其实也是偶数，只是恰好放在4的倍数偏移处而已，-attribute-干得好事"><a href="#4-在这里只是a之后的那一个字节是填充的-short只要是偶数偏移就可以插入咯，int在这里其实也是偶数，只是恰好放在4的倍数偏移处而已，-attribute-干得好事" class="headerlink" title="4. 在这里只是a之后的那一个字节是填充的,short只要是偶数偏移就可以插入咯，int在这里其实也是偶数，只是恰好放在4的倍数偏移处而已，__attribute__干得好事~"></a>4. 在这里只是a之后的那一个字节是填充的,short只要是偶数偏移就可以插入咯，int在这里其实也是偶数，只是恰好放在4的倍数偏移处而已，__attribute__干得好事~</h4><p><img src="/images/gcc-st-4.png" alt="attri_2"></p>
+<h4 id="5-证明了有pack为1的地方必定不留一点空隙"><a href="#5-证明了有pack为1的地方必定不留一点空隙" class="headerlink" title="5. 证明了有pack为1的地方必定不留一点空隙~~~"></a>5. 证明了有pack为1的地方必定不留一点空隙~~~</h4><p><img src="/images/gcc-st-5.png" alt="pack_1"></p>
+<h4 id="6-第一个foo结构体虽然double为8字节，但是由于默认为4字节的对齐，所以根据对齐原则取两者中较小的对结构体大小倍数，因此为12字节．第二个结构体bar插入了第一个结构体，因此结构体d放在哪儿呢-应该是它自己作为结构体的时候元素中最大的-这个栗子为double-要是有char-类型数组超过8，不用管，认为是char-和默认的4相比，还是取较小的为偏移处防止，所以short之后空两个就可以插入了．大小也是一样，直接占12字节就是了．后面的参照规则即可得出．"><a href="#6-第一个foo结构体虽然double为8字节，但是由于默认为4字节的对齐，所以根据对齐原则取两者中较小的对结构体大小倍数，因此为12字节．第二个结构体bar插入了第一个结构体，因此结构体d放在哪儿呢-应该是它自己作为结构体的时候元素中最大的-这个栗子为double-要是有char-类型数组超过8，不用管，认为是char-和默认的4相比，还是取较小的为偏移处防止，所以short之后空两个就可以插入了．大小也是一样，直接占12字节就是了．后面的参照规则即可得出．" class="headerlink" title="6. 第一个foo结构体虽然double为8字节，但是由于默认为4字节的对齐，所以根据对齐原则取两者中较小的对结构体大小倍数，因此为12字节．第二个结构体bar插入了第一个结构体，因此结构体d放在哪儿呢?应该是它自己作为结构体的时候元素中最大的(这个栗子为double,要是有char 类型数组超过8，不用管，认为是char)和默认的4相比，还是取较小的为偏移处防止，所以short之后空两个就可以插入了．大小也是一样，直接占12字节就是了．后面的参照规则即可得出．"></a>6. 第一个foo结构体虽然double为8字节，但是由于默认为4字节的对齐，所以根据对齐原则取两者中较小的对结构体大小倍数，因此为12字节．第二个结构体bar插入了第一个结构体，因此结构体d放在哪儿呢?应该是它自己作为结构体的时候元素中最大的(这个栗子为double,要是有char 类型数组超过8，不用管，认为是char)和默认的4相比，还是取较小的为偏移处防止，所以short之后空两个就可以插入了．大小也是一样，直接占12字节就是了．后面的参照规则即可得出．</h4><p><img src="/images/gcc-st-6.png" alt="st_to_st"></p>
+<h4 id="7-由于第一个结构体声明为1字节的对齐粒度，因此全部都占着吧，但是bar结构体剩余的元素都必须和默认的4进行比较，来放置和占大小．"><a href="#7-由于第一个结构体声明为1字节的对齐粒度，因此全部都占着吧，但是bar结构体剩余的元素都必须和默认的4进行比较，来放置和占大小．" class="headerlink" title="7. 由于第一个结构体声明为1字节的对齐粒度，因此全部都占着吧，但是bar结构体剩余的元素都必须和默认的4进行比较，来放置和占大小．"></a>7. 由于第一个结构体声明为1字节的对齐粒度，因此全部都占着吧，但是bar结构体剩余的元素都必须和默认的4进行比较，来放置和占大小．</h4><p><img src="/images/gcc-st-7.png" alt="st_to_aligned(1)"></p>
+<h3 id="5-C-中的高级之处"><a href="#5-C-中的高级之处" class="headerlink" title="5. C++中的高级之处"></a>5. C++中的高级之处</h3><blockquote>
+<p>至于C和C++的区别我就不再重复教科书上的内容．只是觉得作为一个developer可能只会关心功能实现，不会管各种机制的内部实现，反正丢给编译器去翻译和安排就是咯，咱又不是研究者．但是一旦出现bug且需要调试器支持的时候，底层的实现就不得不去啃了．编译器也是人开发出来的，当然也少不了出问题，只是现代开发体系为了降低开发难度因此对计算机的<strong>封装</strong>程度已经快到了<code>说话编程</code>的地步了．重复造轮子有必要吗？珍爱生命，快用py？  </p>
+</blockquote>
+<h4 id="1-C-中的结构体和类的区别？"><a href="#1-C-中的结构体和类的区别？" class="headerlink" title="1.C++中的结构体和类的区别？"></a>1.C++中的结构体和类的区别？</h4><p>根据C++的标准它俩的区别应该只是默认的访问权限的不同，其他该有的编译器(比如构造函数，析构函数等)还是会允许程序员实现的．以前在微博上分析过一道题<a target="_blank" rel="noopener" href="http://weibo.com/p/230418e682a92a0102w5wl?mod=zwenzhang">链接</a>.因此，在C++中，为了让编译器能够根据标准对各种权限进行检查并生成程序员想要的代码，还是用class比较好．我们不能单调地看待private声明或者const的成员，认为它是不可能被子类或者其他非正常手段修改的．要知道我们所谓的编程最主要是根据标准和规则对编译器进行交互，让编译器取帮我们做翻译工作，一旦编译器通过，程序被加载到内存中后一切的一切被视为<code>高低电平</code>或者其他二进制信息，到时候让CPU译码之后想怎么干就怎么干<del>_</del>(当然这是intel 8086时代，从286开始就开始了保护模式).</p>
+<h4 id="2-C-中class的虚函数"><a href="#2-C-中class的虚函数" class="headerlink" title="2. C++中class的虚函数"></a>2. C++中class的虚函数</h4><p>C++中的虚函数机制保证了动态绑定，实现了直到程序执行的时候才选择执行哪个代码．一般编译器的实现是在对象空间(类被实例化后)开始的4字节(32位OS)保存一个虚函数表指针，继承了几个类中的虚函数，一般就会产生几个虚函数表指针，再加上数据成员(除去静态成员),这个对象的大小大概就是这么多了．类的方法并不单独属于对象，每一次调用方法的时候必须要传入this指针，其实就是这个对象的首地址．在VC++中一般采用intel 的ecx寄存器作为this指针的载体．例如(<code>obj.func(a, b, c);</code>)在编译器翻译的汇编代码里面等价于(<code>func(&amp;obj, a, b, c);</code>),某些编译器甚至允许这样调用．因为底层的汇编代码一样啊….</p>
+<hr>
+<p>先总结这么多吧，其实想真正弄清楚的话还需亲自实现或者读懂一个编译器，不仅仅考虑编译原理里面的词语法分析等，而更要从硬件层面取理解各种软件设计思维模式．毕竟软件是跑在硬件这个载体上面的，各种效率问题要经得起推敲的，为啥选择了GNU/Linux呢？可不仅仅因为是开源免费的原因吧<del>_</del></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/C-C/" rel="tag"># C/C++</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/08/16/hello-world/" rel="prev" title="Hello world">
+      <i class="fa fa-chevron-left"></i> Hello world
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/08/23/vim-and-emacs/" rel="next" title="vim_and_emacs">
+      vim_and_emacs <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E4%BA%8EC-C-%E4%B8%AD%E7%BB%93%E6%9E%84%E4%BD%93-%E7%B1%BB-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">关于C&#x2F;C++中结构体(类)内存对齐问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E9%A6%96%E5%85%88%E6%94%BE%E5%87%BA%E7%8E%B0%E4%BB%A3PC%E7%BC%96%E8%AF%91%E5%99%A8%E5%9C%A8%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%97%B6%E5%80%99%E5%AF%B9%E4%BA%8E%E5%AD%97%E9%95%BF%E7%9A%84%E4%B8%80%E4%BA%9B%E5%85%B8%E5%9E%8B%E7%BA%A6%E5%AE%9A"><span class="nav-number">1.1.</span> <span class="nav-text">1. 首先放出现代PC编译器在实现的时候对于字长的一些典型约定:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#32%E4%BD%8D%E7%BC%96%E8%AF%91%E5%99%A8%EF%BC%9A"><span class="nav-number">1.1.1.</span> <span class="nav-text">32位编译器：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#64%E4%BD%8D%E7%BC%96%E8%AF%91%E5%99%A8%EF%BC%9A"><span class="nav-number">1.1.2.</span> <span class="nav-text">64位编译器：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%8F%98%E9%87%8F%E6%8E%92%E6%94%BE%E8%A7%84%E5%88%99-%E8%87%AA%E5%B7%B1%E7%9A%84%E8%A7%81%E8%A7%A3"><span class="nav-number">1.2.</span> <span class="nav-text">2. 变量排放规则(自己的见解)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E5%86%85%E7%BD%AE%E7%B1%BB%E5%9E%8B%E5%AF%B9%E8%B1%A1-%E5%A6%82char-lt-1%E5%AD%97%E8%8A%82-gt-%E3%80%81int-lt-%E7%8E%B0%E4%BB%A3PC%E7%BC%96%E8%AF%91%E5%99%A8%E6%99%AE%E9%81%8D%E4%B8%BA4%E5%AD%97%E8%8A%82-gt-%E7%AD%89-%E7%9A%84%E5%AF%B9%E9%BD%90%E8%B5%B7%E5%A7%8B%E5%9C%B0%E5%9D%80%E4%B8%BA%E5%85%B6%E6%9C%AC%E8%BA%AB%E5%A4%A7%E5%B0%8F%E5%92%8C%E7%BC%96%E8%AF%91%E5%99%A8%E9%BB%98%E8%AE%A4%E5%A4%A7%E5%B0%8F%EF%BC%88%E6%88%96%E7%94%A8-pragma-pack%EF%BC%88n-%E6%8C%87%E5%AE%9A%E7%9A%84n%EF%BC%8C%E4%B8%80%E8%88%AC%E7%BC%96%E8%AF%91%E5%99%A8%E9%BB%98%E8%AE%A4%E4%B8%BA8%E5%AD%97%E8%8A%82%EF%BC%8C%E5%8F%AF%E7%94%A8%E8%8F%9C%E5%8D%95%E7%AD%89%E5%91%BD%E4%BB%A4%E4%BF%AE%E6%94%B9%EF%BC%8Cn%E4%B8%80%E8%88%AC%E4%B8%BA1-2-4-8%E7%AD%892%E7%9A%84%E5%B9%82%E5%80%BC%EF%BC%89%E4%B8%AD%E6%9C%80%E5%B0%8F%E7%9A%84%E4%B8%80%E4%B8%AA%E7%9A%84%E6%95%B4%E6%95%B0%E5%80%8D"><span class="nav-number">1.2.1.</span> <span class="nav-text">1. 内置类型对象(如char&lt;1字节&gt;、int&lt;现代PC编译器普遍为4字节&gt;等)的对齐起始地址为其本身大小和编译器默认大小（或用#pragma pack（n)指定的n，一般编译器默认为8字节，可用菜单等命令修改，n一般为1,2,4,8等2的幂值）中最小的一个的整数倍.</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E6%95%B4%E4%B8%AA%E7%BB%93%E6%9E%84%E4%BD%93%E6%88%96%E8%80%85%E7%B1%BB%E7%9A%84%E5%A4%A7%E5%B0%8F%E4%B8%BA%E5%AE%83%E4%BB%AC%E4%B8%AD%E7%9A%84%E5%86%85%E7%BD%AE%E7%B1%BB%E5%9E%8B%E5%A4%A7%E5%B0%8F%E6%9C%80%E5%A4%A7%E7%9A%84%E9%82%A3%E4%B8%80%E4%B8%AA%E5%92%8C%E7%BC%96%E8%AF%91%E5%99%A8%E9%BB%98%E8%AE%A4%E5%A4%A7%E5%B0%8F%EF%BC%88%E6%88%96%E7%94%A8-pragma-pack-n-%E6%8C%87%E5%AE%9A%E7%9A%84n%E4%B8%AD%E4%B8%A4%E8%80%85%E8%BE%83%E5%B0%8F%E7%9A%84%E9%82%A3%E4%B8%AA%E7%9A%84%E6%95%B4%E6%95%B0%E5%80%8D-%E8%80%8C%E5%BD%93%E7%BB%93%E6%9E%84%E4%BD%93%E6%88%96%E8%80%85%E7%B1%BB%E4%B8%BA%E5%AE%9A%E4%B9%89%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%9E%8B%E5%AE%9A%E4%B9%89%E6%97%B6%EF%BC%8C%E5%85%B6%E5%AF%B9%E9%BD%90%E6%96%B9%E5%BC%8F%E5%8F%82%E7%85%A7%E5%85%B6%E6%9C%AC%E8%BA%AB%E5%86%85%E7%BD%AE%E7%9A%84%E6%9C%80%E5%A4%A7%E7%9A%84%E9%82%A3%E4%B8%AA%E7%9A%84%E7%84%B6%E5%90%8E%E5%86%8D%E5%92%8C%E7%BC%96%E8%AF%91%E5%99%A8%E9%BB%98%E8%AE%A4%E6%88%96%E5%A3%B0%E6%98%8E%E6%AF%94%E8%BE%83%E4%B8%AD%E5%B0%8F%E7%9A%84%E9%82%A3%E4%B8%AA%EF%BC%8C%E6%84%8F%E6%80%9D%E8%AF%B4%E7%94%B1%E5%AE%83%E4%BB%AC%E4%B8%AD%E6%9C%80%E5%B0%8F%E7%9A%84%E9%82%A3%E4%B8%AA%E4%BB%A3%E8%A1%A8%E5%AE%83%E4%BB%AC%E6%9D%A5%E8%BF%9B%E8%A1%8C%E4%B8%8A%E8%BF%B0%E6%93%8D%E4%BD%9C%E3%80%82"><span class="nav-number">1.2.2.</span> <span class="nav-text">2. 整个结构体或者类的大小为它们中的内置类型大小最大的那一个和编译器默认大小（或用#pragma pack (n)指定的n中两者较小的那个的整数倍,而当结构体或者类为定义对象的自定义类型定义时，其对齐方式参照其本身内置的最大的那个的然后再和编译器默认或声明比较中小的那个，意思说由它们中最小的那个代表它们来进行上述操作。</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Win%E6%A0%97%E5%AD%90%E5%A6%82%E4%B8%8B%EF%BC%9A"><span class="nav-number">1.3.</span> <span class="nav-text">3. Win栗子如下：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E8%BF%99%E6%98%AF%E4%BB%A5%E5%89%8D%E6%88%91%E7%94%A8Win%E7%9A%84%E6%97%B6%E5%80%99VC-6-0%E7%BC%96%E8%AF%91%E5%99%A8%E7%9A%84%E6%95%88%E6%9E%9C%E5%9B%BE"><span class="nav-number">1.3.1.</span> <span class="nav-text">1. 这是以前我用Win的时候VC++ 6.0编译器的效果图</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E6%AD%A4%E5%A4%84%E8%AF%B4%E6%98%8Eint%E7%B1%BB%E5%9E%8B%E7%9A%84b%E5%9C%A8%E6%8E%92%E4%BD%8D%E7%BD%AE%E7%9A%84%E6%97%B6%E5%80%99%E6%94%BE%E5%88%B0%E4%BA%86%E5%81%8F%E7%A7%BB%E5%A4%84%E4%B8%BA4%E7%9A%84%E5%80%8D%E6%95%B0%EF%BC%8C%E8%80%8C%E9%9D%9E%E6%95%B0%E6%8D%AE%E5%A1%AB%E5%85%85a%E5%89%A9%E4%B8%8B%E7%9A%84"><span class="nav-number">1.3.2.</span> <span class="nav-text">2. 此处说明int类型的b在排位置的时候放到了偏移处为4的倍数，而非数据填充a剩下的</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E4%B8%8B%E9%9D%A2%E8%BF%99%E4%B8%80%E5%A4%84%E8%AF%B4%E6%98%8E%E5%A4%A7%E5%B0%8F%E6%98%AF%E6%8C%89%E7%85%A7int%E7%B1%BB%E5%9E%8B-%E6%9C%80%E5%A4%A7%E5%91%80-%E7%9A%84%E6%95%B4%E6%95%B0%E5%80%8D%E6%9D%A5%E5%8F%96"><span class="nav-number">1.3.3.</span> <span class="nav-text">3. 下面这一处说明大小是按照int类型(最大呀)的整数倍来取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-%E8%AF%B4%E6%98%8E%E5%BD%93%E7%B1%BB%E5%9E%8B%E4%B8%BA%E6%95%B0%E7%BB%84%E7%9A%84%E6%97%B6%E5%80%99%EF%BC%8C%E5%8F%AA%E6%8C%89%E7%85%A7%E5%AE%83%E7%9A%84%E7%B1%BB%E5%9E%8B%E6%9D%A5%E5%AF%B9%E9%BD%90%E8%80%8C%E9%9D%9E%E6%95%B4%E4%B8%AA%E5%A4%A7%E5%B0%8F"><span class="nav-number">1.3.4.</span> <span class="nav-text">4. 说明当类型为数组的时候，只按照它的类型来对齐而非整个大小</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-%E8%AF%B4%E6%98%8E%E7%AC%AC%E4%BA%8C%E4%B8%AA%E5%85%83%E7%B4%A0char%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%8F%AF%E4%BB%A5%E5%9C%A8%E4%BB%BB%E4%BD%95%E5%81%8F%E7%A7%BB%E5%A4%84%E5%AE%89%E6%94%BE-%E5%9B%A0%E4%B8%BA%E5%AE%83%E6%98%AF%E4%B8%80%E4%B8%AA%E5%AD%97%E8%8A%82%E5%95%8A"><span class="nav-number">1.3.5.</span> <span class="nav-text">5. 说明第二个元素char类型的可以在任何偏移处安放(因为它是一个字节啊)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-%E8%AF%B4%E6%98%8E-pragma-pack-n-n%E9%9D%9E2%E7%9A%84%E5%B9%82%E7%9A%84%E5%80%BC%E6%97%B6%E5%80%99%E6%97%A0%E6%95%88"><span class="nav-number">1.3.6.</span> <span class="nav-text">6. 说明#pragma pack (n) n非2的幂的值时候无效</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-%E8%AF%B4%E6%98%8E%E7%BB%93%E6%9E%84%E4%BD%93%E4%BD%9C%E4%B8%BA%E4%B8%80%E4%B8%AA%E7%B1%BB%E5%9E%8B%E5%9C%A8%E6%8F%92%E5%85%A5%E6%97%B6%E5%80%99%E6%98%AF%E4%BB%A5%E5%AE%83%E8%87%AA%E5%B7%B1%E6%9C%89%E7%9A%84%E6%9C%80%E5%A4%A7%E5%AD%97%E8%8A%82%E5%85%83%E7%B4%A0%E6%9D%A5%E5%8F%82%E8%80%83%E6%94%BE%E7%9A%84%E5%81%8F%E7%A7%BB%EF%BC%8E%E7%84%B6%E5%90%8E%E6%80%BB%E7%9A%84%E5%A4%A7%E5%B0%8F%E6%98%AF8%E7%9A%84%E5%80%8D%E6%95%B0"><span class="nav-number">1.3.7.</span> <span class="nav-text">7. 说明结构体作为一个类型在插入时候是以它自己有的最大字节元素来参考放的偏移．然后总的大小是8的倍数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-%E8%AF%B4%E6%98%8Epragma-pack-3-%E6%B2%A1%E4%BD%9C%E7%94%A8"><span class="nav-number">1.3.8.</span> <span class="nav-text">8. 说明pragma pack (3)没作用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Linux%E6%A0%97%E5%AD%90%E5%A6%82%E4%B8%8B-%E6%8D%AE%E8%AF%B4gcc%E9%BB%98%E8%AE%A4%E6%98%AF4-bytes%E7%9A%84%E5%AF%B9%E9%BD%90%E5%A4%A7%E5%B0%8F-%EF%BC%9A"><span class="nav-number">1.4.</span> <span class="nav-text">4. Linux栗子如下(据说gcc默认是4 bytes的对齐大小)：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E8%BF%99%E6%98%AF%E6%88%91%E7%94%A8ubuntu-16-04-amd64-ssh%E8%BF%9E%E6%8E%A5ubuntu-16-04-i386%E4%B9%8B%E5%90%8Egcc%E7%89%88%E6%9C%AC%E5%8F%B7"><span class="nav-number">1.4.1.</span> <span class="nav-text">1. 这是我用ubuntu 16.04 amd64 ssh连接ubuntu 16.04 i386之后gcc版本号:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E8%BF%99%E4%B8%AA%E5%BA%94%E8%AF%A5%E9%BB%98%E8%AE%A4%E6%98%AF4%E5%AD%97%E8%8A%82%E7%9A%84%E5%AF%B9%E9%BD%90%EF%BC%8C%E5%A4%A7%E5%B0%8F%E5%92%8C%E5%85%83%E7%B4%A0%E4%B8%AD%E6%9C%80%E5%A4%A7%E7%9A%84int%E6%AF%94%E8%BF%98%E6%98%AF4%E5%AD%97%E8%8A%82"><span class="nav-number">1.4.2.</span> <span class="nav-text">2. 这个应该默认是4字节的对齐，大小和元素中最大的int比还是4字节</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E5%9C%A8gcc%E4%B8%AD%E5%8A%A0%E5%85%A5%E5%8A%9F%E8%83%BD%E5%92%8Cpragma-pack%E5%B7%AE%E4%B8%8D%E5%A4%9A%E7%9A%84-attribute-%E9%80%89%E9%A1%B9%E5%8D%B3%E5%8F%AF%E8%A6%81%E6%B1%82%E7%BC%96%E8%AF%91%E5%99%A8%E6%94%B9%E5%8F%98%E9%BB%98%E8%AE%A4%E5%AF%B9%E9%BD%90%E5%A4%A7%E5%B0%8F%EF%BC%8C%E5%BD%93%E5%80%BC%E4%B8%BA1%E6%97%B6%EF%BC%8C%E5%87%A0%E4%B9%8E%E6%B2%A1%E6%9C%89%E7%A9%BA%E9%97%B4%E6%B5%AA%E8%B4%B9%EF%BC%8C%E4%BD%86%E6%98%AF%E7%94%A8%E8%B5%B7%E6%9D%A5%E7%9A%84%E6%97%B6%E5%80%99%E5%8D%B4%E5%8E%BB%E5%9D%91CPU%E4%BA%86%E2%80%A6"><span class="nav-number">1.4.3.</span> <span class="nav-text">3. 在gcc中加入功能和pragma pack差不多的__attribute__选项即可要求编译器改变默认对齐大小，当值为1时，几乎没有空间浪费，但是用起来的时候却去坑CPU了…</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-%E5%9C%A8%E8%BF%99%E9%87%8C%E5%8F%AA%E6%98%AFa%E4%B9%8B%E5%90%8E%E7%9A%84%E9%82%A3%E4%B8%80%E4%B8%AA%E5%AD%97%E8%8A%82%E6%98%AF%E5%A1%AB%E5%85%85%E7%9A%84-short%E5%8F%AA%E8%A6%81%E6%98%AF%E5%81%B6%E6%95%B0%E5%81%8F%E7%A7%BB%E5%B0%B1%E5%8F%AF%E4%BB%A5%E6%8F%92%E5%85%A5%E5%92%AF%EF%BC%8Cint%E5%9C%A8%E8%BF%99%E9%87%8C%E5%85%B6%E5%AE%9E%E4%B9%9F%E6%98%AF%E5%81%B6%E6%95%B0%EF%BC%8C%E5%8F%AA%E6%98%AF%E6%81%B0%E5%A5%BD%E6%94%BE%E5%9C%A84%E7%9A%84%E5%80%8D%E6%95%B0%E5%81%8F%E7%A7%BB%E5%A4%84%E8%80%8C%E5%B7%B2%EF%BC%8C-attribute-%E5%B9%B2%E5%BE%97%E5%A5%BD%E4%BA%8B"><span class="nav-number">1.4.4.</span> <span class="nav-text">4. 在这里只是a之后的那一个字节是填充的,short只要是偶数偏移就可以插入咯，int在这里其实也是偶数，只是恰好放在4的倍数偏移处而已，__attribute__干得好事~</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-%E8%AF%81%E6%98%8E%E4%BA%86%E6%9C%89pack%E4%B8%BA1%E7%9A%84%E5%9C%B0%E6%96%B9%E5%BF%85%E5%AE%9A%E4%B8%8D%E7%95%99%E4%B8%80%E7%82%B9%E7%A9%BA%E9%9A%99"><span class="nav-number">1.4.5.</span> <span class="nav-text">5. 证明了有pack为1的地方必定不留一点空隙~~~</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-%E7%AC%AC%E4%B8%80%E4%B8%AAfoo%E7%BB%93%E6%9E%84%E4%BD%93%E8%99%BD%E7%84%B6double%E4%B8%BA8%E5%AD%97%E8%8A%82%EF%BC%8C%E4%BD%86%E6%98%AF%E7%94%B1%E4%BA%8E%E9%BB%98%E8%AE%A4%E4%B8%BA4%E5%AD%97%E8%8A%82%E7%9A%84%E5%AF%B9%E9%BD%90%EF%BC%8C%E6%89%80%E4%BB%A5%E6%A0%B9%E6%8D%AE%E5%AF%B9%E9%BD%90%E5%8E%9F%E5%88%99%E5%8F%96%E4%B8%A4%E8%80%85%E4%B8%AD%E8%BE%83%E5%B0%8F%E7%9A%84%E5%AF%B9%E7%BB%93%E6%9E%84%E4%BD%93%E5%A4%A7%E5%B0%8F%E5%80%8D%E6%95%B0%EF%BC%8C%E5%9B%A0%E6%AD%A4%E4%B8%BA12%E5%AD%97%E8%8A%82%EF%BC%8E%E7%AC%AC%E4%BA%8C%E4%B8%AA%E7%BB%93%E6%9E%84%E4%BD%93bar%E6%8F%92%E5%85%A5%E4%BA%86%E7%AC%AC%E4%B8%80%E4%B8%AA%E7%BB%93%E6%9E%84%E4%BD%93%EF%BC%8C%E5%9B%A0%E6%AD%A4%E7%BB%93%E6%9E%84%E4%BD%93d%E6%94%BE%E5%9C%A8%E5%93%AA%E5%84%BF%E5%91%A2-%E5%BA%94%E8%AF%A5%E6%98%AF%E5%AE%83%E8%87%AA%E5%B7%B1%E4%BD%9C%E4%B8%BA%E7%BB%93%E6%9E%84%E4%BD%93%E7%9A%84%E6%97%B6%E5%80%99%E5%85%83%E7%B4%A0%E4%B8%AD%E6%9C%80%E5%A4%A7%E7%9A%84-%E8%BF%99%E4%B8%AA%E6%A0%97%E5%AD%90%E4%B8%BAdouble-%E8%A6%81%E6%98%AF%E6%9C%89char-%E7%B1%BB%E5%9E%8B%E6%95%B0%E7%BB%84%E8%B6%85%E8%BF%878%EF%BC%8C%E4%B8%8D%E7%94%A8%E7%AE%A1%EF%BC%8C%E8%AE%A4%E4%B8%BA%E6%98%AFchar-%E5%92%8C%E9%BB%98%E8%AE%A4%E7%9A%844%E7%9B%B8%E6%AF%94%EF%BC%8C%E8%BF%98%E6%98%AF%E5%8F%96%E8%BE%83%E5%B0%8F%E7%9A%84%E4%B8%BA%E5%81%8F%E7%A7%BB%E5%A4%84%E9%98%B2%E6%AD%A2%EF%BC%8C%E6%89%80%E4%BB%A5short%E4%B9%8B%E5%90%8E%E7%A9%BA%E4%B8%A4%E4%B8%AA%E5%B0%B1%E5%8F%AF%E4%BB%A5%E6%8F%92%E5%85%A5%E4%BA%86%EF%BC%8E%E5%A4%A7%E5%B0%8F%E4%B9%9F%E6%98%AF%E4%B8%80%E6%A0%B7%EF%BC%8C%E7%9B%B4%E6%8E%A5%E5%8D%A012%E5%AD%97%E8%8A%82%E5%B0%B1%E6%98%AF%E4%BA%86%EF%BC%8E%E5%90%8E%E9%9D%A2%E7%9A%84%E5%8F%82%E7%85%A7%E8%A7%84%E5%88%99%E5%8D%B3%E5%8F%AF%E5%BE%97%E5%87%BA%EF%BC%8E"><span class="nav-number">1.4.6.</span> <span class="nav-text">6. 第一个foo结构体虽然double为8字节，但是由于默认为4字节的对齐，所以根据对齐原则取两者中较小的对结构体大小倍数，因此为12字节．第二个结构体bar插入了第一个结构体，因此结构体d放在哪儿呢?应该是它自己作为结构体的时候元素中最大的(这个栗子为double,要是有char 类型数组超过8，不用管，认为是char)和默认的4相比，还是取较小的为偏移处防止，所以short之后空两个就可以插入了．大小也是一样，直接占12字节就是了．后面的参照规则即可得出．</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-%E7%94%B1%E4%BA%8E%E7%AC%AC%E4%B8%80%E4%B8%AA%E7%BB%93%E6%9E%84%E4%BD%93%E5%A3%B0%E6%98%8E%E4%B8%BA1%E5%AD%97%E8%8A%82%E7%9A%84%E5%AF%B9%E9%BD%90%E7%B2%92%E5%BA%A6%EF%BC%8C%E5%9B%A0%E6%AD%A4%E5%85%A8%E9%83%A8%E9%83%BD%E5%8D%A0%E7%9D%80%E5%90%A7%EF%BC%8C%E4%BD%86%E6%98%AFbar%E7%BB%93%E6%9E%84%E4%BD%93%E5%89%A9%E4%BD%99%E7%9A%84%E5%85%83%E7%B4%A0%E9%83%BD%E5%BF%85%E9%A1%BB%E5%92%8C%E9%BB%98%E8%AE%A4%E7%9A%844%E8%BF%9B%E8%A1%8C%E6%AF%94%E8%BE%83%EF%BC%8C%E6%9D%A5%E6%94%BE%E7%BD%AE%E5%92%8C%E5%8D%A0%E5%A4%A7%E5%B0%8F%EF%BC%8E"><span class="nav-number">1.4.7.</span> <span class="nav-text">7. 由于第一个结构体声明为1字节的对齐粒度，因此全部都占着吧，但是bar结构体剩余的元素都必须和默认的4进行比较，来放置和占大小．</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-C-%E4%B8%AD%E7%9A%84%E9%AB%98%E7%BA%A7%E4%B9%8B%E5%A4%84"><span class="nav-number">1.5.</span> <span class="nav-text">5. C++中的高级之处</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-C-%E4%B8%AD%E7%9A%84%E7%BB%93%E6%9E%84%E4%BD%93%E5%92%8C%E7%B1%BB%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-number">1.5.1.</span> <span class="nav-text">1.C++中的结构体和类的区别？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-C-%E4%B8%ADclass%E7%9A%84%E8%99%9A%E5%87%BD%E6%95%B0"><span class="nav-number">1.5.2.</span> <span class="nav-text">2. C++中class的虚函数</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

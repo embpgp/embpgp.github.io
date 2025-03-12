@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="微型计算机组成结构">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核0.11完全注释 第二章">
+<meta property="og:url" content="https://embpgp.github.io/2016/11/07/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%BA%8C%E7%AB%A0/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="微型计算机组成结构">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_arch_IBM_Intel.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_modern_PC.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_Main_Memory.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_ROM_BIOS.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_interrupt_8259A.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_MDA_Color.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_CGA_Color.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_EGA_VGA.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_hard_disk1.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_hard_disk2.png">
+<meta property="article:published_time" content="2016-11-07T12:19:43.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.965Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="Linux kernel">
+<meta property="article:tag" content="LDD">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta property="article:tag" content="Asm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/Linux_0.11_arch_IBM_Intel.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2016/11/07/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%BA%8C%E7%AB%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Linux内核0.11完全注释 第二章 | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2016/11/07/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%BA%8C%E7%AB%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux内核0.11完全注释 第二章
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-11-07 20:19:43" itemprop="dateCreated datePublished" datetime="2016-11-07T20:19:43+08:00">2016-11-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>4k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>微型计算机组成结构</p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<h1 id="传统IBM-PC及其兼容计算机的组成框图"><a href="#传统IBM-PC及其兼容计算机的组成框图" class="headerlink" title="传统IBM PC及其兼容计算机的组成框图"></a>传统IBM PC及其兼容计算机的组成框图</h1><p>可以看出唯有地址总线是单向的,从CPU发出,指向各种控制器和接口.而数据总线和控制总线需要是双向的是由于数据需要读写和控制信号的发出和捕获.<br><img src="/images/Linux_0.11_arch_IBM_Intel.png" alt="Linux_0.11_arch_IBM_Intel"></p>
+<h1 id="现代PC机芯片集框图"><a href="#现代PC机芯片集框图" class="headerlink" title="现代PC机芯片集框图"></a>现代PC机芯片集框图</h1><p><img src="/images/Linux_0.11_modern_PC.png" alt="Linux_0.11_modern_PC.png"></p>
+<h1 id="I-O端口寻址和访问控制方式"><a href="#I-O端口寻址和访问控制方式" class="headerlink" title="I/O端口寻址和访问控制方式"></a>I/O端口寻址和访问控制方式</h1><h2 id="端口编址"><a href="#端口编址" class="headerlink" title="端口编址"></a>端口编址</h2><p>1 统一编址:把I/O控制器的端口地址归入存储器寻址地址空间范围内.CPU访问一个端口的操作与访问内存的操作一样,不需要特别的指令.硬件工程师或芯片工程师需确定采用何种编址.<br>2 独立编址:把I/O控制器和控制卡的寻址空间单独作为一个独立的地址空间对待,称为I/O地址空间.必须使用特殊指令来操作,例如Intel中的IN和OUT指令.此时引脚接线也不一样.  </p>
+<p>IBM PC采用了两种方案,独立编址部分采用ISA总线结构分配I/O空间为0x000-0x3ff共1024个端口.统一编址部分例如CGA显卡占据存储器空间0xB8000-0xBC000范围,即CPU地址总线发出此范围的地址并向数据总线上按约定写入ascii值及属性即可显示字符了.  </p>
+<h3 id="查看I-O地址范围"><a href="#查看I-O地址范围" class="headerlink" title="查看I/O地址范围"></a>查看I/O地址范围</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">rutk1t0r@Rutk1t0r:~$ cat /proc/ioports </span><br><span class="line">0000-0cf7 : PCI Bus 0000:00</span><br><span class="line">  0000-001f : dma1</span><br><span class="line">  0020-0021 : pic1</span><br><span class="line">  0040-0043 : timer0</span><br><span class="line">  0050-0053 : timer1</span><br><span class="line">  0060-0060 : keyboard</span><br><span class="line">  0062-0062 : PNP0C09:00</span><br><span class="line">    0062-0062 : EC data</span><br><span class="line">  0064-0064 : keyboard</span><br><span class="line">  0066-0066 : PNP0C09:00</span><br><span class="line">    0066-0066 : EC cmd</span><br><span class="line">  0070-0077 : rtc0</span><br><span class="line">  0080-008f : dma page reg</span><br><span class="line">  00a0-00a1 : pic2</span><br><span class="line">  00c0-00df : dma2</span><br><span class="line">  00f0-00ff : fpu</span><br><span class="line">    00f0-00f0 : PNP0C04:00</span><br><span class="line">  03c0-03df : vesafb</span><br><span class="line">  0400-0403 : ACPI PM1a_EVT_BLK</span><br><span class="line">  0404-0405 : ACPI PM1a_CNT_BLK</span><br><span class="line">  0408-040b : ACPI PM_TMR</span><br><span class="line">  0410-0415 : ACPI CPU throttle</span><br><span class="line">  0420-042f : ACPI GPE0_BLK</span><br><span class="line">  0430-0433 : iTCO_wdt.2.auto</span><br><span class="line">  0450-0450 : ACPI PM2_CNT_BLK</span><br><span class="line">  0454-0457 : pnp 00:02</span><br><span class="line">  0458-047f : pnp 00:00</span><br><span class="line">    0460-047f : iTCO_wdt.2.auto</span><br><span class="line">  0500-057f : pnp 00:00</span><br><span class="line">  0680-069f : pnp 00:00</span><br><span class="line">0cf8-0cff : PCI conf1</span><br><span class="line">0d00-ffff : PCI Bus 0000:00</span><br><span class="line">  1000-100f : pnp 00:00</span><br><span class="line">  164e-164f : pnp 00:00</span><br><span class="line">  2000-2fff : PCI Bus 0000:01</span><br><span class="line">    2000-20ff : 0000:01:00.0</span><br><span class="line">      2000-20ff : r8169</span><br><span class="line">  3000-303f : 0000:00:02.0</span><br><span class="line">  3040-305f : 0000:00:1f.3</span><br><span class="line">  3060-307f : 0000:00:1f.2</span><br><span class="line">    3060-307f : ahci</span><br><span class="line">  3080-3087 : 0000:00:1f.2</span><br><span class="line">    3080-3087 : ahci</span><br><span class="line">  3088-308f : 0000:00:1f.2</span><br><span class="line">    3088-308f : ahci</span><br><span class="line">  3090-3093 : 0000:00:1f.2</span><br><span class="line">    3090-3093 : ahci</span><br><span class="line">  3094-3097 : 0000:00:1f.2</span><br><span class="line">    3094-3097 : ahci</span><br><span class="line">  4000-4fff : PCI Bus 0000:02</span><br><span class="line">  fd60-fd63 : pnp 00:00</span><br><span class="line">  ffff-ffff : pnp 00:00</span><br><span class="line">    ffff-ffff : pnp 00:00</span><br></pre></td></tr></table></figure>
+<h2 id="接口访问控制"><a href="#接口访问控制" class="headerlink" title="接口访问控制"></a>接口访问控制</h2><h3 id="轮询"><a href="#轮询" class="headerlink" title="轮询"></a>轮询</h3><p>CPU通过在程序中循环查询指定设备控制器中的状态来判断是否与设备进行数据交换.简单耗费CPU时间,适合任务等待时间极短或必须的情况.</p>
+<h3 id="中断"><a href="#中断" class="headerlink" title="中断"></a>中断</h3><p>需要中断控制器的支持,顾名思义,当事件发生后,CPU暂停当前程序转而执行I/O中断处理服务过程,之后视情况才恢复被中断的程序.需要早就填充好中断向量表.效率较高.</p>
+<h3 id="DMA"><a href="#DMA" class="headerlink" title="DMA"></a>DMA</h3><p>用于I/O设备与系统内存之间进行大批量数据传送,整个过程需要使用专门的DMA控制器来进行而CPU在传输过程中无需插手.结合中断配合效率很高的.</p>
+<h1 id="存储器"><a href="#存储器" class="headerlink" title="存储器"></a>存储器</h1><h2 id="主存储器映射"><a href="#主存储器映射" class="headerlink" title="主存储器映射"></a>主存储器映射</h2><p><img src="/images/Linux_0.11_Main_Memory.png" alt="Linux_0.11_Main_Memory.png"></p>
+<h2 id="BIOS"><a href="#BIOS" class="headerlink" title="BIOS"></a>BIOS</h2><p>顾名思义,基本的输入/输出系统,存放在ROM中的系统BIOS主要用于计算机开机执行系统各个部分自检,并建立起操作系统要使用的各种配置表,把处理器和系统其余部分初始化到一个已知的状态,且为DOS等系统提供硬件设备接口服务.除此之外Linux操作系统在运行的时候并不适用BIOS中的功能.当计算机系统上电开机或者按下了机箱上的复位按钮时,CPU捕获到信号后把CS寄存器设置为0xF000,段基址被设置为0xFFFF0000,段长度为64K.而EIP寄存器(32位体系)被设置为0xFFF0,因此线性地址计算得到0xFFFFFFF0,这个是写死的.4G空间最后一个64K(以前的8086分段特性)的最后16字节处,一般安排一条JMP跳转指令跳到BIOS代码中64KB范围内的某一条指令开始执行.由于目前PC/AT微机中的BIOS容量大多有1MB-2MB,并存储在FLASH中,因此为了能够执行或者访问BIOS超过64KB范围并且又远远不在0-1M地址空间中的其他BIOS代码或者数据,BIOS程序首先使用一个成为32位大模式技术把数据段寄存器的访问范围设置为4G.此后,BIOS在执行了一系列硬件检测和初始化操作之后,把与原来PC机兼容的64KB BIOS代码和数据复制到内存低端1M末端的64K处,然后跳转到这个地方并且让CPU进入真正的实地址模式工作.如下图,最后BIOS会从硬盘或者其他块启动设备把操作系统引导程序加载在内存0x7c00处(Intel约定),并跳转到这个地方继续执行引导程序.<br><img src="/images/Linux_0.11_ROM_BIOS.png" alt="Linux_0.11_ROM_BIOS.png"></p>
+<h2 id="CMOS存储器"><a href="#CMOS存储器" class="headerlink" title="CMOS存储器"></a>CMOS存储器</h2><p>主要用来存放计算机实时时钟信息和系统硬件配置信息,这部分内存通常和实时时钟芯片做在一块集成块中,CMOS内存的地址空间在基本内存地址空间之外,需要用I/O指令来访问.</p>
+<h1 id="控制器和控制卡"><a href="#控制器和控制卡" class="headerlink" title="控制器和控制卡"></a>控制器和控制卡</h1><h2 id="中断控制器"><a href="#中断控制器" class="headerlink" title="中断控制器"></a>中断控制器</h2><p>IBM PC/AT 80X86兼容微机采两片级联的8259A可编程中断控制芯片组成一个中断控制器,Linux在内核初始化会继续重新对8259A进行编程来使得其符合自身的控制.<br><img src="/images/Linux_0.11_interrupt_8259A.png" alt="Linux_0.11_interrupt_8259A.png"></p>
+<h2 id="DMA控制器"><a href="#DMA控制器" class="headerlink" title="DMA控制器"></a>DMA控制器</h2><p>采用两块Intel 8237芯片具有8个独立通道,对页面寄存器端口,(偏移)地址寄存器端口和数据寄存器端口进行设置来启用数据传送.由于DMA寄存器是8位的,而地址和计数值是16位值,因此各自需要发送两次.</p>
+<h2 id="定时-计数器"><a href="#定时-计数器" class="headerlink" title="定时/计数器"></a>定时/计数器</h2><p>采用Intel 8253/8254来产生精确的计时中断信号,动态内存DRAM刷新电路和主机扬声器音调合成.Linux 0.11对通道0进行设置,使其工作在方式3下,并且每隔10ms发出IRQ0,即内核的工作脉搏,用于定时切换任务及统计系统资源量.</p>
+<h2 id="键盘控制器"><a href="#键盘控制器" class="headerlink" title="键盘控制器"></a>键盘控制器</h2><p>采用类Intel 8042芯片对键盘的接通码和断开嘛进行扫描并计算.通过IRQ1引脚向CPU发出中断请求.根据三套扫描码集确定具体键盘字符.(早期的键盘控制器P21引脚控制CPU A21信号线开启大范围寻址)</p>
+<h2 id="串行控制卡"><a href="#串行控制卡" class="headerlink" title="串行控制卡"></a>串行控制卡</h2><p>PC常用符合RS-232C标准的串行接口,并使用通用异步收发器控制芯片UART组成的串行控制器来处理串行数据的手法工作.</p>
+<h2 id="显示控制"><a href="#显示控制" class="headerlink" title="显示控制"></a>显示控制</h2><p>IBM最早推出的PC机视频系统标准有单色MDA标准和彩色CGA标准以及EGA和VGA标准.以后推出的所有高级显卡(包括现在的AGP显卡)虽然都具有极高的图形处理速度和智能加速处理,但是它们都支持这几种标准.Linux 0.1x操作系统仅仅使用了这几种标准都支持的文本显示方式.</p>
+<h3 id="MDA显示标准"><a href="#MDA显示标准" class="headerlink" title="MDA显示标准"></a>MDA显示标准</h3><p>仅支持黑白两色,并且只支持独有的文本字符显示方式(BIOS显示方式7).屏幕规格80*25(列号x=0..79;行号y=0..24),共可以显示2000字符(难怪在Linux中打开shell默认都是80*25).每个字符还带有1个属性字节,因此显示一屏(一帧)内容需要占据4KB字节.其中偶地址字节存放字符代码(ascii),奇地址存放显示属性.MDA卡配置有8KB显存.在PC机内存寻址范围中占用0xb0000开始的8K空间(0xb0000-0xb2000).如果显示屏行数是video_num_lines=25;列数是video_num_colums=80,那么位于屏幕列行值x,y处的字符和属性在内存中的位置是:<br>字符字节位置 = 0xb0000 + video_num_colums*2*y + x*2;<br>属性字节位置 = 字符字节位置+1;</p>
+<blockquote>
+<p><strong>注意此处坐标系为从屏幕左上角开始往右为x增大,往下为y增大,均不为负值.</strong>  </p>
+</blockquote>
+<p><img src="/images/Linux_0.11_MDA_Color.png" alt="Linux_0.11_MDA_Color.png"></p>
+<h3 id="CGA显示标准"><a href="#CGA显示标准" class="headerlink" title="CGA显示标准"></a>CGA显示标准</h3><p>CGA支持7种彩色和图形显示方式(BIOS显示方式0-6).在80列*25行的文本字符显示方式下,有单色和16色彩色两种显示方式(BIOS显示方式2-3).CGA卡标配有16K显示内存(占用内存地址范围0xb8000-0xbc000),因此可存放4帧信息,同样,在每一帧4K显存中,偶数地址存字符代码,奇数字节存放显示属性.但是在console.c程序中只使用了其中8K显存(0xb8000-0xba000).字符显示属性定义如下:<br><img src="/images/Linux_0.11_CGA_Color.png" alt="Linux_0.11_CGA_Color.png"></p>
+<h3 id="EGA-VGA显示标准"><a href="#EGA-VGA显示标准" class="headerlink" title="EGA/VGA显示标准"></a>EGA/VGA显示标准</h3><p><img src="/images/Linux_0.11_EGA_VGA.png" alt="Linux_0.11_EGA_VGA.png"></p>
+<h2 id="软盘和硬盘控制器"><a href="#软盘和硬盘控制器" class="headerlink" title="软盘和硬盘控制器"></a>软盘和硬盘控制器</h2><p>由于软盘片比较容易遭到损坏(发霉或划伤),因此目前计算机中已经逐渐开始不配置软盘驱动器,取而代之的是用U盘.而硬盘作为相对于比较大容量和每比特信息廉价的外存设备,在PC中仍然大量存在.下面是硬盘的一些工作原理:<br><img src="/images/Linux_0.11_hard_disk1.png" alt="Linux_0.11_hard_disk1.png"><br><img src="/images/Linux_0.11_hard_disk2.png" alt="Linux_0.11_hard_disk2.png"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本章介绍了基于Intel 80X86芯片组的计算机组成结构及各个工作部件的工作原理.便于理解操作系统内核的实现,毕竟软件要根据硬件的框架在铺设的.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/Linux-kernel/" rel="tag"># Linux kernel</a>
+              <a href="/embpgp.github.io/tags/LDD/" rel="tag"># LDD</a>
+              <a href="/embpgp.github.io/tags/C-C/" rel="tag"># C/C++</a>
+              <a href="/embpgp.github.io/tags/Asm/" rel="tag"># Asm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/11/07/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%80%E7%AB%A0/" rel="prev" title="Linux内核0.11完全注释 第一章">
+      <i class="fa fa-chevron-left"></i> Linux内核0.11完全注释 第一章
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/11/15/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%89%E7%AB%A0/" rel="next" title="Linux内核0.11完全注释 第三章">
+      Linux内核0.11完全注释 第三章 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9FIBM-PC%E5%8F%8A%E5%85%B6%E5%85%BC%E5%AE%B9%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%9A%84%E7%BB%84%E6%88%90%E6%A1%86%E5%9B%BE"><span class="nav-number">1.</span> <span class="nav-text">传统IBM PC及其兼容计算机的组成框图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%8E%B0%E4%BB%A3PC%E6%9C%BA%E8%8A%AF%E7%89%87%E9%9B%86%E6%A1%86%E5%9B%BE"><span class="nav-number">2.</span> <span class="nav-text">现代PC机芯片集框图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#I-O%E7%AB%AF%E5%8F%A3%E5%AF%BB%E5%9D%80%E5%92%8C%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6%E6%96%B9%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">I&#x2F;O端口寻址和访问控制方式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AB%AF%E5%8F%A3%E7%BC%96%E5%9D%80"><span class="nav-number">3.1.</span> <span class="nav-text">端口编址</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8BI-O%E5%9C%B0%E5%9D%80%E8%8C%83%E5%9B%B4"><span class="nav-number">3.1.1.</span> <span class="nav-text">查看I&#x2F;O地址范围</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A5%E5%8F%A3%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="nav-number">3.2.</span> <span class="nav-text">接口访问控制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%AE%E8%AF%A2"><span class="nav-number">3.2.1.</span> <span class="nav-text">轮询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%AD%E6%96%AD"><span class="nav-number">3.2.2.</span> <span class="nav-text">中断</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DMA"><span class="nav-number">3.2.3.</span> <span class="nav-text">DMA</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E5%99%A8"><span class="nav-number">4.</span> <span class="nav-text">存储器</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E5%AD%98%E5%82%A8%E5%99%A8%E6%98%A0%E5%B0%84"><span class="nav-number">4.1.</span> <span class="nav-text">主存储器映射</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BIOS"><span class="nav-number">4.2.</span> <span class="nav-text">BIOS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CMOS%E5%AD%98%E5%82%A8%E5%99%A8"><span class="nav-number">4.3.</span> <span class="nav-text">CMOS存储器</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8E%A7%E5%88%B6%E5%99%A8%E5%92%8C%E6%8E%A7%E5%88%B6%E5%8D%A1"><span class="nav-number">5.</span> <span class="nav-text">控制器和控制卡</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="nav-number">5.1.</span> <span class="nav-text">中断控制器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DMA%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="nav-number">5.2.</span> <span class="nav-text">DMA控制器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E6%97%B6-%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="nav-number">5.3.</span> <span class="nav-text">定时&#x2F;计数器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%94%AE%E7%9B%98%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="nav-number">5.4.</span> <span class="nav-text">键盘控制器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%B2%E8%A1%8C%E6%8E%A7%E5%88%B6%E5%8D%A1"><span class="nav-number">5.5.</span> <span class="nav-text">串行控制卡</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%8E%A7%E5%88%B6"><span class="nav-number">5.6.</span> <span class="nav-text">显示控制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MDA%E6%98%BE%E7%A4%BA%E6%A0%87%E5%87%86"><span class="nav-number">5.6.1.</span> <span class="nav-text">MDA显示标准</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CGA%E6%98%BE%E7%A4%BA%E6%A0%87%E5%87%86"><span class="nav-number">5.6.2.</span> <span class="nav-text">CGA显示标准</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EGA-VGA%E6%98%BE%E7%A4%BA%E6%A0%87%E5%87%86"><span class="nav-number">5.6.3.</span> <span class="nav-text">EGA&#x2F;VGA显示标准</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BD%AF%E7%9B%98%E5%92%8C%E7%A1%AC%E7%9B%98%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="nav-number">5.7.</span> <span class="nav-text">软盘和硬盘控制器</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

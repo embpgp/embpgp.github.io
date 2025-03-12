@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="介绍Linux内核0.11版本的编程语言和环境以及目标文件格式等">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核0.11完全注释 第三章">
+<meta property="og:url" content="https://embpgp.github.io/2016/11/15/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%89%E7%AB%A0/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="介绍Linux内核0.11版本的编程语言和环境以及目标文件格式等">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_as86_compile.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_as86_boot.png.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_as86.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_ld86.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_Intel_AT&T_diff.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_linker_section.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_emb_asm_load_code1.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_emb_asm_load_code2.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_a.out_map.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_a.out_map_header1.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_a.out_map_header2.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_a.out_map_to_memory.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_a.out_linkers.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_a.out_symbol1.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_a.out_symbol2.png">
+<meta property="article:published_time" content="2016-11-15T08:46:00.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.965Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="Linux kernel">
+<meta property="article:tag" content="LDD">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta property="article:tag" content="Asm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/Linux_0.11_chapter3_as86_compile.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2016/11/15/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%89%E7%AB%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Linux内核0.11完全注释 第三章 | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2016/11/15/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%89%E7%AB%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux内核0.11完全注释 第三章
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-11-15 16:46:00" itemprop="dateCreated datePublished" datetime="2016-11-15T16:46:00+08:00">2016-11-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>4k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>介绍Linux内核0.11版本的编程语言和环境以及目标文件格式等  </p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<h1 id="as86-和-ld86"><a href="#as86-和-ld86" class="headerlink" title="as86 和 ld86"></a>as86 和 ld86</h1><ul>
+<li><p>as86 在开发Linux内核时仅用来创建16位的启动引导扇区程序boot/boosect.s和实模式下的初始设置程序boot/setup.s的二进制执行代码.采用Intel格式的汇编指令格式.</p>
+</li>
+<li><p>汇编的命令行基本格式:<code>as [选项] -o objfile srcfile</code>.</p>
+</li>
+<li><p><code>=</code>或<code>EQU</code>符号等价于C语言的宏</p>
+</li>
+<li><p><code>.</code>编译过程中的位置计数器,等价于<code>$</code></p>
+</li>
+<li><p><code>:</code>符号,本质为汇编地址</p>
+</li>
+<li><p>目标文件objfile起码包含三个section,<strong>.text</strong>,<strong>.data</strong>,<strong>.bss</strong></p>
+</li>
+<li><p>as86汇编语言程序例程:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">!</span><br><span class="line">!Filename:boot.s</span><br><span class="line">!</span><br><span class="line">!Description: boot section codes on Intel CPU</span><br><span class="line">!</span><br><span class="line">!Author:rutk1t0r</span><br><span class="line">!</span><br><span class="line">!Data:2016.11.8</span><br><span class="line">!</span><br><span class="line">!GPL</span><br><span class="line">!</span><br><span class="line">!method:</span><br><span class="line">![/root]# as86 -0 -a -o boot.o boot.s    #编译</span><br><span class="line">![/root]# ld86 -0 -s -o boot boot.o      #链接</span><br><span class="line">![/root]# dd bs=32 if=boot of=/dev/fd0 skip=1   #写入软盘或者image文件,跳过文件头</span><br><span class="line">!==================================================================</span><br><span class="line">!</span><br><span class="line">!</span><br><span class="line">! boot.s -- bootsect.s 的框架程序.用代码0x07替换字符串msg1中一个字符,然后在屏幕上1行显示</span><br><span class="line">!</span><br><span class="line">.globl begtext, begdata, begbss, endtext, enddata, endbss !全局标识符,供ld86链接使用</span><br><span class="line">.text  !代码段</span><br><span class="line">begtext:</span><br><span class="line">.data</span><br><span class="line">begdata:</span><br><span class="line">.bss</span><br><span class="line">begbss:</span><br><span class="line">.text</span><br><span class="line">BOOTSEG = 0x07c0   !类似于C语言宏定义,EQU,Intel内存代码执行首地址</span><br><span class="line">entry start        !告知链接程序,程序从start标号开始执行</span><br><span class="line">start:</span><br><span class="line">jmpi	go, BOOTSEG !段间跳转,两个地址,低地址16位送IP寄存器,高地址16位送cs段寄存器</span><br><span class="line">go:</span><br><span class="line">		mov	ax, cs  !将cs段寄存器值同步至ds,es,此代码未用到ss</span><br><span class="line">		mov es, ax</span><br><span class="line">		mov ds, ax</span><br><span class="line">		mov [msg1+17], ah   !示例修改串,然后会调用BIOS中断,参考链接https://zh.wikipedia.org/wiki/INT_10</span><br><span class="line">		mov	cx, #20  		!立即数需要前缀#,根据BIOS提供的接口约定,cx为字符总个数</span><br><span class="line">		mov	dx, #0x1004  	!约定,位置,此时为17行5列</span><br><span class="line">		mov bx, #0x000c    	!约定,字符属性(红色)</span><br><span class="line">		mov bp, #msg1		!约定,字符缓冲区首地址</span><br><span class="line">		mov ax, #0x1301		!ah=0x13表示写字符串功能号</span><br><span class="line">		int 0x10			!调用BIOS中断</span><br><span class="line">loop1:  jmp 	loop1  		!死循环待机</span><br><span class="line">msg1:	.ascii	&quot;Loading system...&quot; !字符20个,包括回车换行</span><br><span class="line">		.byte 	13,10</span><br><span class="line">.org	510					!表示以后的语句从偏移地址510开始放</span><br><span class="line">		.word 	0xAA50		!有效引导扇区标志,约定</span><br><span class="line">.text</span><br><span class="line">endtext:</span><br><span class="line">.data</span><br><span class="line">enddata:</span><br><span class="line">.bss</span><br><span class="line">endbss:</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>可参照如下命令进行编译链接等<br><img src="/images/Linux_0.11_chapter3_as86_compile.png" alt="Linux_0.11_chapter3_as86_compile.png"></p>
+</li>
+<li><p>本应该512字节的boot程序(MBR)多出32字节为MINIX可执行文件头结构,需剔除掉(dd命令等).而后可用Bochs等模拟器观察现象,正常如下:<br><img src="/images/Linux_0.11_chapter3_as86_boot.png.png" alt="Linux_0.11_chapter3_as86_boot.png.png"></p>
+</li>
+<li><p><strong>as86具体使用方法:</strong><br><img src="/images/Linux_0.11_chapter3_as86.png" alt="Linux_0.11_chapter3_as86.png"></p>
+</li>
+<li><p><strong>ld86具体使用方法:</strong><br><img src="/images/Linux_0.11_chapter3_ld86.png" alt="Linux_0.11_chapter3_ld86.png"></p>
+</li>
+</ul>
+<h1 id="GNU-as汇编"><a href="#GNU-as汇编" class="headerlink" title="GNU as汇编"></a>GNU as汇编</h1><ul>
+<li>内核中其余所有汇编语言程序(包括C语言产生的汇编程序)均由gas来编译,并与C语言程序编译产生的模块进行链接. </li>
+<li><strong>Intel格式的汇编与AT&amp;T格式的汇编区别:</strong><br><img src="/images/Linux_0.11_chapter3_Intel_AT&T_diff.png" alt="Linux_0.11_chapter3_Intel_AT&amp;T_diff.png"></li>
+<li>as汇编器对汇编语言程序只进行简单地预处理,比如调整并删除多余空格和制表符,删除注释等;如需要进行宏替换则可以让汇编语言程序使用大写后缀’.S’来让as使用gcc的CPP预处理功能.</li>
+<li>具体关于汇编指令部分可以参考Intel开发者手册<h2 id="区和重定位"><a href="#区和重定位" class="headerlink" title="区和重定位"></a>区和重定位</h2></li>
+<li>区:有时候也成为段,节或部分,英文为section,用来表示一个地址范围,操作系统将会以相同的方式对待和处理改地址范围的数据信息.</li>
+<li>重定位:当汇编过后的数据中出现重定位节时候,由链接器负责修正重定位的数据部分(至于为什么会需要重定位这与很多机制有关系了,必须虚拟内存等).<h2 id="链接器涉及的区"><a href="#链接器涉及的区" class="headerlink" title="链接器涉及的区:"></a>链接器涉及的区:</h2><img src="/images/Linux_0.11_chapter3_linker_section.png" alt="Linux_0.11_chapter3_linker_section.png"></li>
+<li>关于gcc对于C程序的编译和链接过程可参考<a target="_blank" rel="noopener" href="http://www.rutk1t0r.org/2016/09/06/C%E8%AF%AD%E8%A8%80%E5%AE%8F%E5%AE%9A%E4%B9%89%E5%B0%8F%E8%AF%95/">前文</a><h2 id="嵌入汇编"><a href="#嵌入汇编" class="headerlink" title="嵌入汇编"></a>嵌入汇编</h2></li>
+<li>格式： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">asm(&quot;汇编语句&quot;</span><br><span class="line">	:输出寄存器</span><br><span class="line">	:输入寄存器</span><br><span class="line">	:会被修改的寄存器);</span><br></pre></td></tr></table></figure></li>
+<li>嵌入汇编的好处就是利用gcc的灵活性在C语言里面精练地实现某些特定功能</li>
+<li>Linux内核源码中仍然在使用圆括号的组合语句，一般用在宏定义。</li>
+<li>strcpy的嵌入汇编实现如下，因为首先要进行预处理，所以增加换行便于浏览。 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//将字符串(src)拷贝到另一字符串(dest)，直到遇到NULL字符后终止</span></span><br><span class="line"><span class="comment">//参数:dest - 目的字符串指针, src - 源字符串指针, %0 - esi(src), %1 - edi(dest)。</span></span><br><span class="line"><span class="function"><span class="keyword">extern</span> <span class="keyword">inline</span> <span class="keyword">char</span> *<span class="title">strcpy</span><span class="params">(<span class="keyword">char</span> *dest, <span class="keyword">const</span> <span class="keyword">char</span> *src)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">__asm__(<span class="string">&quot;cld\n&quot;</span>			<span class="comment">//清空方向标志，往上为默认增长</span></span><br><span class="line">		<span class="string">&quot;1:\tlodsb\n\t&quot;</span> <span class="comment">//加载DS:[esi]处1字节-&gt;al,esi++</span></span><br><span class="line">		<span class="string">&quot;stosb\n\t&quot;</span>		<span class="comment">//存储al-&gt;ES:[edi],edi++</span></span><br><span class="line">		<span class="string">&quot;testb %%al, %%al\n\t&quot;</span>	<span class="comment">//测试刚刚存储是否为NULL字符</span></span><br><span class="line">		<span class="string">&quot;jne 1b&quot;</span>		<span class="comment">//不是则继续跳到标号1处，否则就结束</span></span><br><span class="line">		::<span class="string">&quot;S&quot;</span>(src), <span class="string">&quot;D&quot;</span>(dest)<span class="string">&quot;:&quot;</span>si<span class="string">&quot;,&quot;</span>di<span class="string">&quot;,&quot;</span>ax<span class="string">&quot;);</span></span><br><span class="line"><span class="string">return dest;			//返回目的字符串首地址，实现链式</span></span><br><span class="line"><span class="string">&#125;</span></span><br></pre></td></tr></table></figure></li>
+<li>嵌入汇编加载代码<br><img src="/images/Linux_0.11_chapter3_emb_asm_load_code1.png" alt="Linux_0.11_chapter3_emb_asm_load_code1.png"><br><img src="/images/Linux_0.11_chapter3_emb_asm_load_code2.png" alt="Linux_0.11_chapter3_emb_asm_load_code2.png"><h2 id="C与汇编的相互调用"><a href="#C与汇编的相互调用" class="headerlink" title="C与汇编的相互调用"></a>C与汇编的相互调用</h2></li>
+<li>调用约定(主要根据参数顺序、传参方式以及平衡堆栈者等来区分,当然其他体系结构也有其他实现,这里主要是IA-32体系,Intel 64调用约定已经开始大幅度使用寄存器传参)<ul>
+<li>fastcall:Linux系统调用比较常用，直接利用寄存器传参，子程序(被调用者)清除栈帧</li>
+<li>__cdecl:参数从右至左压栈，由调用者负责清除栈空间，可变参数</li>
+<li>stdcall:Windows的Win32 API常用，与__cdecl区别是被调用者一般用类似<code>ret n</code>指令来清除栈空间(清除栈空间主要是恢复被保存的寄存器值以及栈指针回归)</li>
+<li>PASCAL:从左到右压栈，被调用者清栈</li>
+<li>this:C++标准的Microsoft实现利用ecx传递对象首地址</li>
+</ul>
+</li>
+<li>在软件工程师的角度,以汇编语言作为”车轮子”和”底线”完全可以应付了绝大多数的问题了，因此只要源代码汇编过后保持一致性，各种语言之间的相互调用都是可以的。</li>
+</ul>
+<h1 id="Linux-0-11目标文件格式"><a href="#Linux-0-11目标文件格式" class="headerlink" title="Linux 0.11目标文件格式"></a>Linux 0.11目标文件格式</h1><blockquote>
+<p>有关目标文件和链接程序的基本工作原理可参见John R.Levine著的《Linkers &amp; Loaders》(有中文译版）一书。</p>
+</blockquote>
+<h2 id="a-out映像"><a href="#a-out映像" class="headerlink" title="a.out映像"></a>a.out映像</h2><ul>
+<li>在Linux 0.11系统中，GNU gcc或者gas编译输出的目标模块文件和链接程序所生成的可执行文件都使用了UNIX传统的a.out格式。对于具有内存分页机制的系统(可由硬件芯片给予软件以支持）来说，这是一种简单有效的目标文件格式。<br><img src="/images/Linux_0.11_chapter3_a.out_map.png" alt="Linux_0.11_chapter3_a.out_map.png"><br><img src="/images/Linux_0.11_chapter3_a.out_map_header1.png" alt="Linux_0.11_chapter3_a.out_map_header1.png"><br><img src="/images/Linux_0.11_chapter3_a.out_map_header2.png" alt="Linux_0.11_chapter3_a.out_map_header2.png"></li>
+<li>Linux内核可执行文件加载器将可执行文件从磁盘加载到内存中的映像<br><img src="/images/Linux_0.11_chapter3_a.out_map_to_memory.png" alt="Linux_0.11_chapter3_a.out_map_to_memory.png"></li>
+<li>链接程序的操作<br><img src="/images/Linux_0.11_chapter3_a.out_linkers.png" alt="Linux_0.11_chapter3_a.out_linkers.png"></li>
+</ul>
+<h2 id="链接程序预定义变量"><a href="#链接程序预定义变量" class="headerlink" title="链接程序预定义变量"></a>链接程序预定义变量</h2><ul>
+<li><p>在链接过程中，链接器ld和ld86会使用自身的变量记录下执行程序中每个段的逻辑地址。因此可以在程序用通过几个外部变量来获取程序中段的位置。</p>
+</li>
+<li><p>_etext(etext):它的地址是.text段结束后的第一个地址;</p>
+</li>
+<li><p>_edata(edata):它的地址是.data初始化数据区后的第一个地址;</p>
+</li>
+<li><p>_end(end):它的地址是未初始化数据区.bss后的第一个地址位置。</p>
+</li>
+<li><p>带下划线前缀和不带是等价的，唯一的区别在ANSI、POSIX等标准中没有定义符号etext、edata和end。</p>
+</li>
+<li><p>Linux 0.1x 内核在初始化块设备高速缓存区时(fs/buffer.c)， 就使用了变量_end来获取内核映像文件Image在内存中的末端后的位置，并从这个位置起开始设置高速缓冲区。</p>
+</li>
+<li><p>利用System.map文件可以找寻到<strong>目标文件及符号信息映射到内存的位置</strong>、<strong>公共符号设置</strong>、<strong>链接中包含的所有文件成员以及其引用的符号</strong>和<strong>内核运行错误信息及调试</strong>。</p>
+</li>
+<li><p>目标文件符号列表文件中的符号类型<br><img src="/images/Linux_0.11_chapter3_a.out_symbol1.png" alt="Linux_0.11_chapter3_a.out_symbol1.png"><br><img src="/images/Linux_0.11_chapter3_a.out_symbol2.png" alt="Linux_0.11_chapter3_a.out_symbol2.png"></p>
+</li>
+</ul>
+<h1 id="Make-和-Makefile"><a href="#Make-和-Makefile" class="headerlink" title="Make 和 Makefile"></a>Make 和 Makefile</h1><ul>
+<li>make程序通过Makefile文件知道如何编译和链接程序</li>
+<li>make的执行过程为两个阶段。</li>
+<li>读取<strong>所有的</strong>Makefile文件以及包含的Makefile文件等，记录所有的变量及值、隐式的或显式的规则，并构造出所有目标对象及其先决条件的一幅全景图;</li>
+<li>make就使用这些内部结构来确定哪个目标对象需要被重建，并且根据相应的规则来操作。</li>
+<li>当make重新编译程序的时，每个修改过的C代码文件(根据文件时间戳)必须被重新编译。如果头文件被修改过了，那么为了保证正确，make也会重新编译每个包含此头文件的C代码文件。</li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ul>
+<li>基本的开发环境需要搭建和理解</li>
+<li>汇编语言在Linux内核中的重要性</li>
+<li>目标文件格式基本格式需理解(PE更复杂)</li>
+<li>链接器的高级特效需理解</li>
+<li>Makefile高级用法需要会用</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/Linux-kernel/" rel="tag"># Linux kernel</a>
+              <a href="/embpgp.github.io/tags/LDD/" rel="tag"># LDD</a>
+              <a href="/embpgp.github.io/tags/C-C/" rel="tag"># C/C++</a>
+              <a href="/embpgp.github.io/tags/Asm/" rel="tag"># Asm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/11/07/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%BA%8C%E7%AB%A0/" rel="prev" title="Linux内核0.11完全注释 第二章">
+      <i class="fa fa-chevron-left"></i> Linux内核0.11完全注释 第二章
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/11/19/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0/" rel="next" title="Linux内核0.11完全注释 第四章">
+      Linux内核0.11完全注释 第四章 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#as86-%E5%92%8C-ld86"><span class="nav-number">1.</span> <span class="nav-text">as86 和 ld86</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GNU-as%E6%B1%87%E7%BC%96"><span class="nav-number">2.</span> <span class="nav-text">GNU as汇编</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8C%BA%E5%92%8C%E9%87%8D%E5%AE%9A%E4%BD%8D"><span class="nav-number">2.1.</span> <span class="nav-text">区和重定位</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5%E5%99%A8%E6%B6%89%E5%8F%8A%E7%9A%84%E5%8C%BA"><span class="nav-number">2.2.</span> <span class="nav-text">链接器涉及的区:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B5%8C%E5%85%A5%E6%B1%87%E7%BC%96"><span class="nav-number">2.3.</span> <span class="nav-text">嵌入汇编</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#C%E4%B8%8E%E6%B1%87%E7%BC%96%E7%9A%84%E7%9B%B8%E4%BA%92%E8%B0%83%E7%94%A8"><span class="nav-number">2.4.</span> <span class="nav-text">C与汇编的相互调用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Linux-0-11%E7%9B%AE%E6%A0%87%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">Linux 0.11目标文件格式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#a-out%E6%98%A0%E5%83%8F"><span class="nav-number">3.1.</span> <span class="nav-text">a.out映像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5%E7%A8%8B%E5%BA%8F%E9%A2%84%E5%AE%9A%E4%B9%89%E5%8F%98%E9%87%8F"><span class="nav-number">3.2.</span> <span class="nav-text">链接程序预定义变量</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Make-%E5%92%8C-Makefile"><span class="nav-number">4.</span> <span class="nav-text">Make 和 Makefile</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="本篇将根据实战经验来构建这个简单的多任务内核的运行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核0.11完全注释 第四章-番外篇">
+<meta property="og:url" content="https://embpgp.github.io/2016/11/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E7%95%AA%E5%A4%96%E7%AF%87/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="本篇将根据实战经验来构建这个简单的多任务内核的运行">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_make_by_heself.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_extra_bochs_start.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_extra_bochs_6.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_extra_bochs_0x7c00.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_extra_bochs_protect_0.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_extra_bochs_first_show.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_extra_bochs_first_jmp.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_extra_bochs_task0_kernel.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_extra_bochs_task0_kernel_resume.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_extra_bochs_task0_kernel_resume_user.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_extra_bochs_running.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_extra_bochs_add_2_task.png">
+<meta property="article:published_time" content="2016-11-22T12:19:15.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.965Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="Linux kernel">
+<meta property="article:tag" content="LDD">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta property="article:tag" content="Asm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/Linux_0.11_chapter4_make_by_heself.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2016/11/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E7%95%AA%E5%A4%96%E7%AF%87/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Linux内核0.11完全注释 第四章-番外篇 | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2016/11/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E7%95%AA%E5%A4%96%E7%AF%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux内核0.11完全注释 第四章-番外篇
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-11-22 20:19:15" itemprop="dateCreated datePublished" datetime="2016-11-22T20:19:15+08:00">2016-11-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.6k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>本篇将根据实战经验来构建这个简单的多任务内核的运行</p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<h1 id="Bochs安装和配置"><a href="#Bochs安装和配置" class="headerlink" title="Bochs安装和配置"></a>Bochs安装和配置</h1><ul>
+<li>通过Debian或者RHEL的包管理器直接安装或者源码安装都可以，网上多建议源码安装，说可以开启调试和反汇编功能，我发现都差不多，至于Win平台的直接点击点击即可。</li>
+<li>按照网上的一些教程将拷贝一份配置文件或者直接文本新建一个，将<strong>romimage</strong>和<strong>vgaromimage</strong>的路径配置好，我的配置如下，删除了很多没啥用的。看启动文件可知道仅仅需要一个设备即可完成。<strong>Image</strong>是后面编译链接后用dd命令写入的文件。<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">romimage: file=<span class="variable">$BXSHARE</span>/BIOS-bochs-latest</span><br><span class="line">megs: 16</span><br><span class="line">vgaromimage: file=/usr/<span class="built_in">local</span>/share/bochs/VGABIOS-lgpl-latest</span><br><span class="line">floppya: 1_44=Image, status=inserted</span><br><span class="line">boot: a</span><br><span class="line"><span class="built_in">log</span>: bochsout.txt</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="生成启动文件"><a href="#生成启动文件" class="headerlink" title="生成启动文件"></a>生成启动文件</h1><ul>
+<li>首先由于我没有Get到原网站的资料，只好硬着头皮根据书本的后面章节来推敲了。<br>　<img src="/images/Linux_0.11_chapter4_make_by_heself.png" alt="Linux_0.11_chapter4_make_by_heself.png"></li>
+<li>我根据上图自己”凑合着”编写Makefile文件。<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$ cat Makefile </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Image: boot system</span><br><span class="line">	dd bs=32 <span class="keyword">if</span>=boot of=Image skip=1</span><br><span class="line">	dd bs=1 <span class="keyword">if</span>=system of=Image skip=4096 seek=512   <span class="comment">#必须指出这里的错误，skip偏移量是0x1000，不是1024</span></span><br><span class="line"></span><br><span class="line">boot: boot.o</span><br><span class="line">	ld86 -0 -s -o <span class="variable">$@</span> $&lt;</span><br><span class="line">boot.o: boot.s</span><br><span class="line">	as86 -0 -a -o <span class="variable">$@</span> $&lt;</span><br><span class="line"></span><br><span class="line">system: head.o</span><br><span class="line">	ld -m elf_i386 -Ttext 0 -e startup_32 -s -x -M $&lt; -o <span class="variable">$@</span> &gt; System.map</span><br><span class="line">head.o: head.s</span><br><span class="line">	as -32 -o <span class="variable">$@</span> $&lt;</span><br><span class="line"></span><br><span class="line">disk:</span><br><span class="line">	dd bs=8192 <span class="keyword">if</span>=Image of=/dev/fd0</span><br><span class="line">	sync;sync;sync</span><br><span class="line"></span><br><span class="line">clean:</span><br><span class="line">	-rm -rf *.o boot system System.map Image</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$ make clean</span><br><span class="line">rm -rf *.o boot system System.map Image</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$ make</span><br><span class="line">as86 -0 -a -o boot.o boot.s</span><br><span class="line">ld86 -0 -s -o boot boot.o</span><br><span class="line">as -32 -o head.o head.s</span><br><span class="line">ld -m elf_i386 -Ttext 0 -e startup_32 -s -x -M head.o -o system &gt; System.map</span><br><span class="line">dd bs=32 <span class="keyword">if</span>=boot of=Image skip=1</span><br><span class="line">记录了16+0 的读入</span><br><span class="line">记录了16+0 的写出</span><br><span class="line">512 bytes copied, 0.00025786 s, 2.0 MB/s</span><br><span class="line">dd bs=1 <span class="keyword">if</span>=system of=Image skip=4096 seek=512   <span class="comment">#必须指出这里的错误，skip偏移量是0x1000，不是1024</span></span><br><span class="line">记录了4996+0 的读入</span><br><span class="line">记录了4996+0 的写出</span><br><span class="line">4996 bytes (5.0 kB, 4.9 KiB) copied, 0.0211415 s, 236 kB/s</span><br><span class="line">rutk1t0r@Rutk1t0r:example_for_multi_tasks$</span><br></pre></td></tr></table></figure></li>
+<li>由于我们这个<strong>多任务内核例子</strong>并不需要文件系统，仅仅只是模拟一下保护模式下的各种机制，因此bochs的配置文件可以直接设置为软盘启动并直接配置<strong>Image</strong>为启动文件。这里需要说明的是如果直接照着Makefile文件的来dd，参数skip是有问题的，我当时为了编译能够通过从网上找了很多参数，可能原文编译的情况不同吧。由于elf文件格式的缘故必须去掉它的头部,用工具查看得知代码段偏移量在0x1000，所以我为了简单好看就每次单字节的写入了4096次。不想自个儿敲以及稍微详细点的注释请参考<a target="_blank" rel="noopener" href="https://github.com/embpgp/Linux_kernel_0.11_examples/tree/master/chapter4/example_for_multi_tasks">这里</a>。</li>
+</ul>
+<h1 id="奔跑吧，小内核"><a href="#奔跑吧，小内核" class="headerlink" title="奔跑吧，小内核~~~"></a>奔跑吧，小内核~~~</h1><ul>
+<li><p>首先键入类似<code>bochs -f ./$config_file</code>，如果没问题则键入6或者直接回车。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_start.png" alt="Linux_0.11_chapter4_extra_bochs_start.png"></p>
+</li>
+<li><p>遇到如下情况就表示进入了调试状态了，左边的小黑框暂时停在了ROM BIOS处等待我们输入命令，可以先输入<code>b 0x7c00</code>，让其断在我们可控的第一条指令处。具体的调试指令可参考<a target="_blank" rel="noopener" href="http://www.cnblogs.com/hongzg1982/articles/2111254.html">这里</a><br><img src="/images/Linux_0.11_chapter4_extra_bochs_6.png" alt="Linux_0.11_chapter4_extra_bochs_6.png"></p>
+</li>
+<li><p>断在了物理地址0x7c00处，此时为boot.s文件代码中第一条指令，正在搭建进入保护模式的环境。后面可以根据汇编代码单步走(s)来一一对照执行。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_0x7c00.png" alt="Linux_0.11_chapter4_extra_bochs_0x7c00.png"></p>
+</li>
+<li><p>接下来看点有趣的东西，由于我多次调试已经知道了内核各个数据结构在内存中的地址(对照调试界面和源码界面，内核数据结构符号均已经变成内存地址)。我便直接下断点在<code>timer_interrupt</code>这个时钟中断处理函数的某一条语句(cmpl)来观察现象。断点地址0x0表示刚刚进入保护模式的内核代码段首地址处。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_protect_0.png" alt="Linux_0.11_chapter4_extra_bochs_protect_0.png"></p>
+</li>
+<li><p>注意观察bochs界面的左上角处，已经打印出了大约10个A。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_first_show.png" alt="Linux_0.11_chapter4_extra_bochs_first_show.png"></p>
+</li>
+<li><p>用s单步走，注意观察第一次jmp后的变化,esp已经改变,此时已经处于任务1即打印B的任务的用户空间了。由于处于调试状态的程序不能单步直接响应定时器中断，我们再次键入c继续等待下一次中断。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_first_jmp.png" alt="Linux_0.11_chapter4_extra_bochs_first_jmp.png"></p>
+</li>
+<li><p>注意观察bochs界面的左上角处，又打印了大约10B。说明此时被中断后来到了任务1(即打印B)的内核空间，esp也发生了变化。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_task0_kernel.png" alt="Linux_0.11_chapter4_extra_bochs_task0_kernel.png"></p>
+</li>
+<li><p>此时的jmp之后esp发生了变化，从tss0中恢复task0的现场，即处于上次被jmp后的地方，因此它必须得继续执行后面的指令，虽然仍然处于中断处理过程，但是CPU不管那么多，它只知道取指译码执行，不出权限问题就没啥事。等到iret指令执行后便会回到task0的用户空间继续打印A了。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_task0_kernel_resume.png" alt="Linux_0.11_chapter4_extra_bochs_task0_kernel_resume.png"></p>
+</li>
+<li><p>看到了没?这就是我所说的”三个esp”,此图说明当时被时钟中断的时候task0正在”睡眠”，B也类似的。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_task0_kernel_resume_user.png" alt="Linux_0.11_chapter4_extra_bochs_task0_kernel_resume_user.png"></p>
+</li>
+<li><p>去掉中断看全景图吧!!!瞬间被霸屏。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_running.png" alt="Linux_0.11_chapter4_extra_bochs_running.png"></p>
+</li>
+<li><p>自己新增加的任务2,其中利用了局部段描述符的第0个槽位,打印字符’0’。<br><img src="/images/Linux_0.11_chapter4_extra_bochs_add_2_task.png" alt="Linux_0.11_chapter4_extra_bochs_add_2_task.png"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>能折腾总会学到很多…关于代码的分析请参见<a target="_blank" rel="noopener" href="https://github.com/embpgp/Linux_kernel_0.11_examples/tree/master/chapter4/example_for_multi_tasks">这里</a>吧</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/Linux-kernel/" rel="tag"># Linux kernel</a>
+              <a href="/embpgp.github.io/tags/LDD/" rel="tag"># LDD</a>
+              <a href="/embpgp.github.io/tags/C-C/" rel="tag"># C/C++</a>
+              <a href="/embpgp.github.io/tags/Asm/" rel="tag"># Asm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/11/19/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0/" rel="prev" title="Linux内核0.11完全注释 第四章">
+      <i class="fa fa-chevron-left"></i> Linux内核0.11完全注释 第四章
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%BA%94%E7%AB%A0/" rel="next" title="Linux内核0.11完全注释 第五章">
+      Linux内核0.11完全注释 第五章 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Bochs%E5%AE%89%E8%A3%85%E5%92%8C%E9%85%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">Bochs安装和配置</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E5%90%AF%E5%8A%A8%E6%96%87%E4%BB%B6"><span class="nav-number">2.</span> <span class="nav-text">生成启动文件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A5%94%E8%B7%91%E5%90%A7%EF%BC%8C%E5%B0%8F%E5%86%85%E6%A0%B8"><span class="nav-number">3.</span> <span class="nav-text">奔跑吧，小内核~~~</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

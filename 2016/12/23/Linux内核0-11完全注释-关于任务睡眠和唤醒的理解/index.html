@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="主要理解注释中提到的链表以及缺少几行代码的缘由">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核0.11完全注释 关于任务睡眠和唤醒的理解">
+<meta property="og:url" content="https://embpgp.github.io/2016/12/23/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E5%85%B3%E4%BA%8E%E4%BB%BB%E5%8A%A1%E7%9D%A1%E7%9C%A0%E5%92%8C%E5%94%A4%E9%86%92%E7%9A%84%E7%90%86%E8%A7%A3/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="主要理解注释中提到的链表以及缺少几行代码的缘由">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_schedule_sleep_on.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_schedule_list_table.png">
+<meta property="article:published_time" content="2016-12-23T06:07:48.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.963Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="Linux kernel">
+<meta property="article:tag" content="LDD">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta property="article:tag" content="Asm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/Linux_0.11_schedule_sleep_on.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2016/12/23/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E5%85%B3%E4%BA%8E%E4%BB%BB%E5%8A%A1%E7%9D%A1%E7%9C%A0%E5%92%8C%E5%94%A4%E9%86%92%E7%9A%84%E7%90%86%E8%A7%A3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Linux内核0.11完全注释 关于任务睡眠和唤醒的理解 | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2016/12/23/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E5%85%B3%E4%BA%8E%E4%BB%BB%E5%8A%A1%E7%9D%A1%E7%9C%A0%E5%92%8C%E5%94%A4%E9%86%92%E7%9A%84%E7%90%86%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux内核0.11完全注释 关于任务睡眠和唤醒的理解
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-12-23 14:07:48" itemprop="dateCreated datePublished" datetime="2016-12-23T14:07:48+08:00">2016-12-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3.8k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>主要理解注释中提到的链表以及缺少几行代码的缘由</p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<h1 id="何为任务调度"><a href="#何为任务调度" class="headerlink" title="何为任务调度?"></a>何为任务调度?</h1><p>学过操作系统的筒子们应该有很深刻的理论了，其实说白了就是从现有可运行的任务中选一个最紧急(或者优先级最高)的任务运行，关于如何定义”最紧急”(优先级最高或者说实时进程)才是调度算法去解决的问题，这里先不分析，Linux 0.11内核调度算法也不是很难。</p>
+<h1 id="sleep-on-函数"><a href="#sleep-on-函数" class="headerlink" title="sleep_on()函数"></a>sleep_on()函数</h1><p>没有源代码的可以参阅<a target="_blank" rel="noopener" href="https://github.com/embpgp/linux-0.11-lab/blob/master/kernel/sched.c#L151">这里</a>。这里的代码已经有修复了。Linus原来的代码如下:(中文注释乃赵博士所写~)</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 把当前任务置为不可中断的等待状态，并让睡眠队列指针指向当前任务。</span></span><br><span class="line"><span class="comment">// 只有明确的唤醒时才会返回。该函数提供了进程与中断处理程序之间的同步机制。函数参数P是等待</span></span><br><span class="line"><span class="comment">// 任务队列头指针。指针是含有一个变量地址的变量。这里参数p使用了指针的指针形式&#x27;**p&#x27;,这是因为</span></span><br><span class="line"><span class="comment">// C函数参数只能传值，没有直接的方式让被调用函数改变调用该函数程序中变量的值。但是指针&#x27;*p&#x27;</span></span><br><span class="line"><span class="comment">// 指向的目标(这里是任务结构)会改变，因此为了能修改调用该函数程序中原来就是指针的变量的值，</span></span><br><span class="line"><span class="comment">// 就需要传递指针&#x27;*p&#x27;的指针，即&#x27;**p&#x27;.</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sleep_on</span><span class="params">(struct task_struct **p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">tmp</span>;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 若指针无效，则退出。(指针所指向的对象可以是NULL，但指针本身不应该为0).另外，如果</span></span><br><span class="line">    <span class="comment">// 当前任务是任务0，则死机。因为任务0的运行不依赖自己的状态，所以内核代码把任务0置为</span></span><br><span class="line">    <span class="comment">// 睡眠状态毫无意义。</span></span><br><span class="line">	<span class="keyword">if</span> (!p)</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	<span class="keyword">if</span> (current == &amp;(init_task.task))</span><br><span class="line">		panic(<span class="string">&quot;task[0] trying to sleep&quot;</span>);</span><br><span class="line">    <span class="comment">// 让tmp指向已经在等待队列上的任务(如果有的话)，例如inode-&gt;i_wait.并且将睡眠队列头的</span></span><br><span class="line">    <span class="comment">// 等等指针指向当前任务。这样就把当前任务插入到了*p的等待队列中。然后将当前任务置为</span></span><br><span class="line">    <span class="comment">// 不可中断的等待状态，并执行重新调度。</span></span><br><span class="line">	tmp = *p;</span><br><span class="line">	*p = current;</span><br><span class="line">	current-&gt;state = TASK_UNINTERRUPTIBLE;</span><br><span class="line">	schedule();</span><br><span class="line">    <span class="comment">// 只有当这个等待任务被唤醒时，调度程序才又返回到这里，表示本进程已被明确的唤醒(就</span></span><br><span class="line">    <span class="comment">// 续态)。既然大家都在等待同样的资源，那么在资源可用时，就有必要唤醒所有等待该该资源</span></span><br><span class="line">    <span class="comment">// 的进程。该函数嵌套调用，也会嵌套唤醒所有等待该资源的进程。这里嵌套调用是指一个</span></span><br><span class="line">    <span class="comment">// 进程调用了sleep_on()后就会在该函数中被切换掉，控制权呗转移到其他进程中。此时若有</span></span><br><span class="line">    <span class="comment">// 进程也需要使用同一资源，那么也会使用同一个等待队列头指针作为参数调用sleep_on()函数，</span></span><br><span class="line">    <span class="comment">// 并且也会陷入该函数而不会返回。只有当内核某处代码以队列头指针作为参数wake_up了队列，</span></span><br><span class="line">    <span class="comment">// 那么当系统切换去执行头指针所指的进程A时，该进程才会继续执行下面的代码，把队列后一个</span></span><br><span class="line">    <span class="comment">// 进程B置位就绪状态(唤醒)。而当轮到B进程执行时，它也才可能继续执行下面的代码。若它</span></span><br><span class="line">    <span class="comment">// 后面还有等待的进程C，那它也会把C唤醒等。在这前面还应该添加一行：*p = tmp.</span></span><br><span class="line">	<span class="keyword">if</span> (tmp)                    <span class="comment">// 若在其前还有存在的等待的任务，则也将其置为就绪状态(唤醒).</span></span><br><span class="line">		tmp-&gt;state=<span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>调用此函数的地方一般是资源得不到满足(比如等待缓冲区解锁等场景)而致使自身任务运行到这里时候睡眠。但是等待这个资源的可能不止一个进程，一般管理缓冲的数据结构都会设置一个task_struct结构体指针表示当前正在等待本缓冲区的任务。但数据结构中并没有明显定义链表结构呀?注释里怎么说有呢?其实是”潜移默化”地保存在了各个任务的栈空间中去了。<br><img src="/images/Linux_0.11_schedule_sleep_on.png" alt="Linux_0.11_schedule_sleep_on.png"><br>内核代码首先定义一个tmp指针保存已经正在等待本资源的进程(假设叫A),然后将正在等待本资源的进程改变为当前进程(假设叫B)，并立即置B进程状态为不可中断地好唤醒，表示只能由wake_up函数来唤醒。之后便进行任务调度，因此B进程会”停止”在任务调度这里,因为如果没有被唤醒(即state置0)是不可能被调度的，调度算法只会选出”状态为0”的进程进行调度运行。假设另外一个进程(假设为C)也需要这个资源，代码也运行到这里(但是它们的进程上下文是不同的)，在C进程的栈空间定义一个tmp保存B进程的指针，把C自己的指针赋值到资源等待任务的指针位置，并启用任务调度，同样，C也会”停止”在这里。假设某个时候某个进程手动调用了wake_up函数。此时传递的指针居然是C进程(假设之后没有其他进程需要这个资源了)。好了，C被唤醒了，肯定优先于A和B运行了，貌似不太公平呀，”后来先到”。当调度程序检测到C处于可运行状态的时候并且它的优先级最高，便切换到C运行，而C会从schedule()函数这里继续向后运行，Linus原来的代码仅仅是将tmp任务(这里是B)唤醒，如果在这次之后没有其他任务来竞争这个资源，则也能顺利陆续唤醒(因为B运行完了也会执行到这里，B的tmp保存了A的任务指针…)。但是如果此时有一个任务D也来等待这个资源，D运行到tmp的时候tmp保存的居然还是C的任务指针(因为等待资源任务指针没有被更新)。之后运行完之后继续唤醒C(没啥用，C早就可运行，或者等待其他资源而阻塞，此时唤醒它将会打乱其所在队列…当然一般会有其他策略继续检测)。但是A和B不出意外就永远不能唤醒了。因此赵博士的注释要求增加一行代码<code>*p=tmp</code>，目的是刷新等待缓冲任务指针。(按照栈的意思也得有借有还吧，前面保存了之后也得会送回去呀)至于为什么Linux 0.11版本内核也看出什么大问题可能是由于”竞争”不够激烈，等待真正遇到业务场景复杂的时候弊端就暴露出来了，因此Linux内核版本一直在前进中。</p>
+<p><img src="/images/Linux_0.11_schedule_list_table.png" alt="Linux_0.11_schedule_list_table.png"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 唤醒*p指向的让任务。*p是任务等待队列头指针。由于新等待任务是插入在等待队列头指针处的，</span></span><br><span class="line"><span class="comment">// 因此唤醒的是最后进入等待队列的任务。</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">wake_up</span><span class="params">(struct task_struct **p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (p &amp;&amp; *p) &#123;</span><br><span class="line">		(**p).state=<span class="number">0</span>;          <span class="comment">// 置为就绪(可运行)状态TASK_RUNNING.</span></span><br><span class="line">		*p=<span class="literal">NULL</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>同样的源代码于interruptible_sleep_on函数。大体思路差不多，只不过此状态可被某些信号唤醒，不必要一定调用wake_up函数来置位。如注释所说，因此必须判断是否当前任务是否为等待头指针才能对头指针进行唤醒而自身又置为TASK_INTERRUPTIBLE状态并重新调度。(由于信号对其会产生影响而并不唯一是其他进程唤醒的)</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// 将当前任务置为可中断的等待状态，并放入*p指定的等待队列中。</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">interruptible_sleep_on</span><span class="params">(struct task_struct **p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">tmp</span>;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 若指针无效，则退出。(指针所指向的对象可以是NULL，但指针本身不会为0).如果当前任务是</span></span><br><span class="line">    <span class="comment">// 任务0，则死机。</span></span><br><span class="line">	<span class="keyword">if</span> (!p)</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	<span class="keyword">if</span> (current == &amp;(init_task.task))</span><br><span class="line">		panic(<span class="string">&quot;task[0] trying to sleep&quot;</span>);</span><br><span class="line">    <span class="comment">// 让tmp指向已经在等待队列上的任务(如果有的话)，例如inode-&gt;i_wait。并且将睡眠队列头的</span></span><br><span class="line">    <span class="comment">// 等待指针指向当前任务。这样就把当前任务插入到了*p的等待队列中。然后将当前任务置为可</span></span><br><span class="line">    <span class="comment">// 中断的等待状态，并执行重新调度。</span></span><br><span class="line">	tmp=*p;</span><br><span class="line">	*p=current;</span><br><span class="line">repeat:	current-&gt;state = TASK_INTERRUPTIBLE;</span><br><span class="line">	schedule();</span><br><span class="line">    <span class="comment">// 只有当这个等待任务被唤醒时，程序才又会回到这里，标志进程已被明确的唤醒执行。如果等待</span></span><br><span class="line">    <span class="comment">// 队列中还有等待任务，并且队列头指针所指向的任务不是当前任务时，则将该等待任务置为可运行</span></span><br><span class="line">    <span class="comment">// 的就绪状态，并重新执行调度程序。当指针*p所指向的不是当前任务时，表示在当前任务被被放入</span></span><br><span class="line">    <span class="comment">// 队列后，又有新的任务被插入等待队列前部。因此我们先唤醒他们，而让自己仍然等等。等待这些</span></span><br><span class="line">    <span class="comment">// 后续进入队列的任务被唤醒执行时来唤醒本任务。于是去执行重新调度。</span></span><br><span class="line">	<span class="keyword">if</span> (*p &amp;&amp; *p != current) &#123;</span><br><span class="line">		(**p).state=<span class="number">0</span>;</span><br><span class="line">		<span class="keyword">goto</span> repeat;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 下一句代码有误：应该是 *p = tmp, 让队列头指针指向其余等待任务，否则在当前任务之前插入</span></span><br><span class="line">    <span class="comment">// 等待队列的任务均被抹掉了。当然同时也需要删除下面行数中同样的语句</span></span><br><span class="line">	*p=<span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">if</span> (tmp)</span><br><span class="line">		tmp-&gt;state=<span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>CS中学会抽象还是非常重要的，无处不在的数据结构:)</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/Linux-kernel/" rel="tag"># Linux kernel</a>
+              <a href="/embpgp.github.io/tags/LDD/" rel="tag"># LDD</a>
+              <a href="/embpgp.github.io/tags/C-C/" rel="tag"># C/C++</a>
+              <a href="/embpgp.github.io/tags/Asm/" rel="tag"># Asm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/12/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E6%9D%A5%E5%90%A7-Minix/" rel="prev" title="Linux内核0.11完全注释 来吧,Minix!">
+      <i class="fa fa-chevron-left"></i> Linux内核0.11完全注释 来吧,Minix!
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/12/30/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-0-11%E7%9A%84loader-execve/" rel="next" title="Linux内核0.11完全注释 0.11的loader->execve">
+      Linux内核0.11完全注释 0.11的loader->execve <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%95%E4%B8%BA%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6"><span class="nav-number">1.</span> <span class="nav-text">何为任务调度?</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#sleep-on-%E5%87%BD%E6%95%B0"><span class="nav-number">2.</span> <span class="nav-text">sleep_on()函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

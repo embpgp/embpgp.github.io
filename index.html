@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+<meta property="og:type" content="website">
+<meta property="og:title" content="rutk1t0r&#39;s blog">
+<meta property="og:url" content="https://embpgp.github.io/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="rutk1t0r">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://embpgp.github.io/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : true,
+    isPost : false,
+    lang   : 'en'
+  };
+</script>
+
+  <title>rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content index posts-expand">
+            
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2025/03/11/psock-tpacket%E5%AE%9E%E8%B7%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/embpgp.github.io/2025/03/11/psock-tpacket%E5%AE%9E%E8%B7%B5/" class="post-title-link" itemprop="url">psock_tpacket实践</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2025-03-11 22:41:54" itemprop="dateCreated datePublished" datetime="2025-03-11T22:41:54+08:00">2025-03-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-12 16:52:11" itemprop="dateModified" datetime="2025-03-12T16:52:11+08:00">2025-03-12</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/misc/" itemprop="url" rel="index"><span itemprop="name">misc</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>6.2k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>6 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>参考资料:<br><a target="_blank" rel="noopener" href="https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.10.1.tar.gz">https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.10.1.tar.gz</a><br><a target="_blank" rel="noopener" href="https://docs.kernel.org/networking/packet_mmap.html">https://docs.kernel.org/networking/packet_mmap.html</a><br><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/486178226/answer/2587632732">https://www.zhihu.com/question/486178226/answer/2587632732</a><br><a target="_blank" rel="noopener" href="https://jgsun.github.io/2019/01/21/linux-tcpdump/">https://jgsun.github.io/2019/01/21/linux-tcpdump/</a></p>
+<hr>
+<blockquote>
+<p>分析 tools/testing/selftests/net/psock_tpacket.c</p>
+</blockquote>
+<h1 id="1、下载内核源码并编译测试程序"><a href="#1、下载内核源码并编译测试程序" class="headerlink" title="1、下载内核源码并编译测试程序"></a>1、下载内核源码并编译测试程序</h1><p><code>cd linux-3.10.1/tools/testing/selftests/net &amp;&amp; make</code><br><img src="/images/tpacket_01.png" alt="tpacket_compile"></p>
+<h1 id="2、分析初始化"><a href="#2、分析初始化" class="headerlink" title="2、分析初始化"></a>2、分析初始化</h1><p>首先定位到pfsocket函数，其中需要初始化一个domain为PF_PACKET，type为SOCK_RAW的套接字，通过分析PF_PACKET是宏定义AF_PACKET一样的值，<br>而在Linux内核的介绍当中AF_PACKET专门用来嗅探流量用的，类似wireshark和tcpdump;当调用到setsockopt的时候，内核对应packet_setsockopt函数，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">pfsocket</span><span class="params">(<span class="keyword">int</span> ver)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> ret, sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));</span><br><span class="line">	<span class="keyword">if</span> (sock == <span class="number">-1</span>) &#123;</span><br><span class="line">		perror(<span class="string">&quot;socket&quot;</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	ret = setsockopt(sock, SOL_PACKET, PACKET_VERSION, &amp;ver, <span class="keyword">sizeof</span>(ver));</span><br><span class="line">	<span class="keyword">if</span> (ret == <span class="number">-1</span>) &#123;</span><br><span class="line">		perror(<span class="string">&quot;setsockopt&quot;</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> sock;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<p>直接看V3版本（当然最正确的方式是根据当前内核支持的版本自动选择v1/v2/v3）,设置版本的时候只是简单给po-&gt;tp_version赋值。<br>当再次调用设置PACKET_RX_RING或者PACKET_TX_RING的时候，会进入到packet_set_ring，这里会根据应用层的配置（例如使用mmap方案）来决定使用<br>哪个收包函数，在有环形缓冲区的方案情况下，会调用<code>pg_vec = alloc_pg_vec(req, order);</code> 申请内存页面，并指向当前的sock的，等待后续应用层调用<br>mmap的时候，通过给应用程序插入vma并指向同样的内存区域，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="keyword">case</span> PACKET_RX_RING:</span><br><span class="line">	<span class="keyword">case</span> PACKET_TX_RING:</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="class"><span class="keyword">union</span> <span class="title">tpacket_req_u</span> <span class="title">req_u</span>;</span></span><br><span class="line">		<span class="keyword">int</span> len;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">switch</span> (po-&gt;tp_version) &#123;</span><br><span class="line">		<span class="keyword">case</span> TPACKET_V1:</span><br><span class="line">		<span class="keyword">case</span> TPACKET_V2:</span><br><span class="line">			len = <span class="keyword">sizeof</span>(req_u.req);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> TPACKET_V3:</span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">			len = <span class="keyword">sizeof</span>(req_u.req3);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (optlen &lt; len)</span><br><span class="line">			<span class="keyword">return</span> -EINVAL;</span><br><span class="line">		<span class="keyword">if</span> (pkt_sk(sk)-&gt;has_vnet_hdr)</span><br><span class="line">			<span class="keyword">return</span> -EINVAL;</span><br><span class="line">		<span class="keyword">if</span> (copy_from_user(&amp;req_u.req, optval, len))</span><br><span class="line">			<span class="keyword">return</span> -EFAULT;</span><br><span class="line">		<span class="keyword">return</span> packet_set_ring(sk, &amp;req_u, <span class="number">0</span>,</span><br><span class="line">			optname == PACKET_TX_RING);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line">	<span class="keyword">case</span> PACKET_VERSION:</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">int</span> val;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (optlen != <span class="keyword">sizeof</span>(val))</span><br><span class="line">			<span class="keyword">return</span> -EINVAL;</span><br><span class="line">		<span class="keyword">if</span> (po-&gt;rx_ring.pg_vec || po-&gt;tx_ring.pg_vec)</span><br><span class="line">			<span class="keyword">return</span> -EBUSY;</span><br><span class="line">		<span class="keyword">if</span> (copy_from_user(&amp;val, optval, <span class="keyword">sizeof</span>(val)))</span><br><span class="line">			<span class="keyword">return</span> -EFAULT;</span><br><span class="line">		<span class="keyword">switch</span> (val) &#123;</span><br><span class="line">		<span class="keyword">case</span> TPACKET_V1:</span><br><span class="line">		<span class="keyword">case</span> TPACKET_V2:</span><br><span class="line">		<span class="keyword">case</span> TPACKET_V3:</span><br><span class="line">			po-&gt;tp_version = val;</span><br><span class="line">			<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">			<span class="keyword">return</span> -EINVAL;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>在这里会判断是否有环形缓冲区来决定采用哪个收包函数<br><code>po-&gt;prot_hook.func = (po-&gt;rx_ring.pg_vec) ?                         tpacket_rcv : packet_rcv;</code></p>
+<p>两者的差异可以参考上述 <a target="_blank" rel="noopener" href="https://jgsun.github.io/2019/01/21/linux-tcpdump/">https://jgsun.github.io/2019/01/21/linux-tcpdump/</a></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">    <span class="keyword">if</span> (closing || atomic_read(&amp;po-&gt;mapped) == <span class="number">0</span>) &#123;</span><br><span class="line">		err = <span class="number">0</span>;</span><br><span class="line">		spin_lock_bh(&amp;rb_queue-&gt;lock);</span><br><span class="line">		swap(rb-&gt;pg_vec, pg_vec);</span><br><span class="line">		rb-&gt;frame_max = (req-&gt;tp_frame_nr - <span class="number">1</span>);</span><br><span class="line">		rb-&gt;head = <span class="number">0</span>;</span><br><span class="line">		rb-&gt;frame_size = req-&gt;tp_frame_size;</span><br><span class="line">		spin_unlock_bh(&amp;rb_queue-&gt;lock);</span><br><span class="line"></span><br><span class="line">		swap(rb-&gt;pg_vec_order, order);</span><br><span class="line">		swap(rb-&gt;pg_vec_len, req-&gt;tp_block_nr);</span><br><span class="line"></span><br><span class="line">		rb-&gt;pg_vec_pages = req-&gt;tp_block_size/PAGE_SIZE;</span><br><span class="line">		po-&gt;prot_hook.func = (po-&gt;rx_ring.pg_vec) ?</span><br><span class="line">						tpacket_rcv : packet_rcv;</span><br><span class="line">		skb_queue_purge(rb_queue);</span><br><span class="line">		<span class="keyword">if</span> (atomic_read(&amp;po-&gt;mapped))</span><br><span class="line">			pr_err(<span class="string">&quot;packet_mmap: vma is busy: %d\n&quot;</span>,</span><br><span class="line">			       atomic_read(&amp;po-&gt;mapped));</span><br><span class="line">	&#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>也可以简单查看下面的视图。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">+---------------------+</span><br><span class="line">|  Network Interface  |</span><br><span class="line">+----------+----------+</span><br><span class="line">           |</span><br><span class="line">           v</span><br><span class="line">+----------+----------+</span><br><span class="line">|   Protocol Hook     |</span><br><span class="line">|   (prot_hook.func)  +---&gt; [ tpacket_rcv ] 带环形缓冲区</span><br><span class="line">|                     |       |</span><br><span class="line">+----------+----------+       | 直接写入共享内存</span><br><span class="line">           |                  |</span><br><span class="line">           |                  v</span><br><span class="line">           |        +---------+---------+</span><br><span class="line">           |        |  Ring Buffer      |</span><br><span class="line">           |        | (pg_vec)          |</span><br><span class="line">           |        +-------------------+</span><br><span class="line">           |</span><br><span class="line">           v</span><br><span class="line">+----------+----------+</span><br><span class="line">|   packet_rcv        +---&gt; 传统接收路径</span><br><span class="line">|                     |      (sk_receive_queue)</span><br><span class="line">+---------------------+</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>当应用程序调用mmap的时候，其中第一个参数fd是PF_PACKET类型的，最终会调用到内核的packet_mmap函数，通过调用<code>vm_insert_page</code><br>将环形缓冲区的地址插入到进程的vma里面，应用程序可以正常访问。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">	start = vma-&gt;vm_start;</span><br><span class="line">	<span class="keyword">for</span> (rb = &amp;po-&gt;rx_ring; rb &lt;= &amp;po-&gt;tx_ring; rb++) &#123;</span><br><span class="line">		<span class="keyword">if</span> (rb-&gt;pg_vec == <span class="literal">NULL</span>)</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; rb-&gt;pg_vec_len; i++) &#123;</span><br><span class="line">			<span class="class"><span class="keyword">struct</span> <span class="title">page</span> *<span class="title">page</span>;</span></span><br><span class="line">			<span class="keyword">void</span> *kaddr = rb-&gt;pg_vec[i].buffer;</span><br><span class="line">			<span class="keyword">int</span> pg_num;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">for</span> (pg_num = <span class="number">0</span>; pg_num &lt; rb-&gt;pg_vec_pages; pg_num++) &#123;</span><br><span class="line">				page = pgv_to_page(kaddr);</span><br><span class="line">				err = vm_insert_page(vma, start, page);</span><br><span class="line">				<span class="keyword">if</span> (unlikely(err))</span><br><span class="line">					<span class="keyword">goto</span> out;</span><br><span class="line">				start += PAGE_SIZE;</span><br><span class="line">				kaddr += PAGE_SIZE;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">...</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>而后就是bind具体的网卡，可以选择any，这里可以通过SOL_SOCKET层配合SO_ATTACH_FILTER，注入类似于tcpdump的过滤语法规则，而后数据流就开始了。</p>
+<h1 id="3、AF-PACKET收包流程"><a href="#3、AF-PACKET收包流程" class="headerlink" title="3、AF_PACKET收包流程"></a>3、AF_PACKET收包流程</h1><p>当应用层通过poll或者其他的轮询方式发现rx_ring有可读的数据的时候，就可以将数据包做进一步处理了。正常网卡先通过软中断经过gro等操作后，在进入协议栈之前<br>会在<code>__netif_receive_skb_core</code>函数寻找注册的ptype_all找到回调函数，在这里<br>AF_PACKET的就是tpacket_rcv。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">	list_for_each_entry_rcu(ptype, &amp;ptype_all, <span class="built_in">list</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> (!ptype-&gt;dev || ptype-&gt;dev == skb-&gt;dev) &#123;</span><br><span class="line">			<span class="keyword">if</span> (pt_prev)</span><br><span class="line">				ret = deliver_skb(skb, pt_prev, orig_dev);</span><br><span class="line">			pt_prev = ptype;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<p>跑<code>run_filter</code>是否匹配目标数据包，若不命中就直接跳过，否则通过<br><code>h.raw = packet_current_rx_frame(po, skb,                     TP_STATUS_KERNEL, (macoff+snaplen));</code>寻找一个<br>空闲frame，调用<code>skb_copy_bits(skb, 0, h.raw + macoff, snaplen);</code>将skb的线性区和分片区（若有，存储在skb_shinfo指向的多个页面以及关联的SKB分片链表一次性拷贝到<code>h.raw + macoff</code>,而后更新status，并通过<code>sk-&gt;sk_data_ready(sk, 0);</code>唤醒应用进程，此时应用层拿到的frame就是现成的数据包了。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">	snaplen = skb-&gt;len;</span><br><span class="line"></span><br><span class="line">	res = run_filter(skb, sk, snaplen);</span><br><span class="line">	<span class="keyword">if</span> (!res)</span><br><span class="line">		<span class="keyword">goto</span> drop_n_restore;</span><br><span class="line">	<span class="keyword">if</span> (snaplen &gt; res)</span><br><span class="line">		snaplen = res;</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="4、应用层处理"><a href="#4、应用层处理" class="headerlink" title="4、应用层处理"></a>4、应用层处理</h1><p>V3版本直接调用walk_v3_rx处理，通过<code>__v3_walk_block</code>将数据包摘下来（比如在拷贝到预申请的应用层缓冲区，然后调用<code>__v3_flush_block</code>刷新块状态，内核便可以继续读写该块。</p>
+<blockquote>
+<p>这里可以简单再用一个udp套接字，将拿到的数据包，再通过<code>sendto</code>转发出去（流量采集），以实现类似网络流量分析的功能。考虑到CPU开销问题，有一些优化思路：<br>1、可以先用sendmmsg批量发送（内核最大1024），即应用层每缓存1024的数据包发起一次系统调用，将数据批量拷贝到内核发送，以降低系统调用次数；2、通过AF_PACKET的发送缓冲区mmap，直接从rx_ring摘下来后，稍微”加工”一下写入另一个AF_PACKET发送出去，这就需要自己构造L2-L4等，进一步降低拷贝带来的CPU开销。3、通过将GRO的思想移植到应用层，进一步降低发送端PPS，这样的话就需要应用层缓存抓取的流量，需要实际的测试数据对比第2点。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">walk_v3</span><span class="params">(<span class="keyword">int</span> sock, struct ring *ring)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (ring-&gt;type == PACKET_RX_RING)</span><br><span class="line">		walk_v3_rx(sock, ring);</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		bug_on(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">walk_v3_rx</span><span class="params">(<span class="keyword">int</span> sock, struct ring *ring)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">int</span> block_num = <span class="number">0</span>;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span> <span class="title">pfd</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">block_desc</span> *<span class="title">pbd</span>;</span></span><br><span class="line">        <span class="keyword">int</span> udp_sock[<span class="number">2</span>];</span><br><span class="line"></span><br><span class="line">        bug_on(ring-&gt;type != PACKET_RX_RING);</span><br><span class="line"></span><br><span class="line">        pair_udp_open(udp_sock, PORT_BASE);</span><br><span class="line">        pair_udp_setfilter(sock);</span><br><span class="line"></span><br><span class="line">        <span class="built_in">memset</span>(&amp;pfd, <span class="number">0</span>, <span class="keyword">sizeof</span>(pfd));</span><br><span class="line">        pfd.fd = sock;</span><br><span class="line">        pfd.events = POLLIN | POLLERR;</span><br><span class="line">        pfd.revents = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        pair_udp_send(udp_sock, NUM_PACKETS);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (total_packets &lt; NUM_PACKETS * <span class="number">2</span>) &#123;</span><br><span class="line">                pbd = (struct block_desc *) ring-&gt;rd[block_num].iov_base;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">while</span> ((BLOCK_STATUS(pbd) &amp; TP_STATUS_USER) == <span class="number">0</span>)</span><br><span class="line">                        poll(&amp;pfd, <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">                __v3_walk_block(pbd, block_num);</span><br><span class="line">                __v3_flush_block(pbd);</span><br><span class="line"></span><br><span class="line">                block_num = (block_num + <span class="number">1</span>) % ring-&gt;rd_num;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        pair_udp_close(udp_sock);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (total_packets != <span class="number">2</span> * NUM_PACKETS) &#123;</span><br><span class="line">                <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;walk_v3_rx: received %u out of %u pkts\n&quot;</span>,</span><br><span class="line">                        total_packets, NUM_PACKETS);</span><br><span class="line">                <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot; %u pkts (%u bytes)&quot;</span>, NUM_PACKETS, total_bytes &gt;&gt; <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="5、展望"><a href="#5、展望" class="headerlink" title="5、展望"></a>5、展望</h1><p>结合ebpf技术，轻量级agent支持旁路https解密，分析主动外联场景。 参考<a target="_blank" rel="noopener" href="https://github.com/gojue/ecapture">https://github.com/gojue/ecapture</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2022/01/16/%E5%BC%80%E5%B9%B4%E7%AC%AC%E4%B8%80%E7%AF%87%20DIM-SUM%20%E5%85%A5%E9%97%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/embpgp.github.io/2022/01/16/%E5%BC%80%E5%B9%B4%E7%AC%AC%E4%B8%80%E7%AF%87%20DIM-SUM%20%E5%85%A5%E9%97%A8/" class="post-title-link" itemprop="url">DIM-SUM学习</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-01-16 19:35:40" itemprop="dateCreated datePublished" datetime="2022-01-16T19:35:40+08:00">2022-01-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:17:04" itemprop="dateModified" datetime="2025-03-11T20:17:04+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.4k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <blockquote>
+<p>DIM-SUM内核学习,先跑起来吧。</p>
+</blockquote>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/embpgp.github.io/2022/01/16/%E5%BC%80%E5%B9%B4%E7%AC%AC%E4%B8%80%E7%AF%87%20DIM-SUM%20%E5%85%A5%E9%97%A8/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2021/08/08/VPC%E7%BD%91%E7%BB%9C%E6%89%93%E9%80%9A%E7%A0%94%E7%A9%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/embpgp.github.io/2021/08/08/VPC%E7%BD%91%E7%BB%9C%E6%89%93%E9%80%9A%E7%A0%94%E7%A9%B6/" class="post-title-link" itemprop="url">VPC网络打通研究</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2021-08-08 11:15:28 / Modified: 11:58:35" itemprop="dateCreated datePublished" datetime="2021-08-08T11:15:28+08:00">2021-08-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>902</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <blockquote>
+<p>云内网络打通</p>
+</blockquote>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/embpgp.github.io/2021/08/08/VPC%E7%BD%91%E7%BB%9C%E6%89%93%E9%80%9A%E7%A0%94%E7%A9%B6/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2021/07/20/golang-init/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/embpgp.github.io/2021/07/20/golang-init/" class="post-title-link" itemprop="url">golang init</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-20 23:10:04" itemprop="dateCreated datePublished" datetime="2021-07-20T23:10:04+08:00">2021-07-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-08-08 10:20:26" itemprop="dateModified" datetime="2021-08-08T10:20:26+08:00">2021-08-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>1.8k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <blockquote>
+<p>拥抱追求高效率生产的云原生时代</p>
+</blockquote>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/embpgp.github.io/2021/07/20/golang-init/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2017/12/24/ln-sf-target-link-name/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/embpgp.github.io/2017/12/24/ln-sf-target-link-name/" class="post-title-link" itemprop="url">ln -sf target link_name</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-12-24 22:02:13" itemprop="dateCreated datePublished" datetime="2017-12-24T22:02:13+08:00">2017-12-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <blockquote>
+<p>进程起不来?</p>
+</blockquote>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/embpgp.github.io/2017/12/24/ln-sf-target-link-name/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+
+  
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/embpgp.github.io/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/embpgp.github.io/page/8/">8</a><a class="extend next" rel="next" href="/embpgp.github.io/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+  </nav>
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

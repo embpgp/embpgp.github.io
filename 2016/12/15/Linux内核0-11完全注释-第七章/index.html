@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="init进程来了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核0.11完全注释 第七章">
+<meta property="og:url" content="https://embpgp.github.io/2016/12/15/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%83%E7%AB%A0/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="init进程来了">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_chapter7_main_init.png">
+<meta property="article:published_time" content="2016-12-15T05:36:08.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.965Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="Linux kernel">
+<meta property="article:tag" content="LDD">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta property="article:tag" content="Asm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/Linux_0.11_chapter7_main_init.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2016/12/15/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%83%E7%AB%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Linux内核0.11完全注释 第七章 | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2016/12/15/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%83%E7%AB%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux内核0.11完全注释 第七章
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-12-15 13:36:08" itemprop="dateCreated datePublished" datetime="2016-12-15T13:36:08+08:00">2016-12-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>8.7k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>8 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>init进程来了</p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<h1 id="内核初始化流程"><a href="#内核初始化流程" class="headerlink" title="内核初始化流程"></a>内核初始化流程</h1><p><img src="/images/Linux_0.11_chapter7_main_init.png" alt="Linux_0.11_chapter7_main_init.png"></p>
+<h1 id="着重分析”move-to-user-mode-”的前前后后"><a href="#着重分析”move-to-user-mode-”的前前后后" class="headerlink" title="着重分析”move_to_user_mode()”的前前后后"></a>着重分析”move_to_user_mode()”的前前后后</h1><h2 id="move-to-user-mode-宏定义"><a href="#move-to-user-mode-宏定义" class="headerlink" title="move_to_user_mode()宏定义"></a>move_to_user_mode()宏定义</h2><ul>
+<li>这是一段嵌入汇编，gcc在预处理的时候就会完全替代掉。本质是模拟中断返回从内核态转到用户态，但是控制流还是下面那段。相当于虽然从内核态转到用户态但是由于选择子指向的是同一段物理内存空间，所以CPU执行流看起来还是没有什么”异常”。</li>
+<li>根据压栈顺序可以知道用户态cs为0x0f，EIP为iret指令下面的标号1处，功能是仅仅将用户态的局部段选择子值送往各个数据段选择器。而后就会执行fork()函数。下面去看一下任务0的全局描述符表的项是如何加载进去的。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> move_to_user_mode() \</span></span><br><span class="line"><span class="meta">__asm__ (<span class="meta-string">&quot;movl %%esp,%%eax\n\t&quot;</span> \</span></span><br><span class="line"><span class="meta">	<span class="meta-string">&quot;pushl $0x17\n\t&quot;</span> \</span></span><br><span class="line"><span class="meta">	<span class="meta-string">&quot;pushl %%eax\n\t&quot;</span> \</span></span><br><span class="line"><span class="meta">	<span class="meta-string">&quot;pushfl\n\t&quot;</span> \</span></span><br><span class="line"><span class="meta">	<span class="meta-string">&quot;pushl $0x0f\n\t&quot;</span> \</span></span><br><span class="line"><span class="meta">	<span class="meta-string">&quot;pushl $1f\n\t&quot;</span> \</span></span><br><span class="line"><span class="meta">	<span class="meta-string">&quot;iret\n&quot;</span> \</span></span><br><span class="line"><span class="meta">	<span class="meta-string">&quot;1:\tmovl $0x17,%%eax\n\t&quot;</span> \</span></span><br><span class="line"><span class="meta">	<span class="meta-string">&quot;movw %%ax,%%ds\n\t&quot;</span> \</span></span><br><span class="line"><span class="meta">	<span class="meta-string">&quot;movw %%ax,%%es\n\t&quot;</span> \</span></span><br><span class="line"><span class="meta">	<span class="meta-string">&quot;movw %%ax,%%fs\n\t&quot;</span> \</span></span><br><span class="line"><span class="meta">	<span class="meta-string">&quot;movw %%ax,%%gs&quot;</span> \</span></span><br><span class="line"><span class="meta">	:::<span class="meta-string">&quot;ax&quot;</span>)</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="sched-init"><a href="#sched-init" class="headerlink" title="sched_init()"></a>sched_init()</h2><ul>
+<li>我们根据已有的注释可以大概知道这个函数的功能，主要进行了任务0的tss和ldt的加载到GDT中,以及把剩余任务的tss和ldt槽清0。</li>
+<li>清除掉NT标志，因为并没有任务嵌套并且tss的back_link字段无效。</li>
+<li>由于是第一次，因此必须手动加载tss到tr以及ldt到ldtr。</li>
+<li>定时器功能选择，用于定时任务切换调度。</li>
+<li>加载定时器中断门和系统调用门0x80到gdt。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// 内核调度程序的初始化子程序</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sched_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">desc_struct</span> * <span class="title">p</span>;</span>                 <span class="comment">// 描述符表结构指针</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Linux系统开发之初，内核不成熟。内核代码会被经常修改。Linus怕自己无意中修改了</span></span><br><span class="line">    <span class="comment">// 这些关键性的数据结构，造成与POSIX标准的不兼容。这里加入下面这个判断语句并无</span></span><br><span class="line">    <span class="comment">// 必要，纯粹是为了提醒自己以及其他修改内核代码的人。</span></span><br><span class="line">	<span class="keyword">if</span> (<span class="keyword">sizeof</span>(struct sigaction) != <span class="number">16</span>)         <span class="comment">// sigaction 是存放有关信号状态的结构</span></span><br><span class="line">		panic(<span class="string">&quot;Struct sigaction MUST be 16 bytes&quot;</span>);</span><br><span class="line">    <span class="comment">// 在全局描述符表中设置初始任务(任务0)的任务状态段描述符和局部数据表描述符。</span></span><br><span class="line">    <span class="comment">// FIRST_TSS_ENTRY和FIRST_LDT_ENTRY的值分别是4和5，定义在include/linux/sched.h</span></span><br><span class="line">    <span class="comment">// 中；gdt是一个描述符表数组(include/linux/head.h)，实际上对应程序head.s中</span></span><br><span class="line">    <span class="comment">// 全局描述符表基址（_gdt）.因此gtd+FIRST_TSS_ENTRY即为gdt[FIRST_TSS_ENTRY](即为gdt[4]),</span></span><br><span class="line">    <span class="comment">// 也即gdt数组第4项的地址。</span></span><br><span class="line">	set_tss_desc(gdt+FIRST_TSS_ENTRY,&amp;(init_task.task.tss));</span><br><span class="line">	set_ldt_desc(gdt+FIRST_LDT_ENTRY,&amp;(init_task.task.ldt));</span><br><span class="line">    <span class="comment">// 清任务数组和描述符表项(注意 i=1 开始，所以初始任务的描述符还在)。描述符项结构</span></span><br><span class="line">    <span class="comment">// 定义在文件include/linux/head.h中。</span></span><br><span class="line">	p = gdt+<span class="number">2</span>+FIRST_TSS_ENTRY;</span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;NR_TASKS;i++) &#123;</span><br><span class="line">		task[i] = <span class="literal">NULL</span>;</span><br><span class="line">		p-&gt;a=p-&gt;b=<span class="number">0</span>;</span><br><span class="line">		p++;</span><br><span class="line">		p-&gt;a=p-&gt;b=<span class="number">0</span>;</span><br><span class="line">		p++;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="comment">/* Clear NT, so that we won&#x27;t have troubles with that later on */</span></span><br><span class="line">    <span class="comment">// NT标志用于控制程序的递归调用(Nested Task)。当NT置位时，那么当前中断任务执行</span></span><br><span class="line">    <span class="comment">// iret指令时就会引起任务切换。NT指出TSS中的back_link字段是否有效。</span></span><br><span class="line">	__asm__(<span class="string">&quot;pushfl ; andl $0xffffbfff,(%esp) ; popfl&quot;</span>);        <span class="comment">// 复位NT标志</span></span><br><span class="line">	ltr(<span class="number">0</span>);</span><br><span class="line">	lldt(<span class="number">0</span>);</span><br><span class="line">    <span class="comment">// 下面代码用于初始化8253定时器。通道0，选择工作方式3，二进制计数方式。通道0的</span></span><br><span class="line">    <span class="comment">// 输出引脚接在中断控制主芯片的IRQ0上，它每10毫秒发出一个IRQ0请求。LATCH是初始</span></span><br><span class="line">    <span class="comment">// 定时计数值。</span></span><br><span class="line">	outb_p(<span class="number">0x36</span>,<span class="number">0x43</span>);		<span class="comment">/* binary, mode 3, LSB/MSB, ch 0 */</span></span><br><span class="line">	outb_p(LATCH &amp; <span class="number">0xff</span> , <span class="number">0x40</span>);	<span class="comment">/* LSB */</span></span><br><span class="line">	outb(LATCH &gt;&gt; <span class="number">8</span> , <span class="number">0x40</span>);	<span class="comment">/* MSB */</span></span><br><span class="line">    <span class="comment">// 设置时钟中断处理程序句柄(设置时钟中断门)。修改中断控制器屏蔽码，允许时钟中断。</span></span><br><span class="line">    <span class="comment">// 然后设置系统调用中断门。这两个设置中断描述符表IDT中描述符在宏定义在文件</span></span><br><span class="line">    <span class="comment">// include/asm/system.h中。</span></span><br><span class="line">	set_intr_gate(<span class="number">0x20</span>,&amp;timer_interrupt);</span><br><span class="line">	outb(inb_p(<span class="number">0x21</span>)&amp;~<span class="number">0x01</span>,<span class="number">0x21</span>);</span><br><span class="line">	set_system_gate(<span class="number">0x80</span>,&amp;system_call);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="init-task共同体"><a href="#init-task共同体" class="headerlink" title="init_task共同体"></a>init_task共同体</h2><ul>
+<li>关于内核态的堆栈”只读”理解见<a target="_blank" rel="noopener" href="https://github.com/embpgp/Linux_kernel_0.11_examples/blob/master/chapter4/example_for_multi_tasks/head.s#L180">这里</a></li>
+<li>注释里面也提到了，task_struct结构体和内核态堆栈都处于同一个页面，因此把两者放在一起构成一个共同体是很正确的用法。<del>但得保证task结构体必须放在4K对齐边界，否则在初始化的时候加了个PAGE_SIZE esp0就指到了另外一个内存页了。</del>经过调试发现任务0并不需要满足4K对齐条件，编译的时候也没有特意要求init_task共同体放在边界，但只要不影响程序执行就没什么特别对待的。但后面经过fork()的任务通过层次调用get_page()返回的地址就是4K对齐了。<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info registers </span><br><span class="line">eax            0x0	0</span><br><span class="line">ecx            0x55e8	21992</span><br><span class="line">edx            0x17	23</span><br><span class="line">ebx            0x3	3</span><br><span class="line">esp            0x1f0ec	0x1f0ec &lt;init_task+4012&gt;</span><br><span class="line">ebp            0x24e88	0x24e88 &lt;user_stack+4072&gt;</span><br><span class="line">esi            0xe0000	917504</span><br><span class="line">edi            0xffc	4092</span><br><span class="line">eip            0x6d4c	0x6d4c &lt;schedule+163&gt;</span><br><span class="line">eflags         0x246	[ PF ZF IF ]</span><br><span class="line">cs             0x8	8</span><br><span class="line">ss             0x10	16</span><br><span class="line">ds             0x10	16</span><br><span class="line">es             0x10	16</span><br><span class="line">fs             0x17	23</span><br><span class="line">gs             0x17	23</span><br><span class="line">(gdb) <span class="built_in">print</span> &amp;init_task</span><br><span class="line"><span class="variable">$1</span> = (union task_union *) 0x1e140 &lt;init_task&gt;</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 每个任务(进程)在内核态运行时都有自己的内核态堆栈。这里定义了任务的内核态堆栈结构。</span></span><br><span class="line"><span class="comment">// 定义任务联合(任务结构成员和stack字符数组成员)。因为一个任务的数据结构与其内核态堆栈</span></span><br><span class="line"><span class="comment">// 在同一内存页中，所以从堆栈段寄存器ss可以获得其数据端选择符。</span></span><br><span class="line"><span class="class"><span class="keyword">union</span> <span class="title">task_union</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> <span class="title">task</span>;</span></span><br><span class="line">	<span class="keyword">char</span> <span class="built_in">stack</span>[PAGE_SIZE];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">union</span> <span class="title">task_union</span> <span class="title">init_task</span> =</span> &#123;INIT_TASK,&#125;;   <span class="comment">// 定义初始任务的数据</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="INIT-TASK宏"><a href="#INIT-TASK宏" class="headerlink" title="INIT_TASK宏"></a>INIT_TASK宏</h2><ul>
+<li>越过前面的任务字段看后面的tss字段可以看到ss0为0x10,esp0为PAGE_SIZE+init_task。</li>
+<li>CR3字段为<a target="_blank" rel="noopener" href="https://github.com/embpgp/linux-0.11-lab/blob/master/boot/head.s#L16">pg_dir</a>,其实就是物理地址为0x00000000处，代码运行到<a target="_blank" rel="noopener" href="https://github.com/embpgp/linux-0.11-lab/blob/master/boot/head.s#L128">0x5000</a>之后就开始”粉碎”物理地址0x0000处的代码和数据了。重新建立新的”秩序”,一个页目录和4个页表。参见<a target="_blank" rel="noopener" href="https://github.com/embpgp/linux-0.11-lab/blob/master/boot/head.s#L137">after_page_tables</a>和<a target="_blank" rel="noopener" href="https://github.com/embpgp/linux-0.11-lab/blob/master/boot/head.s#L200">setup_paging</a>这两个汇编过程源码。</li>
+<li>其余字段几乎初始化为默认值(0)。而esp3是由move_to_user_mode()宏来加载的。</li>
+<li>局部段的代码段和数据段的物理地址还是对应内核一致。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> *  INIT_TASK is used to set up the first task table, touch at</span></span><br><span class="line"><span class="comment"> * your own risk!. Base=0, limit=0x9ffff (=640kB)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INIT_TASK \</span></span><br><span class="line"><span class="meta"><span class="comment">/* state etc */</span>	&#123; 0,15,15, \</span></span><br><span class="line"><span class="meta"><span class="comment">/* signals */</span>	0,&#123;&#123;&#125;,&#125;,0, \</span></span><br><span class="line"><span class="meta"><span class="comment">/* ec,brk... */</span>	0,0,0,0,0,0, \</span></span><br><span class="line"><span class="meta"><span class="comment">/* pid etc.. */</span>	0,-1,0,0,0, \</span></span><br><span class="line"><span class="meta"><span class="comment">/* uid etc */</span>	0,0,0,0,0,0, \</span></span><br><span class="line"><span class="meta"><span class="comment">/* alarm */</span>	0,0,0,0,0,0, \</span></span><br><span class="line"><span class="meta"><span class="comment">/* math */</span>	0, \</span></span><br><span class="line"><span class="meta"><span class="comment">/* fs info */</span>	-1,0022,NULL,NULL,NULL,0, \</span></span><br><span class="line"><span class="meta"><span class="comment">/* filp */</span>	&#123;NULL,&#125;, \</span></span><br><span class="line"><span class="meta">	&#123; \</span></span><br><span class="line"><span class="meta">		&#123;0,0&#125;, \</span></span><br><span class="line"><span class="meta"><span class="comment">/* ldt */</span>	&#123;0x9f,0xc0fa00&#125;, \</span></span><br><span class="line"><span class="meta">		&#123;0x9f,0xc0f200&#125;, \</span></span><br><span class="line"><span class="meta">	&#125;, \</span></span><br><span class="line"><span class="meta"><span class="comment">/*tss*/</span>	&#123;0,PAGE_SIZE+(long)&amp;init_task,0x10,0,0,0,0,(long)&amp;pg_dir,\</span></span><br><span class="line"><span class="meta">	 0,0,0,0,0,0,0,0, \</span></span><br><span class="line"><span class="meta">	 0,0,0x17,0x17,0x17,0x17,0x17,0x17, \</span></span><br><span class="line"><span class="meta">	 _LDT(0),0x80000000, \</span></span><br><span class="line"><span class="meta">		&#123;&#125; \</span></span><br><span class="line"><span class="meta">	&#125;, \</span></span><br><span class="line"><span class="meta">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+<blockquote>
+<p>此时已经从内核态返回到了任务0的用户态了，但是控制流已经执行到了fork()函数了，Linux 0.11由一个宏定义来引用，下面继续分析</p>
+</blockquote>
+<h2 id="fork"><a href="#fork" class="headerlink" title="fork"></a>fork</h2><ul>
+<li>为了不”污染”任务1的用户栈因此选择使用宏定义来进行fork系统调用。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Linux在内核空间创建进程时不使用写时复制技术(Copy on write).main()在移动到用户</span></span><br><span class="line"><span class="comment">// 模式（到任务0）后执行内嵌方式的fork()和pause(),因此可保证不适用任务0的用户栈。</span></span><br><span class="line"><span class="comment">// 在执行moveto_user_mode()之后，本程序main()就以任务0的身份在运行了。而任务0是</span></span><br><span class="line"><span class="comment">// 所有将将创建子进程的父进程。当它创建一个子进程时(init进程)，由于任务1代码属于</span></span><br><span class="line"><span class="comment">// 内核空间，因此没有使用写时复制功能。此时任务0的用户栈就是任务1的用户栈，即它们</span></span><br><span class="line"><span class="comment">// 共同使用一个栈空间。因此希望在main.c运行在任务0的环境下不要有对堆栈的任何操作，</span></span><br><span class="line"><span class="comment">// 以免弄乱堆栈。而在再次执行fork()并执行过execve()函数后，被加载程序已不属于内核空间</span></span><br><span class="line"><span class="comment">// 因此可以使用写时复制技术了。</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// 下面_syscall0()是unistd.h中的内嵌宏代码。以嵌入汇编的形式调用Linux的系统调用中断</span></span><br><span class="line"><span class="comment">// 0x80.该中断是所有系统调用的入口。该条语句实际上是int fork()创建进程系统调用。可展</span></span><br><span class="line"><span class="comment">// 开看之就会立刻明白。syscall0名称中最后的0表示无参数，1表示1个参数。</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> _syscall0(<span class="keyword">int</span>,fork)</span><br><span class="line"><span class="comment">// int pause() 系统调用，暂停进程的执行，直到收到一个信号</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> _syscall0(<span class="keyword">int</span>,pause)</span><br><span class="line"><span class="comment">// int setup(void * BIOS)系统调用，仅用于linux初始化(仅在这个程序中被调用)</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> _syscall1(<span class="keyword">int</span>,setup,<span class="keyword">void</span> *,BIOS)</span><br><span class="line"><span class="comment">// int sync()系统调用：更新文件系统。</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> _syscall0(<span class="keyword">int</span>,sync)</span><br></pre></td></tr></table></figure></li>
+<li>可以直接跳到kernel/system_call.s的<a target="_blank" rel="noopener" href="https://github.com/embpgp/linux-0.11-lab/blob/master/kernel/system_call.s#L208">sys_fork</a>系统调用源码处查看。</li>
+<li>可以知道主要进行了两个步骤。</li>
+<li>find_empty_process:寻找空闲进程号码(个人觉得代码有点”累赘”)</li>
+<li>copy_process:复制进程PCB,并修改某些字段以符合逻辑。关于其具体实现等到mm模块的时候再具体分析。最后在父进程中返回last_pid。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">### sys_fork()调用，用于创建子进程，是system_call功能<span class="number">2.</span></span><br><span class="line"># 首先调用C函数find_empty_process()，取得一个进程号PID。若返回负数则说明目前任务数组</span><br><span class="line"># 已满。然后调用copy_process()复制进程。</span><br><span class="line">.align <span class="number">2</span></span><br><span class="line">sys_fork:</span><br><span class="line">	call find_empty_process</span><br><span class="line">	testl %eax,%eax             # 在eax中返回进程号pid。若返回负数则退出。</span><br><span class="line">	js <span class="number">1f</span></span><br><span class="line">	push %gs</span><br><span class="line">	pushl %esi</span><br><span class="line">	pushl %edi</span><br><span class="line">	pushl %ebp</span><br><span class="line">	pushl %eax</span><br><span class="line">	call copy_process</span><br><span class="line">	addl $<span class="number">20</span>,%esp               # 丢弃这里所有压栈内容。</span><br><span class="line"><span class="number">1</span>:	ret</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li>之后main函数(即任务0)就一直死循环执行pause()系统调用。</li>
+<li>而fork得到的子进程会调用init()函数并继续执行后期初始化。再之后的fork以及execve才调用shell。</li>
+<li>并且再之后的while(1)循环会一直执行fork &amp; execve。这也是为什么在shell终端键入exit或者退出命令后显示一个进程号并仍然存在shell的原因。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在main()中已经进行了系统初始化，包括内存管理、各种硬件设备和驱动程序。init()函数</span></span><br><span class="line"><span class="comment">// 运行在任务0第1次创建的子进程(任务1)中。它首先对第一个将要执行的程序(shell)的环境</span></span><br><span class="line"><span class="comment">// 进行初始化，然后以登录shell方式加载该程序并执行。</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> pid,i;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// setup()是一个系统调用。用于读取硬盘参数包括分区表信息并加载虚拟盘(若存在的话)</span></span><br><span class="line">    <span class="comment">// 和安装根文件系统设备。该函数用25行上的宏定义，对应函数是sys_setup()，在块设备</span></span><br><span class="line">    <span class="comment">// 子目录kernel/blk_drv/hd.c中。</span></span><br><span class="line">	setup((<span class="keyword">void</span> *) &amp;drive_info);        <span class="comment">// drive_info结构是2个硬盘参数表</span></span><br><span class="line">    <span class="comment">// 下面以读写访问方式打开设备&quot;/dev/tty0&quot;,它对应终端控制台。由于这是第一次打开文件</span></span><br><span class="line">    <span class="comment">// 操作，因此产生的文件句柄号(文件描述符)肯定是0。该句柄是UNIX类操作系统默认的</span></span><br><span class="line">    <span class="comment">// 控制台标准输入句柄stdin。这里再把它以读和写的方式别人打开是为了复制产生标准输出(写)</span></span><br><span class="line">    <span class="comment">// 句柄stdout和标准出错输出句柄stderr。函数前面的&quot;(void)&quot;前缀用于表示强制函数无需返回值。</span></span><br><span class="line">	(<span class="keyword">void</span>) open(<span class="string">&quot;/dev/tty0&quot;</span>,O_RDWR,<span class="number">0</span>);</span><br><span class="line">	(<span class="keyword">void</span>) dup(<span class="number">0</span>);                      <span class="comment">// 复制句柄，产生句柄1号——stdout标准输出设备</span></span><br><span class="line">	(<span class="keyword">void</span>) dup(<span class="number">0</span>);                      <span class="comment">// 复制句柄，产生句柄2号——stderr标准出错输出设备</span></span><br><span class="line">    <span class="comment">// 打印缓冲区块数和总字节数，每块1024字节，以及主内存区空闲内存字节数</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;%d buffers = %d bytes buffer space\n\r&quot;</span>,NR_BUFFERS,</span><br><span class="line">		NR_BUFFERS*BLOCK_SIZE);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;Free mem: %d bytes\n\r&quot;</span>,memory_end-main_memory_start);</span><br><span class="line">    <span class="comment">// 下面fork()用于创建一个子进程(任务2)。对于被创建的子进程，fork()将返回0值，对于</span></span><br><span class="line">    <span class="comment">// 原进程(父进程)则返回子进程的进程号pid。该子进程关闭了句柄0(stdin)、以只读方式打开</span></span><br><span class="line">    <span class="comment">// /etc/rc文件，并使用execve()函数将进程自身替换成/bin/sh程序(即shell程序)，然后</span></span><br><span class="line">    <span class="comment">// 执行/bin/sh程序。然后执行/bin/sh程序。所携带的参数和环境变量分别由argv_rc和envp_rc</span></span><br><span class="line">    <span class="comment">// 数组给出。关闭句柄0并立即打开/etc/rc文件的作用是把标准输入stdin重定向到/etc/rc文件。</span></span><br><span class="line">    <span class="comment">// 这样shell程序/bin/sh就可以运行rc文件中的命令。由于这里的sh的运行方式是非交互的，</span></span><br><span class="line">    <span class="comment">// 因此在执行完rc命令后就会立刻退出，进程2也随之结束。</span></span><br><span class="line">    <span class="comment">// _exit()退出时出错码1 - 操作未许可；2 - 文件或目录不存在。</span></span><br><span class="line">	<span class="keyword">if</span> (!(pid=fork())) &#123;</span><br><span class="line">		close(<span class="number">0</span>);</span><br><span class="line">		<span class="keyword">if</span> (open(<span class="string">&quot;/etc/rc&quot;</span>,O_RDONLY,<span class="number">0</span>))</span><br><span class="line">			_exit(<span class="number">1</span>);                       <span class="comment">// 如果打开文件失败，则退出(lib/_exit.c)</span></span><br><span class="line">		execve(<span class="string">&quot;/bin/sh&quot;</span>,argv_rc,envp_rc);  <span class="comment">// 替换成/bin/sh程序并执行</span></span><br><span class="line">		_exit(<span class="number">2</span>);                           <span class="comment">// 若execve()执行失败则退出。</span></span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 下面还是父进程(1)执行语句。wait()等待子进程停止或终止，返回值应是子进程的进程号(pid).</span></span><br><span class="line">    <span class="comment">// 这三句的作用是父进程等待子进程的结束。&amp;i是存放返回状态信息的位置。如果wait()返回值</span></span><br><span class="line">    <span class="comment">// 不等于子进程号，则继续等待。</span></span><br><span class="line">	<span class="keyword">if</span> (pid&gt;<span class="number">0</span>)</span><br><span class="line">		<span class="keyword">while</span> (pid != wait(&amp;i))</span><br><span class="line">			<span class="comment">/* nothing */</span>;</span><br><span class="line">    <span class="comment">// 如果执行到这里，说明刚创建的子进程的执行已停止或终止了。下面循环中首先再创建</span></span><br><span class="line">    <span class="comment">// 一个子进程，如果出错，则显示“初始化程序创建子进程失败”信息并继续执行。对于所</span></span><br><span class="line">    <span class="comment">// 创建的子进程将关闭所有以前还遗留的句柄(stdin, stdout, stderr),新创建一个会话</span></span><br><span class="line">    <span class="comment">// 并设置进程组号，然后重新打开/dev/tty0作为stdin,并复制成stdout和sdterr.再次</span></span><br><span class="line">    <span class="comment">// 执行系统解释程序/bin/sh。但这次执行所选用的参数和环境数组另选了一套。然后父</span></span><br><span class="line">    <span class="comment">// 进程再次运行wait()等待。如果子进程又停止了执行，则在标准输出上显示出错信息</span></span><br><span class="line">    <span class="comment">// “子进程pid挺直了运行，返回码是i”,然后继续重试下去....，形成一个“大”循环。</span></span><br><span class="line">    <span class="comment">// 此外，wait()的另外一个功能是处理孤儿进程。如果一个进程的父进程先终止了，那么</span></span><br><span class="line">    <span class="comment">// 这个进程的父进程就会被设置为这里的init进程(进程1)，并由init进程负责释放一个</span></span><br><span class="line">    <span class="comment">// 已终止进程的任务数据结构等资源。</span></span><br><span class="line">	<span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> ((pid=fork())&lt;<span class="number">0</span>) &#123;</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">&quot;Fork failed in init\r\n&quot;</span>);</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (!pid) &#123;                                 <span class="comment">// 新的子进程</span></span><br><span class="line">			close(<span class="number">0</span>);close(<span class="number">1</span>);close(<span class="number">2</span>);</span><br><span class="line">			setsid();                               <span class="comment">// 创建一新的会话期</span></span><br><span class="line">			(<span class="keyword">void</span>) open(<span class="string">&quot;/dev/tty0&quot;</span>,O_RDWR,<span class="number">0</span>);</span><br><span class="line">			(<span class="keyword">void</span>) dup(<span class="number">0</span>);</span><br><span class="line">			(<span class="keyword">void</span>) dup(<span class="number">0</span>);</span><br><span class="line">			_exit(execve(<span class="string">&quot;/bin/sh&quot;</span>,argv,envp));</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">			<span class="keyword">if</span> (pid == wait(&amp;i))</span><br><span class="line">				<span class="keyword">break</span>;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;\n\rchild %d died with code %04x\n\r&quot;</span>,pid,i);</span><br><span class="line">		sync();                                     <span class="comment">// 同步操作，刷新缓冲区。</span></span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// _exit()和exit()都用于正常终止一个函数。但_exit()直接是一个sys_exit系统调用，</span></span><br><span class="line">    <span class="comment">// 而exit()则通常是普通函数库中的一个函数。它会先执行一些清除操作，例如调用</span></span><br><span class="line">    <span class="comment">// 执行各终止处理程序、关闭所有标准IO等，然后调用sys_exit。</span></span><br><span class="line">	_exit(<span class="number">0</span>);	<span class="comment">/* NOTE! _exit, not exit() */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>此时Linux 0.11内核已经起来了，当然还有一大波驱动代码和系统调用、库函数、文件系统(重点)和调度策略等等等没有分析，后面将挑出个人认为重点的部分记录。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/Linux-kernel/" rel="tag"># Linux kernel</a>
+              <a href="/embpgp.github.io/tags/LDD/" rel="tag"># LDD</a>
+              <a href="/embpgp.github.io/tags/C-C/" rel="tag"># C/C++</a>
+              <a href="/embpgp.github.io/tags/Asm/" rel="tag"># Asm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%85%AD%E7%AB%A0/" rel="prev" title="Linux内核0.11完全注释 第六章">
+      <i class="fa fa-chevron-left"></i> Linux内核0.11完全注释 第六章
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/12/20/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" rel="next" title="Linux内核0.11完全注释 编译环境搭建">
+      Linux内核0.11完全注释 编译环境搭建 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E6%A0%B8%E5%88%9D%E5%A7%8B%E5%8C%96%E6%B5%81%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">内核初始化流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9D%80%E9%87%8D%E5%88%86%E6%9E%90%E2%80%9Dmove-to-user-mode-%E2%80%9D%E7%9A%84%E5%89%8D%E5%89%8D%E5%90%8E%E5%90%8E"><span class="nav-number">2.</span> <span class="nav-text">着重分析”move_to_user_mode()”的前前后后</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#move-to-user-mode-%E5%AE%8F%E5%AE%9A%E4%B9%89"><span class="nav-number">2.1.</span> <span class="nav-text">move_to_user_mode()宏定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sched-init"><span class="nav-number">2.2.</span> <span class="nav-text">sched_init()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#init-task%E5%85%B1%E5%90%8C%E4%BD%93"><span class="nav-number">2.3.</span> <span class="nav-text">init_task共同体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#INIT-TASK%E5%AE%8F"><span class="nav-number">2.4.</span> <span class="nav-text">INIT_TASK宏</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fork"><span class="nav-number">2.5.</span> <span class="nav-text">fork</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">小结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

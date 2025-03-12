@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="着重分析操作系统的加载器是如何运行程序的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核0.11完全注释 0.11的loader-&gt;execve">
+<meta property="og:url" content="https://embpgp.github.io/2016/12/30/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-0-11%E7%9A%84loader-execve/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="着重分析操作系统的加载器是如何运行程序的。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_fs_exec_new_stack.png">
+<meta property="og:image" content="https://embpgp.github.io/images/Linux_0.11_fs_exec_ZMAGIC_header.png">
+<meta property="article:published_time" content="2016-12-30T15:28:46.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.963Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="Linux kernel">
+<meta property="article:tag" content="LDD">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta property="article:tag" content="Asm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/Linux_0.11_fs_exec_new_stack.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2016/12/30/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-0-11%E7%9A%84loader-execve/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Linux内核0.11完全注释 0.11的loader->execve | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2016/12/30/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-0-11%E7%9A%84loader-execve/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux内核0.11完全注释 0.11的loader->execve
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-12-30 23:28:46" itemprop="dateCreated datePublished" datetime="2016-12-30T23:28:46+08:00">2016-12-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>11 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>着重分析操作系统的加载器是如何运行程序的。</p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<h1 id="从fork到execve"><a href="#从fork到execve" class="headerlink" title="从fork到execve"></a>从fork到execve</h1><p>根据Linux操作系统的设计原理,在Linux 0.11版本里面，进程0是手动创建的，进程1(init)是fork到进程0的，并且后续进程都是以1号进程为最顶层父进程。如果仅仅是fork只能实现所谓的多进程并发操作，而想要加载新的内容的话必须使用execve系统调用，将数据和代码从其他介质(比如硬盘)通过文件系统加载到内存，将原有进程代码和数据”冲刷掉”，现代Linux操作系统大体上也是这样的。</p>
+<h1 id="do-execve"><a href="#do-execve" class="headerlink" title="do_execve()"></a>do_execve()</h1><ul>
+<li><p>根据Linux操作系统内核的编码习惯*do_*开头的一般为系统调用或者中断的下半部函数。在后续的Linux内核版本里面允许进程在内核态被抢占(几乎总是在中断里面)就主要是执行下半部的时候开放中断。个人认为所谓被抢占即不是自愿放弃CPU时间(即任务自身进程空间内主动直接或者间接调用schedule函数进行任务调度和切换),而主要是由于时钟中断(所谓操作系统的脉搏)而引发的周期性的任务调度。但是在0.11版本里面当发生时钟中断的时候会检查当前的cs是否为0x0f(0.11代码段选择子写死)，如果不是的话表明刚刚从另外一个任务的内核态切换过来的，控制流程立即返回，而不进行调度。</p>
+</li>
+<li><p>在反汇编的时候会经常发现C库的crt过程先push三个参数，然后call main,最后再返回。<br><img src="/images/Linux_0.11_fs_exec_new_stack.png" alt="Linux_0.11_fs_exec_new_stack.png"></p>
+</li>
+<li><p>用户层执行exec类lib函数库簇或者直接通过系统调用嵌入汇编等方式触发系统调用,因此至少传递filename、argv、envp等参数，貌似envp经常由编译链接过程自动填充。</p>
+</li>
+<li><p>函数首先检查是否为用户层通过系统调用过来的，如果不是则panic。</p>
+</li>
+<li><p>linus认为128K的空间足够来存储环境变量和参数,因此立即先将这段空间初始化为0</p>
+</li>
+<li><p>可执行文件必须为普通文件</p>
+</li>
+<li><p>根据文件的set标志位等检查进程是否有权限执行该文件</p>
+</li>
+<li><p>先处理是否为脚本类可执行文件，因此直接读出文件的第一块内容，看第一行是否为<code>#!</code>,该约定在内核里面写死，因此如果不是则不能执行脚本。</p>
+</li>
+<li><p>如果是脚本的话将改造参数顺序，如原来为<code>./example.sh -arg1 -arg2</code>变为<code>interp -iarg1 -iarg2 example.sh -arg1 -arg2</code>，即把可执行文件送往解释脚本里面去(注意没有约定说一定要为#!/bin/sh,例如#!/bin/cat等自己可以试试)，而解释脚本(如bash)本身为elf格式的二进制可执行文件，可被直接加载到内存交由CPU执行，有种”偷天换日”的感觉，但事实就是这样，而解释脚本(一般为bash)进一步怎么处理那是它的事情，可参考GNU的各种/bin/目录下文件的实现(例如GNU bash)。</p>
+</li>
+<li><p>之后便将参数一一填充至顶端,并取得解释程序i节点继续goto处理，第二次的处理将在这个if语句<code>if ((bh-&gt;b_data[0] == &#39;#&#39;) &amp;&amp; (bh-&gt;b_data[1] == &#39;!&#39;) &amp;&amp; (!sh_bang)) &#123;</code>跳出到brelse(bh)。</p>
+</li>
+<li><p>然后便直接开始二进制程序的识别了,0.11版本的仅仅支持ZMAGIC格式的可执行映像。下图为0.11系统中hello程序的磁盘映像布局。(精通处理器指令集的大牛可以尝试不需要编译器链接器手动创建一个程序…)<br><img src="/images/Linux_0.11_fs_exec_ZMAGIC_header.png" alt="Linux_0.11_fs_exec_ZMAGIC_header.png"></p>
+</li>
+<li><p>处理掉原来进程的一些”后事”之后便修改task_struct结构的某些字段，置返回地址为新程序的入口，栈指针为环境块、参数块p,如果调度程序待会儿调度到本进程运行，则立即触发no_page异常，页面处理程序将磁盘上的代码和数据载入相应线性地址映射的物理地址处即可按需加载执行。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * &#x27;do_execve()&#x27; executes a new program.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="comment">//// execve()系统中断调用函数。加载并执行子进程</span></span><br><span class="line"><span class="comment">// 该函数是系统中断调用（int 0x80）功能号__NR_execve调用的函数。函数的参数是进</span></span><br><span class="line"><span class="comment">// 入系统调用处理过程后直接到调用本系统调用处理过程和调用本函数之前逐步压入栈中</span></span><br><span class="line"><span class="comment">// 的值。</span></span><br><span class="line"><span class="comment">// eip - 调用系统中断的程序代码指针。</span></span><br><span class="line"><span class="comment">// tmp - 系统中断中在调用_sys_execve时的返回地址，无用；</span></span><br><span class="line"><span class="comment">// filename - 被执行程序文件名指针；</span></span><br><span class="line"><span class="comment">// argv - 命令行参数指针数组的指针；</span></span><br><span class="line"><span class="comment">// envp - 环境变量指针数组的指针。</span></span><br><span class="line"><span class="comment">// 返回：如果调用成功，则不返回；否则设置出错号，并返回-1.</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">do_execve</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">long</span> * eip,<span class="keyword">long</span> tmp,<span class="keyword">char</span> * filename,</span></span></span><br><span class="line"><span class="params"><span class="function">	<span class="keyword">char</span> ** argv, <span class="keyword">char</span> ** envp)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">m_inode</span> * <span class="title">inode</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">buffer_head</span> * <span class="title">bh</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">exec</span> <span class="title">ex</span>;</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> page[MAX_ARG_PAGES];</span><br><span class="line">	<span class="keyword">int</span> i,argc,envc;</span><br><span class="line">	<span class="keyword">int</span> e_uid, e_gid;</span><br><span class="line">	<span class="keyword">int</span> retval;</span><br><span class="line">	<span class="keyword">int</span> sh_bang = <span class="number">0</span>;                            <span class="comment">// 控制是否需要执行的脚本程序</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> p=PAGE_SIZE*MAX_ARG_PAGES<span class="number">-4</span>;  <span class="comment">// p指向参数和环境空间的最后部</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在正式设置执行文件的运行环境之前，让我们先干这些杂事。内核准备了128kb(32</span></span><br><span class="line">    <span class="comment">// 个页面)空间来存放化执行文件的命令行参数和环境字符串。上杭把p初始设置成位</span></span><br><span class="line">    <span class="comment">// 于128KB空间中的当前位置。</span></span><br><span class="line">    <span class="comment">// 另外，参数eip[1]是调用本次系统调用的原用户程序代码段寄存器CS值，其中的段</span></span><br><span class="line">    <span class="comment">// 选择符当然必须是当前任务的代码段选择符0x000f.若不是该值，那么CS只能会是</span></span><br><span class="line">    <span class="comment">// 内核代码段的选择符0x0008.但这是绝对不允许的，因为内核代码是常驻内存而不</span></span><br><span class="line">    <span class="comment">// 能被替换掉的。因此下面根据eip[1]的值确认是否符合正常情况。然后再初始化</span></span><br><span class="line">    <span class="comment">// 128KB的参数和环境串空间，把所有字节清零，并取出执行文件的i节点。再根据函</span></span><br><span class="line">    <span class="comment">// 数参数分别计算出命令行参数和环境字符串的个数argc和envc。另外，执行文件必</span></span><br><span class="line">    <span class="comment">// 须是常规文件。</span></span><br><span class="line">	<span class="keyword">if</span> ((<span class="number">0xffff</span> &amp; eip[<span class="number">1</span>]) != <span class="number">0x000f</span>)</span><br><span class="line">		panic(<span class="string">&quot;execve called from supervisor mode&quot;</span>);</span><br><span class="line">	<span class="keyword">for</span> (i=<span class="number">0</span> ; i&lt;MAX_ARG_PAGES ; i++)	<span class="comment">/* clear page-table */</span></span><br><span class="line">		page[i]=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span> (!(inode=namei(filename)))		<span class="comment">/* get executables inode */</span></span><br><span class="line">		<span class="keyword">return</span> -ENOENT;</span><br><span class="line">	argc = count(argv);</span><br><span class="line">	envc = count(envp);</span><br><span class="line">	</span><br><span class="line">restart_interp:</span><br><span class="line">	<span class="keyword">if</span> (!S_ISREG(inode-&gt;i_mode)) &#123;	<span class="comment">/* must be regular file */</span></span><br><span class="line">		retval = -EACCES;</span><br><span class="line">		<span class="keyword">goto</span> exec_error2;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 下面检查当前进程是否有权运行指定的执行文件。即根据执行文件i节点中的属性，</span></span><br><span class="line">    <span class="comment">// 看看本进程是否有权执行它。在把执行文件i节点的属性字段值取到i中后，我们首</span></span><br><span class="line">    <span class="comment">// 先查看属性中是否设置了&quot;设置-用户-ID&quot;(set-user_id)标志和“设置-组-ID”(set_group-id)</span></span><br><span class="line">    <span class="comment">// 标志。这两个标志主要是让一般用户能够执行特权用户(如超级用户root)的程序，</span></span><br><span class="line">    <span class="comment">// 例如改变密码的程序passwd等。如果set-user-id标志置位，则后面执行进程的有</span></span><br><span class="line">    <span class="comment">// 效用户ID(euid)就设置成执行文件的用户ID，否则设置成当前进程的euid。如果执</span></span><br><span class="line">    <span class="comment">// 行文件set-group-id被置位的话，则执行进程的有效组ID（egid）就被设置为执行</span></span><br><span class="line">    <span class="comment">// 文件的组ID。否则设置成当前进程的egid。这里暂时把这两个判断出来的值保存在</span></span><br><span class="line">    <span class="comment">// 变量e_uid和e_gid中。</span></span><br><span class="line">	i = inode-&gt;i_mode;                      <span class="comment">// 取文件属性字段</span></span><br><span class="line">	e_uid = (i &amp; S_ISUID) ? inode-&gt;i_uid : current-&gt;euid;</span><br><span class="line">	e_gid = (i &amp; S_ISGID) ? inode-&gt;i_gid : current-&gt;egid;</span><br><span class="line">    <span class="comment">// 现在根据进程的euid和egid和执行文件的访问属性进行比较。如果执行文件属于运</span></span><br><span class="line">    <span class="comment">// 行进程的用户，则把文件属性值i右移6位，此时最低3位是文件宿主的访问权限标</span></span><br><span class="line">    <span class="comment">// 志。否则的话如果执行文件与当前进程的用户属性同租，则使属性值最低3位是执</span></span><br><span class="line">    <span class="comment">// 行文件组用户的访问权限标志。否则此时属性值最低3位就是其他用户访问该执行</span></span><br><span class="line">    <span class="comment">// 文件的权限。</span></span><br><span class="line">    <span class="comment">// 然后我们根据属性字i的最低3bit值来判断当前进程是否有权限运行这个执行文件。</span></span><br><span class="line">    <span class="comment">// 如果选出的相应用户没有运行该文件的权利(位0是执行权限)，并且其他用户也没</span></span><br><span class="line">    <span class="comment">// 有任何权限或者当前进程用户不是超级用户，则表明当前进程没有权利运行这个执</span></span><br><span class="line">    <span class="comment">// 行文件。于是置不可执行出错码，并跳转到exec_error2处去做退出处理。</span></span><br><span class="line">	<span class="keyword">if</span> (current-&gt;euid == inode-&gt;i_uid)</span><br><span class="line">		i &gt;&gt;= <span class="number">6</span>;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (current-&gt;egid == inode-&gt;i_gid)</span><br><span class="line">		i &gt;&gt;= <span class="number">3</span>;</span><br><span class="line">	<span class="keyword">if</span> (!(i &amp; <span class="number">1</span>) &amp;&amp;</span><br><span class="line">	    !((inode-&gt;i_mode &amp; <span class="number">0111</span>) &amp;&amp; suser())) &#123;</span><br><span class="line">		retval = -ENOEXEC;</span><br><span class="line">		<span class="keyword">goto</span> exec_error2;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 程序执行到这里，说明当前进程有运行指定执行文件的权限。因此从这里开始我们</span></span><br><span class="line">    <span class="comment">// 需要取出执行文件头部数据并根据其中的信息来分析设置运行环境，或者运行另一</span></span><br><span class="line">    <span class="comment">// 个shell程序来执行脚本程序。首先读取执行文件第1块数据到高速缓冲块中。并复</span></span><br><span class="line">    <span class="comment">// 制缓冲块数据到ex中。如果执行文件开始的两个字节是字符&#x27;#!&#x27;，则说明执行文件</span></span><br><span class="line">    <span class="comment">// 是一个脚本文件。如果想运行脚本文件，我们就需要执行脚本文件的解释程序(例</span></span><br><span class="line">    <span class="comment">// 如shell程序)。通常脚本文件的第一行文本为&#x27;#!/bin/bash&#x27;。他指明了运行脚本</span></span><br><span class="line">    <span class="comment">// 文件需要的解释程序。运行方法从脚本文件第一行中取出其中的解释程序名及后面</span></span><br><span class="line">    <span class="comment">// 的参数(若有的话)，然后将这些参数和脚本文件名放进执行文件（此时是解释程序）</span></span><br><span class="line">    <span class="comment">// 的命令行参数空间中。在这之前我们当然需要先把函数指定的原有命令行参数和环</span></span><br><span class="line">    <span class="comment">// 境字符串放到128KB空间中，而这里建立起来的命令行参数则放到它们前面位置处(</span></span><br><span class="line">    <span class="comment">// 因为是逆向放置)。最后让内核执行脚本文件的解释程序。下面就是在设置好解释</span></span><br><span class="line">    <span class="comment">// 程序的脚本文件名等参数后，取出解释程序的i节点并跳转去执行解释程序。由于</span></span><br><span class="line">    <span class="comment">// 我们需要跳转去执行，因此在下面确认处并处理了脚本文件之后需要设置一个禁止</span></span><br><span class="line">    <span class="comment">// 再次执行下面的脚本处理代码标志sh_bang。在后面的代码中该标志也用来表示我</span></span><br><span class="line">    <span class="comment">// 们已经设置好执行的命令行参数，不用重复设置。</span></span><br><span class="line">	<span class="keyword">if</span> (!(bh = bread(inode-&gt;i_dev,inode-&gt;i_zone[<span class="number">0</span>]))) &#123;</span><br><span class="line">		retval = -EACCES;</span><br><span class="line">		<span class="keyword">goto</span> exec_error2;</span><br><span class="line">	&#125;</span><br><span class="line">	ex = *((struct exec *) bh-&gt;b_data);	<span class="comment">/* read exec-header */</span></span><br><span class="line">	<span class="keyword">if</span> ((bh-&gt;b_data[<span class="number">0</span>] == <span class="string">&#x27;#&#x27;</span>) &amp;&amp; (bh-&gt;b_data[<span class="number">1</span>] == <span class="string">&#x27;!&#x27;</span>) &amp;&amp; (!sh_bang)) &#123;</span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">		 * This section does the #! interpretation.</span></span><br><span class="line"><span class="comment">		 * Sorta complicated, but hopefully it will work.  -TYT</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line"></span><br><span class="line">		<span class="keyword">char</span> buf[<span class="number">1023</span>], *cp, *interp, *i_name, *i_arg;</span><br><span class="line">		<span class="keyword">unsigned</span> <span class="keyword">long</span> old_fs;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 从这里开始，我们从脚本文件中提取解释程序名以及其参数，并把解释程序名、</span></span><br><span class="line">        <span class="comment">// 解释程序的参数和脚本文件名组合放入环境参数块中。首先复制脚本文件头1</span></span><br><span class="line">        <span class="comment">// 行字符&#x27;#!&#x27;后面的字符串到buf中，其中含有脚本解释程序名，也可能包含解</span></span><br><span class="line">        <span class="comment">// 释程序的几个参数。然后对buf中的内容进行处理。删除开始空格、制表符。</span></span><br><span class="line">		<span class="built_in">strncpy</span>(buf, bh-&gt;b_data+<span class="number">2</span>, <span class="number">1022</span>);</span><br><span class="line">		brelse(bh);</span><br><span class="line">		iput(inode);</span><br><span class="line">		buf[<span class="number">1022</span>] = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">		<span class="keyword">if</span> ((cp = <span class="built_in">strchr</span>(buf, <span class="string">&#x27;\n&#x27;</span>))) &#123;</span><br><span class="line">			*cp = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">			<span class="keyword">for</span> (cp = buf; (*cp == <span class="string">&#x27; &#x27;</span>) || (*cp == <span class="string">&#x27;\t&#x27;</span>); cp++);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (!cp || *cp == <span class="string">&#x27;\0&#x27;</span>) &#123;</span><br><span class="line">			retval = -ENOEXEC; <span class="comment">/* No interpreter name found */</span></span><br><span class="line">			<span class="keyword">goto</span> exec_error1;</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">// 此时我们得到了开头是脚本解释程序名的一行内容(字符串)。下面分析改行。</span></span><br><span class="line">        <span class="comment">// 首先取第一个字符串，它应该是解释程序名，此时i_name指向该名称。若解释</span></span><br><span class="line">        <span class="comment">// 程序名后还有字符，则它们应该是解释程序的参数串，于是令i_arg指向该串。</span></span><br><span class="line">		interp = i_name = cp;</span><br><span class="line">		i_arg = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">for</span> ( ; *cp &amp;&amp; (*cp != <span class="string">&#x27; &#x27;</span>) &amp;&amp; (*cp != <span class="string">&#x27;\t&#x27;</span>); cp++) &#123;</span><br><span class="line"> 			<span class="keyword">if</span> (*cp == <span class="string">&#x27;/&#x27;</span>)</span><br><span class="line">				i_name = cp+<span class="number">1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (*cp) &#123;</span><br><span class="line">			*cp++ = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">			i_arg = cp;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">		 * OK, we&#x27;ve parsed out the interpreter name and</span></span><br><span class="line"><span class="comment">		 * (optional) argument.</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">        <span class="comment">// 现在我们要把上面解析出来的解释程序名i_name及其参数i_arg和脚本文件名作</span></span><br><span class="line">        <span class="comment">// 即使程序的参数放进环境和参数块中。不过首先我们需要把函数提供的原来一</span></span><br><span class="line">        <span class="comment">// 些参数和环境字符串先放进去，然后再放这里解析出来的。例如对于命令行参</span></span><br><span class="line">        <span class="comment">// 数来说，如果原来的参数是&quot;-arg1-arg2&quot;、解释程序名是bash、其参数是&quot;-iarg1</span></span><br><span class="line">        <span class="comment">//  -iarg2&quot;、脚本文件名(即原来的执行文件名)是&quot;example.sh&quot;，那么放入这里</span></span><br><span class="line">        <span class="comment">//  的参数之后，新的命令行类似于这样：</span></span><br><span class="line">        <span class="comment">//  &quot;bash -iarg1 -iarg2 example.sh -arg1 -arg2&quot;</span></span><br><span class="line">        <span class="comment">//  这里我们把sh_bang标志置上，然后把函数参数提供的原有参数和环境字符串</span></span><br><span class="line">        <span class="comment">//  放入到空间中。环境字符串和参数个数分别是envc和argc-1个。少复制的一</span></span><br><span class="line">        <span class="comment">//  个原有参数是原来的执行文件名，即这里的脚本文件名。[[??? 这里可以看</span></span><br><span class="line">        <span class="comment">//  出，实际上我们需要去另行处理脚本文件名，即这里完全可以复制argc个参</span></span><br><span class="line">        <span class="comment">//  数，包括原来执行文件名(即现在的脚本文件名)。因为它位于同一个位置上]]</span></span><br><span class="line">        <span class="comment">//  注意！这里指针p随着复制信息增加而逐渐向小地址方向移动，因此这两个复</span></span><br><span class="line">        <span class="comment">//  制串函数执行完后，环境参数串信息块位于程序命令行参数串信息块的上方，</span></span><br><span class="line">        <span class="comment">//  并且p指向程序的第一个参数串。copy_strings()最后一个参数(0)指明参数</span></span><br><span class="line">        <span class="comment">//  字符串在用户空间。</span></span><br><span class="line">		<span class="keyword">if</span> (sh_bang++ == <span class="number">0</span>) &#123;</span><br><span class="line">			p = copy_strings(envc, envp, page, p, <span class="number">0</span>);</span><br><span class="line">			p = copy_strings(--argc, argv+<span class="number">1</span>, page, p, <span class="number">0</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">		 * Splice in (1) the interpreter&#x27;s name for argv[0]</span></span><br><span class="line"><span class="comment">		 *           (2) (optional) argument to interpreter</span></span><br><span class="line"><span class="comment">		 *           (3) filename of shell script</span></span><br><span class="line"><span class="comment">		 *</span></span><br><span class="line"><span class="comment">		 * This is done in reverse order, because of how the</span></span><br><span class="line"><span class="comment">		 * user environment and arguments are stored.</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">        <span class="comment">// 接着我们逆向复制脚本文件名、解释程序的参数和解释程序文件名到参数和环</span></span><br><span class="line">        <span class="comment">// 境空间中。若出错，则置出错码，跳转到exec_error1。另外，由于本函数参</span></span><br><span class="line">        <span class="comment">// 数提供的脚本文件名filename在用户空间，而这里赋予copy_string()的脚本</span></span><br><span class="line">        <span class="comment">// 文件名指针在内核空间，因此这个复制字符串函数的最后一个参数(字符串来</span></span><br><span class="line">        <span class="comment">// 源标志)需要被设置成1.若字符串在内核空间，则copy_strings()的最后一个</span></span><br><span class="line">        <span class="comment">// 参数要设置成2。</span></span><br><span class="line">		p = copy_strings(<span class="number">1</span>, &amp;filename, page, p, <span class="number">1</span>);</span><br><span class="line">		argc++;</span><br><span class="line">		<span class="keyword">if</span> (i_arg) &#123;</span><br><span class="line">			p = copy_strings(<span class="number">1</span>, &amp;i_arg, page, p, <span class="number">2</span>);</span><br><span class="line">			argc++;</span><br><span class="line">		&#125;</span><br><span class="line">		p = copy_strings(<span class="number">1</span>, &amp;i_name, page, p, <span class="number">2</span>);</span><br><span class="line">		argc++;</span><br><span class="line">		<span class="keyword">if</span> (!p) &#123;</span><br><span class="line">			retval = -ENOMEM;</span><br><span class="line">			<span class="keyword">goto</span> exec_error1;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">		 * OK, now restart the process with the interpreter&#x27;s inode.</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">        <span class="comment">// 最后我们取得解释程序的i节点指针，然后跳转到上面去执行解释程序。为了</span></span><br><span class="line">        <span class="comment">// 获得解释程序的i节点，我们需要使用namei()函数，但是该函数所使用的参数</span></span><br><span class="line">        <span class="comment">// (文件名)是从用户数据空间得到的，即从段寄存器fs指向空间中取得。因此调</span></span><br><span class="line">        <span class="comment">// 用namei()函数之前我们需要先临时让fs指向内核数据空间，以让函数能从内</span></span><br><span class="line">        <span class="comment">// 核空间得到解释程序名，并在namei()返回后恢复fs的默认设置。因此这里我</span></span><br><span class="line">        <span class="comment">// 们先临时保存原fs段寄存器（原指向用户数据段）的值，将其设置成指向内核</span></span><br><span class="line">        <span class="comment">// 数据段，然后取解释程序的i节点。之后再恢复fs的原值。并跳转到restart_interp</span></span><br><span class="line">        <span class="comment">// 出重新处理新的执行文件——脚本文件解释程序。</span></span><br><span class="line">		old_fs = get_fs();</span><br><span class="line">		set_fs(get_ds());</span><br><span class="line">		<span class="keyword">if</span> (!(inode=namei(interp))) &#123; <span class="comment">/* get executables inode */</span></span><br><span class="line">			set_fs(old_fs);</span><br><span class="line">			retval = -ENOENT;</span><br><span class="line">			<span class="keyword">goto</span> exec_error1;</span><br><span class="line">		&#125;</span><br><span class="line">		set_fs(old_fs);</span><br><span class="line">		<span class="keyword">goto</span> restart_interp;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 此时缓冲块中的执行文件头结构数据已经复制到了ex中。于是先释放该缓冲块，并</span></span><br><span class="line">    <span class="comment">// 开始对ex中的执行头信息进行判断处理。对于Linux0.11内核来说，它仅支持ZMAGIC</span></span><br><span class="line">    <span class="comment">// 执行文件格式，并且执行文件代码都从逻辑地址0开始执行，因此不支持含有代码</span></span><br><span class="line">    <span class="comment">// 或数据重定位信息的执行文件。当然，如果执行文件实在太大或者执行文件残缺不</span></span><br><span class="line">    <span class="comment">// 全，那么我们也不能运行它。因此对于下列情况将不执行程序：如果执行文件不是</span></span><br><span class="line">    <span class="comment">// 需求页可执行文件（ZMAGIC）、或者代码和数据重定位部分不等于0，或者（代码段</span></span><br><span class="line">    <span class="comment">// + 数据段+堆）长度超过50MB、或者执行文件长度小于（代码段+数据段+符号表长度</span></span><br><span class="line">    <span class="comment">// +执行头部分）长度的总和。</span></span><br><span class="line">	brelse(bh);</span><br><span class="line">	<span class="keyword">if</span> (N_MAGIC(ex) != ZMAGIC || ex.a_trsize || ex.a_drsize ||</span><br><span class="line">		ex.a_text+ex.a_data+ex.a_bss&gt;<span class="number">0x3000000</span> ||</span><br><span class="line">		inode-&gt;i_size &lt; ex.a_text+ex.a_data+ex.a_syms+N_TXTOFF(ex)) &#123;</span><br><span class="line">		retval = -ENOEXEC;</span><br><span class="line">		<span class="keyword">goto</span> exec_error2;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 另外，如果执行文件中代码开始处没有位于1个页面(1024字节)边界处，则也不能</span></span><br><span class="line">    <span class="comment">// 执行。因为需求页(Demand paging)技术要求加载执行文件内容时以页面为单位，</span></span><br><span class="line">    <span class="comment">// 因此要求执行文件映象中代码和数据都从页面边界处开始。</span></span><br><span class="line">	<span class="keyword">if</span> (N_TXTOFF(ex) != BLOCK_SIZE) &#123;</span><br><span class="line">		printk(<span class="string">&quot;%s: N_TXTOFF != BLOCK_SIZE. See a.out.h.&quot;</span>, filename);</span><br><span class="line">		retval = -ENOEXEC;</span><br><span class="line">		<span class="keyword">goto</span> exec_error2;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 如果sh_bang标志没有设置，则复制指定个数的命令行参数和环境字符串到参数和</span></span><br><span class="line">    <span class="comment">// 环境空间中。若sh_bang标志已经设置，则表明是将运行脚本解释程序，此时环境</span></span><br><span class="line">    <span class="comment">// 变量页面已经复制，无须再复制。同样，若sh_bang没有置位而需要复制的话，那</span></span><br><span class="line">    <span class="comment">// 么此时指针p随着复制信息增加而逐渐向小地址方向移动，因此这两个复制串函数</span></span><br><span class="line">    <span class="comment">// 执行完后，环境参数串信息块位于程序参数串信息块上方，并且p指向程序的第1个</span></span><br><span class="line">    <span class="comment">// 参数串。事实上，p是128KB参数和环境空间中的偏移值。因此如果p=0，则表示环</span></span><br><span class="line">    <span class="comment">// 境变量与参数空间页面已经被占满，容纳不下了。</span></span><br><span class="line">	<span class="keyword">if</span> (!sh_bang) &#123;</span><br><span class="line">		p = copy_strings(envc,envp,page,p,<span class="number">0</span>);</span><br><span class="line">		p = copy_strings(argc,argv,page,p,<span class="number">0</span>);</span><br><span class="line">		<span class="keyword">if</span> (!p) &#123;</span><br><span class="line">			retval = -ENOMEM;</span><br><span class="line">			<span class="keyword">goto</span> exec_error2;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="comment">/* OK, This is the point of no return */</span></span><br><span class="line">    <span class="comment">// 前面我们针对函数参数提供的信息对需要运行执行文件的命令行参数和环境空间进</span></span><br><span class="line">    <span class="comment">// 行了设置，但还没有为执行文件做过什么实质性的工作，即还没有做过为执行文件</span></span><br><span class="line">    <span class="comment">// 初始化进程任务结构信息、建立页表等工作。现在我们就来做这些工作。由于执行</span></span><br><span class="line">    <span class="comment">// 文件直接使用当前进程的“躯壳”，即当钱进程将被改造成执行文件的进程，因此我</span></span><br><span class="line">    <span class="comment">// 们需要首先释放当前进程占用的某些系统资源，包括关闭指定的已打开文件、占用</span></span><br><span class="line">    <span class="comment">// 的页表和内存页面等。然后根据执行文件头结构信息修改当前进程使用的局部描述</span></span><br><span class="line">    <span class="comment">// 符表LDT中描述符的内容，重新设置代码段和数据段描述符的限长，再利用前面处</span></span><br><span class="line">    <span class="comment">// 理得到的e_uid和e_gid等信息来设置进程任务结构中相关的字段。最后把执行本次</span></span><br><span class="line">    <span class="comment">// 系统调用程序的返回地址eip[]指向执行文件中代码的其实位置处。这样当本系统</span></span><br><span class="line">    <span class="comment">// 调用退出返回后就会去运行新执行文件的代码了。注意，虽然此时新执行文件代码</span></span><br><span class="line">    <span class="comment">// 和数据还没有从文件中加载到内存中，但其参数和环境块已经在copy_strings()中</span></span><br><span class="line">    <span class="comment">// 使用get_free_page()分配了物理内存页来保存数据，并在change_ldt()函数中使</span></span><br><span class="line">    <span class="comment">// 用put_page()放到了进程逻辑空间的末端处。另外，在create_tables()中也会由</span></span><br><span class="line">    <span class="comment">// 于在用户栈上存放参数和环境指针表而引起缺页异常，从而内存管理程序也会就此</span></span><br><span class="line">    <span class="comment">// 为用户栈空间映射物理内存页。</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="comment">// 这里我们首先放回进程原执行程序的i节点，并且让进程executable字段指向新执行</span></span><br><span class="line">    <span class="comment">// 文件的i节点。然后复位原进程的所有信号处理句柄。再根据设定的执行时关闭文件</span></span><br><span class="line">    <span class="comment">// 句柄（close_on_exec）位图标志，关闭指定的打开文件，并复位该标志。</span></span><br><span class="line">	<span class="keyword">if</span> (current-&gt;executable)</span><br><span class="line">		iput(current-&gt;executable);</span><br><span class="line">	current-&gt;executable = inode;</span><br><span class="line">	<span class="keyword">for</span> (i=<span class="number">0</span> ; i&lt;<span class="number">32</span> ; i++)</span><br><span class="line">		current-&gt;sigaction[i].sa_handler = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">for</span> (i=<span class="number">0</span> ; i&lt;NR_OPEN ; i++)</span><br><span class="line">		<span class="keyword">if</span> ((current-&gt;close_on_exec&gt;&gt;i)&amp;<span class="number">1</span>)</span><br><span class="line">			sys_close(i);</span><br><span class="line">	current-&gt;close_on_exec = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 然后根据当前进程指定的基地址和限长，释放原来程序的代码段和数据段所对应的</span></span><br><span class="line">    <span class="comment">// 内存页表指定的物理内存页面及页表本身。此时新执行文件并没有占用主内存区任</span></span><br><span class="line">    <span class="comment">// 何页面，因此在处理器真正运行新执行文件代码时就会引起缺页异常中断，此时内</span></span><br><span class="line">    <span class="comment">// 存管理程序执行缺页处理而为新执行文件申请内存页面和设置相关表项，并且把相</span></span><br><span class="line">    <span class="comment">// 关执行文件页面读入内存中。如果“上次任务使用了协处理器”指向的是当前进程，</span></span><br><span class="line">    <span class="comment">// 则将其置空，并复位使用了协处理器的标志。</span></span><br><span class="line">	free_page_tables(get_base(current-&gt;ldt[<span class="number">1</span>]),get_limit(<span class="number">0x0f</span>));</span><br><span class="line">	free_page_tables(get_base(current-&gt;ldt[<span class="number">2</span>]),get_limit(<span class="number">0x17</span>));</span><br><span class="line">	<span class="keyword">if</span> (last_task_used_math == current)</span><br><span class="line">		last_task_used_math = <span class="literal">NULL</span>;</span><br><span class="line">	current-&gt;used_math = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 然后我们根据新执行文件头结构中的代码长度字段a_text的值修改局部表中描述符</span></span><br><span class="line">    <span class="comment">// 基地址和段限长，并将128KB的参数和环境空间页面放置在数据段末端。执行下面</span></span><br><span class="line">    <span class="comment">// 语句之后，p此时更改成以数据段起始处为原点的偏移值，但仍指向参数和环境空</span></span><br><span class="line">    <span class="comment">// 间数据开始处，即已转换成为栈指针值。然后调用内部函数create_tables()在栈中</span></span><br><span class="line">    <span class="comment">// 穿件环境和参数变量指针表，供程序的main()作为参数使用，并返回该栈指针。</span></span><br><span class="line">	p += change_ldt(ex.a_text,page)-MAX_ARG_PAGES*PAGE_SIZE;</span><br><span class="line">	p = (<span class="keyword">unsigned</span> <span class="keyword">long</span>) create_tables((<span class="keyword">char</span> *)p,argc,envc);</span><br><span class="line">    <span class="comment">// 接着再修改各字段值为新执行文件的信息。即令进程任务结构代码尾字段end_code</span></span><br><span class="line">    <span class="comment">// 等于执行文件的代码长度a_text；数据尾字段end_data等于执行文件的代码段长度</span></span><br><span class="line">    <span class="comment">// 加数据段长度(a_data+a_text)；并令进程堆结尾字段brk=a_text+a_data+a_bss.</span></span><br><span class="line">    <span class="comment">// brk用于指明进程当前数据段（包括未初始化数据部分）末端位置。然后设置进程</span></span><br><span class="line">    <span class="comment">// 栈开始字段为栈指针所在页面，并重新设置进程的有效用户id和有效组id。</span></span><br><span class="line">	current-&gt;brk = ex.a_bss +</span><br><span class="line">		(current-&gt;end_data = ex.a_data +</span><br><span class="line">		(current-&gt;end_code = ex.a_text));</span><br><span class="line">	current-&gt;start_stack = p &amp; <span class="number">0xfffff000</span>;</span><br><span class="line">	current-&gt;euid = e_uid;</span><br><span class="line">	current-&gt;egid = e_gid;</span><br><span class="line">    <span class="comment">// 如果执行文件代码加数据长度的末端不再页面边界上，则把最后不到1页长度的内</span></span><br><span class="line">    <span class="comment">// 存过空间初始化为零。</span></span><br><span class="line">	i = ex.a_text+ex.a_data;</span><br><span class="line">	<span class="keyword">while</span> (i&amp;<span class="number">0xfff</span>)</span><br><span class="line">		put_fs_byte(<span class="number">0</span>,(<span class="keyword">char</span> *) (i++));</span><br><span class="line">    <span class="comment">// 最后将原调用系统中断的程序在堆栈上的代码指针替换为指向新执行程序的入口点，</span></span><br><span class="line">    <span class="comment">// 并将栈指针替换为执行文件的栈指针。此后返回指令将这些栈数据并使得CPU去执</span></span><br><span class="line">    <span class="comment">// 行新执行文件，因此不会返回到原调用系统中断的程序中去了。</span></span><br><span class="line">	eip[<span class="number">0</span>] = ex.a_entry;		<span class="comment">/* eip, magic happens :-) */</span></span><br><span class="line">	eip[<span class="number">3</span>] = p;			<span class="comment">/* stack pointer */</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">exec_error2:</span><br><span class="line">	iput(inode);</span><br><span class="line">exec_error1:</span><br><span class="line">	<span class="keyword">for</span> (i=<span class="number">0</span> ; i&lt;MAX_ARG_PAGES ; i++)</span><br><span class="line">		free_page(page[i]);</span><br><span class="line">	<span class="keyword">return</span>(retval);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>相对于Windows的PE格式来说该版本的可执行文件格式(a.out)还是简单许多，所以需要配套的编译链接工具提供支持，有时间可以继续分析ELF。可以同步参考<a target="_blank" rel="noopener" href="https://tinylab.gitbooks.io/cbook/content/zh/preface/01-chapter1.html">这里</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/Linux-kernel/" rel="tag"># Linux kernel</a>
+              <a href="/embpgp.github.io/tags/LDD/" rel="tag"># LDD</a>
+              <a href="/embpgp.github.io/tags/C-C/" rel="tag"># C/C++</a>
+              <a href="/embpgp.github.io/tags/Asm/" rel="tag"># Asm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/12/23/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E5%85%B3%E4%BA%8E%E4%BB%BB%E5%8A%A1%E7%9D%A1%E7%9C%A0%E5%92%8C%E5%94%A4%E9%86%92%E7%9A%84%E7%90%86%E8%A7%A3/" rel="prev" title="Linux内核0.11完全注释 关于任务睡眠和唤醒的理解">
+      <i class="fa fa-chevron-left"></i> Linux内核0.11完全注释 关于任务睡眠和唤醒的理解
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2017/01/07/fmt-exploit/" rel="next" title="fmt_exploit">
+      fmt_exploit <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8Efork%E5%88%B0execve"><span class="nav-number">1.</span> <span class="nav-text">从fork到execve</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#do-execve"><span class="nav-number">2.</span> <span class="nav-text">do_execve()</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

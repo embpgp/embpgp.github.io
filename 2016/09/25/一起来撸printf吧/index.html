@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="printf实现还隐藏了很多参数,例如%n,printf返回值是啥你知道吗?格式化字符串漏洞成因何在?这里分析Linux内核中的printf实现,而非glibc库中的标准实现(我们用的肯定是标准库咯,不过很复杂_),因为这里没有%f等浮点类型的匹配,简单一些.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一起来撸printf吧">
+<meta property="og:url" content="https://embpgp.github.io/2016/09/25/%E4%B8%80%E8%B5%B7%E6%9D%A5%E6%92%B8printf%E5%90%A7/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="printf实现还隐藏了很多参数,例如%n,printf返回值是啥你知道吗?格式化字符串漏洞成因何在?这里分析Linux内核中的printf实现,而非glibc库中的标准实现(我们用的肯定是标准库咯,不过很复杂_),因为这里没有%f等浮点类型的匹配,简单一些.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://embpgp.github.io/images/printf.png">
+<meta property="og:image" content="https://embpgp.github.io/images/va_arg.png">
+<meta property="og:image" content="https://embpgp.github.io/images/vsprintf.png">
+<meta property="article:published_time" content="2016-09-25T12:17:43.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.967Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="Linux kernel">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://embpgp.github.io/images/printf.png">
+
+<link rel="canonical" href="https://embpgp.github.io/2016/09/25/%E4%B8%80%E8%B5%B7%E6%9D%A5%E6%92%B8printf%E5%90%A7/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>一起来撸printf吧 | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2016/09/25/%E4%B8%80%E8%B5%B7%E6%9D%A5%E6%92%B8printf%E5%90%A7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          一起来撸printf吧
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-09-25 20:17:43" itemprop="dateCreated datePublished" datetime="2016-09-25T20:17:43+08:00">2016-09-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/misc/" itemprop="url" rel="index"><span itemprop="name">misc</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>8.7k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>8 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>printf实现还隐藏了很多参数,例如%n,printf返回值是啥你知道吗?格式化字符串漏洞成因何在?这里分析Linux内核中的printf实现,而非glibc库中的标准实现(我们用的肯定是标准库咯,不过很复杂<del>_</del>),因为这里没有%f等浮点类型的匹配,简单一些.</p>
+</blockquote>
+<span id="more"></span>
+
+
+<p>参考资料:<br><a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/master/arch/x86/boot/printf.c">Linus的github仓库https://github.com/torvalds/linux/blob/master/arch/x86/boot/printf.c</a></p>
+<h2 id="printf大体"><a href="#printf大体" class="headerlink" title="printf大体"></a>printf大体</h2><p>首先我们找到printf函数的实现(由于x86体系容易理解便选择了这个体系),可以看到申请了1024个字节的空间来保存要格式化串,有人会问要是我给出的参数超过了1024不就缓冲区溢出程序会crash掉吗?我觉得编译器肯定会察觉到的,有兴趣的自己鼓捣下…大体就是将传递进来的参数根据压栈的顺序逐个取出并格式化成字符串,这个是在vsprintf函数实现的,返回值是两个地址的差,即本次输出的字符串数目.最后调用puts函数向终端输出.最后后才返回本次输出字符串数目.<br><img src="/images/printf.png" alt="printf"></p>
+<h2 id="va-系类宏"><a href="#va-系类宏" class="headerlink" title="va_系类宏"></a>va_系类宏</h2><p>然后我们利用sublime的插件来jump到<code>va_list</code>的定义,发现是一个char*的typedef.干脆就一起来认识一下<code>va_</code>系列的宏.</p>
+<p><code>acpi_native_int</code>也是一个typedef,根据最开始的配置决定是s32还是s64,在x86这里肯定就是有符号的32位了,即int类型的.<code>_AUPBND</code>和<code>_ADNBND</code>两个宏的值一样.而<code>_bnd</code>这个宏在32b体系下给出的是类型X的大小的4字节对齐值.在printf里面用的时候关系不是很大,因为格式化的时候不会是很大结构体(%结构体根本没实现啊),纵然是小于4字节的char,short之类的,存的时候可能是那么多字节,但是压栈的时候编译器会毫不犹豫地安排用一个寄存器扩展并压入栈顶的指令,所以不用担心,可以认为这个宏在printf里面仅仅是4字节对齐没问题的.<code>va_start(ap, A)</code>这个宏接到A(fmt)地址,再+4赋值给ap,原因在于A(fmt)是printf的第一个参数(格式化字符串含有%的部分),+4之后才能对准第一个真正要格式化的参数.而<code>va_arg(ap, T)</code>目的是先使得ap移往后一个参数但是返回的值确实本次参数的值,比较巧妙.<code>va_end(ap)</code>仅仅为了保证安全而象征性地将ap指向NULL.<br><img src="/images/va_arg.png" alt="va_arg"></p>
+<h2 id="vsprintf"><a href="#vsprintf" class="headerlink" title="vsprintf"></a>vsprintf</h2><p>vsprintf这个函数有几个重要的局部变量需要注意,英文注释写的很清楚了,flags标志主要是关于数字对齐这一块,等到number函数被调用的时候会判断的.field_width字段主要是占用宽度计算.precision是精度计算,其实是输出个字符个数控制.qualifier是对于长整型的扩展,例如将int转为long.(x86下int=long)<br><img src="/images/vsprintf.png" alt="vsprintf"><br>在定义了局部变量之后,一个for循环遍历fmt所有的字符,取出特别的%来格式化,最后计算地址偏移便完结了.当找到第一个%的时候,首先处理flags字段,定义个标号repeat来快速跳出,虽然听说C标准不推荐使用goto语句,但是能够提高效率为什么不能用呢?代码片段如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> ZEROPAD	1		<span class="comment">/* pad with zero */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SIGN	2		<span class="comment">/* unsigned/signed long */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PLUS	4		<span class="comment">/* show plus */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SPACE	8		<span class="comment">/* space if plus */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LEFT	16		<span class="comment">/* left justified */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SMALL	32		<span class="comment">/* Must be 32 == 0x20 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SPECIAL	64		<span class="comment">/* 0x */</span></span></span><br><span class="line"><span class="comment">/* process flags */</span></span><br><span class="line">		flags = <span class="number">0</span>;</span><br><span class="line">	      repeat:</span><br><span class="line">		++fmt;		<span class="comment">/* this also skips first &#x27;%&#x27; */</span></span><br><span class="line">		<span class="keyword">switch</span> (*fmt) &#123;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;-&#x27;</span>:</span><br><span class="line">			flags |= LEFT;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;+&#x27;</span>:</span><br><span class="line">			flags |= PLUS;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27; &#x27;</span>:</span><br><span class="line">			flags |= SPACE;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;#&#x27;</span>:</span><br><span class="line">			flags |= SPECIAL;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;0&#x27;</span>:</span><br><span class="line">			flags |= ZEROPAD;</span><br><span class="line">			<span class="keyword">goto</span> repeat;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+<p>某些字段就不说了,用过printf的应该都知道的,其中的<code>#</code>作用就是方便16进制和8进制的格式化,例如<code>%#x</code>就会被默认加上<code>0x</code>,而<code>%#o</code>就会被默认加上<code>0</code>,具体可以看后面number函数实现就知道了.  </p>
+<hr>
+<blockquote>
+<p>找工作太忙了,今天才得有空继续分析^~^(2016.10.17) </p>
+</blockquote>
+<hr>
+<p>接下来就会去获得宽度字段,利用<code>isdigital</code>函数一步实现字符串转整型并使得fmt指针指向后续格式符.如果用<code>*</code>代替,将直接将压入的参数转为整型赋值为宽度字段.并根据正负号置标志位采取相应的对齐方式(默认为右对齐).  </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* get field width */</span></span><br><span class="line">		field_width = <span class="number">-1</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">isdigit</span>(*fmt))</span><br><span class="line">			field_width = skip_atoi(&amp;fmt);</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (*fmt == <span class="string">&#x27;*&#x27;</span>) &#123;</span><br><span class="line">			++fmt;</span><br><span class="line">			<span class="comment">/* it&#x27;s the next argument */</span></span><br><span class="line">			field_width = va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">			<span class="keyword">if</span> (field_width &lt; <span class="number">0</span>) &#123;</span><br><span class="line">				field_width = -field_width;</span><br><span class="line">				flags |= LEFT;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+<p>再下来就是获取精度了,一般有浮点类型的就得保留多少位的精度.首先得在串中检测到有<code>.</code>字符,之后的处理跟宽度就差不多了.先保存相关的参数然后会传到另外的函数做具体处理的.对于有<code>l</code>,<code>L</code>,<code>h</code>跟在后面的将使得<code>qualifier</code>被置为其ascii码值.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* get the precision */</span></span><br><span class="line">		precision = <span class="number">-1</span>;</span><br><span class="line">		<span class="keyword">if</span> (*fmt == <span class="string">&#x27;.&#x27;</span>) &#123;</span><br><span class="line">			++fmt;</span><br><span class="line">			<span class="keyword">if</span> (<span class="built_in">isdigit</span>(*fmt))</span><br><span class="line">				precision = skip_atoi(&amp;fmt);</span><br><span class="line">			<span class="keyword">else</span> <span class="keyword">if</span> (*fmt == <span class="string">&#x27;*&#x27;</span>) &#123;</span><br><span class="line">				++fmt;</span><br><span class="line">				<span class="comment">/* it&#x27;s the next argument */</span></span><br><span class="line">				precision = va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (precision &lt; <span class="number">0</span>)</span><br><span class="line">				precision = <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">/* get the conversion qualifier */</span></span><br><span class="line">		qualifier = <span class="number">-1</span>;</span><br><span class="line">		<span class="keyword">if</span> (*fmt == <span class="string">&#x27;h&#x27;</span> || *fmt == <span class="string">&#x27;l&#x27;</span> || *fmt == <span class="string">&#x27;L&#x27;</span>) &#123;</span><br><span class="line">			qualifier = *fmt;</span><br><span class="line">			++fmt;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+<p>之后就进入最后的格式化匹配了,根据提供的格式化类型对压入的参数进行相应操作.首先会使得base默认为10进制,如果类似%c的话,直接根据左右对齐方式填充空白符,中间以<code>int</code>类型为地址单元取得参数的值直接强制转化为<code>unsigned char</code>类型的字符.为什么呢?详情参考我的另外一篇<a target="_blank" rel="noopener" href="http://www.rutk1t0r.cn/2016/08/21/memory-align/">文章</a>,我们需要知道这个是编译器自己这么压进去的就得这么去接收就行了.对于类似%s,首先取得参数首地址,然后调用安全的<code>strnlen</code>函数获取填充空白的长度.之后逐字符地拷贝,若非右对齐后续还需继续填充空白,<code>if</code>和<code>while</code>没有加<code>&#123;&#125;</code>可能看得不太清楚.建议源代码中的风格严谨一点好.对于%p如果没有字段宽度值则默认为2个指针大小的宽度,并使得flags的ZEROPAD置位.而后直接送往number函数继续处理.%n可是一个很生疏的东西,我猜测这个参数最初的目的是用于调试用的,可以检查本次printf调用在%n之前输出的字符个数,并将这个值赋给调用者传递进来的参数地址处,但是如果使用不当,就可能会造成<code>任意地址读写任意数据</code>的格式化字符串漏洞.<br>之后的几个参数大都是置位相应标志位而已,后期直接送往number函数处理,需要注意的是之前这几个参数后面完成后用的是<code>continue</code>,意思是直接跳转到最外面的<code>for</code>循环进行下一个字符的匹配,而%xXdiu后面接的是<code>break</code>,表示退出<code>switch</code>,转而进行后面的<code>h,L,l</code>的长类型的处理去了.还要注意在<code>switch case break</code>的结构中,如果<code>case</code>了第一个条件,之后如果没有遇到<code>break</code>,程序的控制流程将忽略后面的<code>case</code>条件,直接执行语句部分,直到遇见结束的<code>break</code>.因为这里已经出现了这种用法(匹配x的时候),所以应该注意一下,某些笔试题也会考察这个知识点.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* default base */</span></span><br><span class="line">		base = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">switch</span> (*fmt) &#123;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;c&#x27;</span>:</span><br><span class="line">			<span class="keyword">if</span> (!(flags &amp; LEFT))</span><br><span class="line">				<span class="keyword">while</span> (--field_width &gt; <span class="number">0</span>)</span><br><span class="line">					*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			*str++ = (<span class="keyword">unsigned</span> <span class="keyword">char</span>)va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">			<span class="keyword">while</span> (--field_width &gt; <span class="number">0</span>)</span><br><span class="line">				*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;s&#x27;</span>:</span><br><span class="line">			s = va_arg(args, <span class="keyword">char</span> *);</span><br><span class="line">			len = strnlen(s, precision);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (!(flags &amp; LEFT))</span><br><span class="line">				<span class="keyword">while</span> (len &lt; field_width--)</span><br><span class="line">					*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; len; ++i)</span><br><span class="line">				*str++ = *s++;</span><br><span class="line">			<span class="keyword">while</span> (len &lt; field_width--)</span><br><span class="line">				*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;p&#x27;</span>:</span><br><span class="line">			<span class="keyword">if</span> (field_width == <span class="number">-1</span>) &#123;</span><br><span class="line">				field_width = <span class="number">2</span> * <span class="keyword">sizeof</span>(<span class="keyword">void</span> *);</span><br><span class="line">				flags |= ZEROPAD;</span><br><span class="line">			&#125;</span><br><span class="line">			str = number(str,</span><br><span class="line">				     (<span class="keyword">unsigned</span> <span class="keyword">long</span>)va_arg(args, <span class="keyword">void</span> *), <span class="number">16</span>,</span><br><span class="line">				     field_width, precision, flags);</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;n&#x27;</span>:</span><br><span class="line">			<span class="keyword">if</span> (qualifier == <span class="string">&#x27;l&#x27;</span>) &#123;</span><br><span class="line">				<span class="keyword">long</span> *ip = va_arg(args, <span class="keyword">long</span> *);</span><br><span class="line">				*ip = (str - buf);</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">int</span> *ip = va_arg(args, <span class="keyword">int</span> *);</span><br><span class="line">				*ip = (str - buf);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;%&#x27;</span>:</span><br><span class="line">			*str++ = <span class="string">&#x27;%&#x27;</span>;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">			<span class="comment">/* integer number formats - set up the flags and &quot;break&quot; */</span></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;o&#x27;</span>:</span><br><span class="line">			base = <span class="number">8</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;x&#x27;</span>:</span><br><span class="line">			flags |= SMALL;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;X&#x27;</span>:</span><br><span class="line">			base = <span class="number">16</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;d&#x27;</span>:</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;i&#x27;</span>:</span><br><span class="line">			flags |= SIGN;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;u&#x27;</span>:</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">			*str++ = <span class="string">&#x27;%&#x27;</span>;</span><br><span class="line">			<span class="keyword">if</span> (*fmt)</span><br><span class="line">				*str++ = *fmt;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				--fmt;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (qualifier == <span class="string">&#x27;l&#x27;</span>)</span><br><span class="line">			num = va_arg(args, <span class="keyword">unsigned</span> <span class="keyword">long</span>);</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (qualifier == <span class="string">&#x27;h&#x27;</span>) &#123;</span><br><span class="line">			num = (<span class="keyword">unsigned</span> <span class="keyword">short</span>)va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">			<span class="keyword">if</span> (flags &amp; SIGN)</span><br><span class="line">				num = (<span class="keyword">short</span>)num;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (flags &amp; SIGN)</span><br><span class="line">			num = va_arg(args, <span class="keyword">int</span>);</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			num = va_arg(args, <span class="keyword">unsigned</span> <span class="keyword">int</span>);</span><br><span class="line">		str = number(str, num, base, field_width, precision, flags);</span><br><span class="line">	&#125;</span><br><span class="line">	*str = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">	<span class="keyword">return</span> str - buf;</span><br></pre></td></tr></table></figure>
+
+<h2 id="number函数"><a href="#number函数" class="headerlink" title="number函数"></a>number函数</h2><p>首先分析一下这个宏定义的作用,如果先看number函数里面用到这个宏居然是放在<code>[]</code>里面的,因此可以猜测作用是用来偏移寻址的.有些人会问,C语言里面可以这样用吗?(答案很明了了,不能用怎么编译通过呢?所以还是需要多看别人写的代码,有些用法不常用的但是如果好用就可以Get到了)编译器编译的时候能够生成合适的代码即可.这个宏的作用是求出n对base余数,并使得n变为商,同时”返回”余数__res.主要用于八进制和十六进制的数值与字符的转换.(不知是否C语言的思想是一切皆为表达式,据说类*nix操作系统和shell的核心思想分别是<code>一切皆为文件</code>和<code>一切皆为表达式</code>.)</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __do_div(n, base) (&#123; \</span></span><br><span class="line"><span class="meta">int __res; \</span></span><br><span class="line"><span class="meta">__res = ((unsigned long) n) % (unsigned) base; \</span></span><br><span class="line"><span class="meta">n = ((unsigned long) n) / (unsigned) base; \</span></span><br><span class="line"><span class="meta">__res; &#125;)</span></span><br></pre></td></tr></table></figure>
+<p>再来看number函数的实现,首先分析函数的参数以及返回值,作为软件工程师应该要做到文档清晰可理解,各个接口的参数以及返回值的作用解释清楚.<code>static</code>类型的函数表明这个函数仅仅在这个文件作用域可以调用,这样减少了命名冲突问题.<code>char *</code>返回值表明能够实现链式功能,可对比<code>strcpy</code>函数的实现.再来看参数,第一个str即上层传入的str首地址,表明要对上层传进来的参数空间进行修改.第二个<code>num</code>是对%idp等格式化的栈参数的一个拷贝.第三个<code>base</code>顾名思义就是进制基数了.第四个<code>size</code>即为对齐宽度.第五个为精度,最后一个为标志位字段.<br>首先定义一个静态的常量数组保存进制转换的字符,便于直接寻址取得相应字符赋值给str.<code>tmp[66]</code>我认为目前来看是有点长,它的作用是暂存num转换之后的数据,num最大为<code>long</code>的最大值,为2^64(64bit),也就是16个F,即16个字符即可,愚以为有点多余~~~.locase探测type字段的SMALL标志,不得不说SMALL标志位也是取得合理,32-&gt;第4位置位,使得可以很轻松地<code>或</code>运算实现大写字符-&gt;小写字符(ascii码相差32).如果<code>0</code>和<code>-</code>同时置位,gcc编译器会提示<code>warning: &#39;0&#39; flag ignored with &#39;-&#39; flag in gnu_printf format [-Wformat=]</code>,表明会忽略掉<code>0</code>的作用,具体实现也是这样.首先会判断是否有左对齐标志,有的话就用经典的<code>&amp;= ~</code>运算来清除相应标志位,这个在嵌入式开发里面很常见,一般是操作外设寄存器用的.在这里的逻辑是清除<code>补零</code>标志.这里也有一个健壮性的判断,不过number函数仅限于本文件调用,一般的开发者应该不会传入错误的base.字符<code>c</code>也是用来填充的,为<code>0</code>或者空格.接下来就是检测SIGH标志,并根据正负和0填充的需求占据<code>size</code>和置位<code>sign</code>.之后判断16进制和8进制情况,16进制的<code>size</code>减2是由于要填充<code>0x</code>或者<code>0X</code>,8进制只需要填充<code>0</code>即可.之后就开始进制转换成字符了,并根据<code>locase</code>的实际情况对于16进制翻转大小写字符.而对于数字0~9,由于他们的ascii码的第4位已经置位,所以或上1并不影响自身的值,而默认的大写字母第4位没有置位,如果程序员需要转换就可以转换.这个是很巧妙的!!!值得学习的技巧.传进来的<code>precision</code>表示精度,由于这里没有浮点匹配,这里就主要用来截取串的长度.如果<code>ZEROPAD</code>和<code>LEFT</code>都没有置位,就填充空格.然后根据进制继续填充数值.如果不是左对齐,就根据<code>size</code>的剩余大小继续填充<code>c</code>,后面就根据i的情况填充了,直到满足<code>size</code>这个宽度域为0.最后返回<code>str</code>的首地址.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">char</span> *<span class="title">number</span><span class="params">(<span class="keyword">char</span> *str, <span class="keyword">long</span> num, <span class="keyword">int</span> base, <span class="keyword">int</span> size, <span class="keyword">int</span> precision,</span></span></span><br><span class="line"><span class="params"><span class="function">		    <span class="keyword">int</span> type)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">/* we are called with base 8, 10 or 16, only, thus don&#x27;t need &quot;G...&quot;  */</span></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">char</span> digits[<span class="number">16</span>] = <span class="string">&quot;0123456789ABCDEF&quot;</span>; <span class="comment">/* &quot;GHIJKLMNOPQRSTUVWXYZ&quot;; */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">char</span> tmp[<span class="number">66</span>];</span><br><span class="line">	<span class="keyword">char</span> c, sign, locase;</span><br><span class="line">	<span class="keyword">int</span> i;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* locase = 0 or 0x20. ORing digits or letters with &#x27;locase&#x27;</span></span><br><span class="line"><span class="comment">	 * produces same digits or (maybe lowercased) letters */</span></span><br><span class="line">	locase = (type &amp; SMALL);</span><br><span class="line">	<span class="keyword">if</span> (type &amp; LEFT)</span><br><span class="line">		type &amp;= ~ZEROPAD;</span><br><span class="line">	<span class="keyword">if</span> (base &lt; <span class="number">2</span> || base &gt; <span class="number">16</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">	c = (type &amp; ZEROPAD) ? <span class="string">&#x27;0&#x27;</span> : <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">	sign = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span> (type &amp; SIGN) &#123;</span><br><span class="line">		<span class="keyword">if</span> (num &lt; <span class="number">0</span>) &#123;</span><br><span class="line">			sign = <span class="string">&#x27;-&#x27;</span>;</span><br><span class="line">			num = -num;</span><br><span class="line">			size--;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (type &amp; PLUS) &#123;</span><br><span class="line">			sign = <span class="string">&#x27;+&#x27;</span>;</span><br><span class="line">			size--;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (type &amp; SPACE) &#123;</span><br><span class="line">			sign = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">			size--;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (type &amp; SPECIAL) &#123;</span><br><span class="line">		<span class="keyword">if</span> (base == <span class="number">16</span>)</span><br><span class="line">			size -= <span class="number">2</span>;</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (base == <span class="number">8</span>)</span><br><span class="line">			size--;</span><br><span class="line">	&#125;</span><br><span class="line">	i = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span> (num == <span class="number">0</span>)</span><br><span class="line">		tmp[i++] = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		<span class="keyword">while</span> (num != <span class="number">0</span>)</span><br><span class="line">			tmp[i++] = (digits[__do_div(num, base)] | locase);</span><br><span class="line">	<span class="keyword">if</span> (i &gt; precision)</span><br><span class="line">		precision = i;</span><br><span class="line">	size -= precision;</span><br><span class="line">	<span class="keyword">if</span> (!(type &amp; (ZEROPAD + LEFT)))</span><br><span class="line">		<span class="keyword">while</span> (size-- &gt; <span class="number">0</span>)</span><br><span class="line">			*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">	<span class="keyword">if</span> (sign)</span><br><span class="line">		*str++ = sign;</span><br><span class="line">	<span class="keyword">if</span> (type &amp; SPECIAL) &#123;</span><br><span class="line">		<span class="keyword">if</span> (base == <span class="number">8</span>)</span><br><span class="line">			*str++ = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (base == <span class="number">16</span>) &#123;</span><br><span class="line">			*str++ = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">			*str++ = (<span class="string">&#x27;X&#x27;</span> | locase);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (!(type &amp; LEFT))</span><br><span class="line">		<span class="keyword">while</span> (size-- &gt; <span class="number">0</span>)</span><br><span class="line">			*str++ = c;</span><br><span class="line">	<span class="keyword">while</span> (i &lt; precision--)</span><br><span class="line">		*str++ = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">	<span class="keyword">while</span> (i-- &gt; <span class="number">0</span>)</span><br><span class="line">		*str++ = tmp[i];</span><br><span class="line">	<span class="keyword">while</span> (size-- &gt; <span class="number">0</span>)</span><br><span class="line">		*str++ = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">	<span class="keyword">return</span> str;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="puts"><a href="#puts" class="headerlink" title="puts"></a>puts</h2><p>至于puts的实现应该就不难了,内核中有很多处代码.应该就是简单地逐字节地拷贝到某缓冲区,再由内核的IO调度机制向屏幕或者串口等字符驱动设备文件拷贝输出.一般在嵌入式开发里面串口输出的比较常见.而普通PC的CPU(类似以前8086时代的intel)可能是按照主板等的设计给显存预留出地址空间,只要CPU把数据送往那个地址空间(貌似是0x0B800)显示设备就能够打印出相应的字符.</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>最起初的printf实现大概就这么多吧,可能内核开发者考虑到某些CPU没有浮点体系就没有把处理浮点类型的情况加进去的,标准的printf实现还是需要参考glibc库的.后期有空继续分析.对了,前面有说到<code>格式化字符串漏洞</code>参考看雪论坛这篇<a target="_blank" rel="noopener" href="http://bbs.pediy.com/showthread.php?t=213153">文章</a>,如果没注册看不了的话先<a target="_blank" rel="noopener" href="http://mp.weixin.qq.com/s?__biz=MjM5NTc2MDYxMw==&mid=2458279936&idx=1&sn=2eb47265a0d170c45403d4b5d9097549&chksm=b181508a86f6d99c27d4b2c9281a573ac16284c3a7f7f6f3d9cad3a7452f3bcc22ba15616303&scene=0#wechat_redirect">戳这里吧</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/Linux-kernel/" rel="tag"># Linux kernel</a>
+              <a href="/embpgp.github.io/tags/C-C/" rel="tag"># C/C++</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/09/18/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%9F%BA%E6%9C%AC%E8%A6%81%E7%B4%A0%E5%8F%8A%E5%AF%B9%E7%AD%96/" rel="prev" title="网络安全基本要素及对策">
+      <i class="fa fa-chevron-left"></i> 网络安全基本要素及对策
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2016/10/17/job-summary/" rel="next" title="求职艰辛路">
+      求职艰辛路 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#printf%E5%A4%A7%E4%BD%93"><span class="nav-number">1.</span> <span class="nav-text">printf大体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#va-%E7%B3%BB%E7%B1%BB%E5%AE%8F"><span class="nav-number">2.</span> <span class="nav-text">va_系类宏</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vsprintf"><span class="nav-number">3.</span> <span class="nav-text">vsprintf</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#number%E5%87%BD%E6%95%B0"><span class="nav-number">4.</span> <span class="nav-text">number函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#puts"><span class="nav-number">5.</span> <span class="nav-text">puts</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

