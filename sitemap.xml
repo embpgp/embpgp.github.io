@@ -23,6 +23,13 @@
   </url>
   
   <url>
+    <loc>https://embpgp.github.io/2021/08/08/VPC%E7%BD%91%E7%BB%9C%E6%89%93%E9%80%9A%E7%A0%94%E7%A9%B6/</loc>
+    
+    <lastmod>2025-03-11</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://embpgp.github.io/2016/08/25/%E6%97%A0%E4%BA%BA%E6%9C%BA%E5%AD%A6%E4%B9%A0%E6%A6%82%E5%86%B5/</loc>
     
     <lastmod>2025-03-11</lastmod>
@@ -93,13 +100,6 @@
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/2016/10/27/%E5%B8%B8%E7%94%A8VPN%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AE/</loc>
-    
-    <lastmod>2025-03-11</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://embpgp.github.io/2016/09/25/%E4%B8%80%E8%B5%B7%E6%9D%A5%E6%92%B8printf%E5%90%A7/</loc>
     
     <lastmod>2025-03-11</lastmod>
@@ -107,7 +107,7 @@
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/2016/12/20/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</loc>
+    <loc>https://embpgp.github.io/2016/10/27/%E5%B8%B8%E7%94%A8VPN%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AE/</loc>
     
     <lastmod>2025-03-11</lastmod>
     
@@ -121,14 +121,14 @@
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/2017/08/04/gentoo-install/</loc>
+    <loc>https://embpgp.github.io/2016/12/20/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</loc>
     
     <lastmod>2025-03-11</lastmod>
     
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/2016/08/16/hello-world/</loc>
+    <loc>https://embpgp.github.io/2017/08/25/compile-VLC-for-Linux/</loc>
     
     <lastmod>2025-03-11</lastmod>
     
@@ -142,7 +142,28 @@
   </url>
   
   <url>
+    <loc>https://embpgp.github.io/2017/08/04/gentoo-install/</loc>
+    
+    <lastmod>2025-03-11</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://embpgp.github.io/2017/04/27/getshell-on-Win7-x64/</loc>
+    
+    <lastmod>2025-03-11</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://embpgp.github.io/2021/07/20/golang-init/</loc>
+    
+    <lastmod>2025-03-11</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://embpgp.github.io/2016/08/16/hello-world/</loc>
     
     <lastmod>2025-03-11</lastmod>
     
@@ -191,14 +212,14 @@
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%85%AD%E7%AB%A0/</loc>
+    <loc>https://embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%BA%94%E7%AB%A0/</loc>
     
     <lastmod>2025-03-11</lastmod>
     
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%BA%94%E7%AB%A0/</loc>
+    <loc>https://embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%85%AD%E7%AB%A0/</loc>
     
     <lastmod>2025-03-11</lastmod>
     
@@ -233,14 +254,14 @@
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/2016/11/07/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%80%E7%AB%A0/</loc>
+    <loc>https://embpgp.github.io/2016/12/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E6%9D%A5%E5%90%A7-Minix/</loc>
     
     <lastmod>2025-03-11</lastmod>
     
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/2016/12/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E6%9D%A5%E5%90%A7-Minix/</loc>
+    <loc>https://embpgp.github.io/2016/11/07/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%B8%80%E7%AB%A0/</loc>
     
     <lastmod>2025-03-11</lastmod>
     
@@ -268,14 +289,14 @@
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/categories/index.html</loc>
+    <loc>https://embpgp.github.io/about/index.html</loc>
     
     <lastmod>2025-03-11</lastmod>
     
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/about/index.html</loc>
+    <loc>https://embpgp.github.io/categories/index.html</loc>
     
     <lastmod>2025-03-11</lastmod>
     
@@ -295,27 +316,6 @@
     
   </url>
   
-  <url>
-    <loc>https://embpgp.github.io/2021/08/08/VPC%E7%BD%91%E7%BB%9C%E6%89%93%E9%80%9A%E7%A0%94%E7%A9%B6/</loc>
-    
-    <lastmod>2021-08-08</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://embpgp.github.io/2021/07/20/golang-init/</loc>
-    
-    <lastmod>2021-08-08</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://embpgp.github.io/2017/08/25/compile-VLC-for-Linux/</loc>
-    
-    <lastmod>2021-07-18</lastmod>
-    
-  </url>
-  
 
   <url>
     <loc>https://embpgp.github.io/</loc>
@@ -324,6 +324,20 @@
     <priority>1.0</priority>
   </url>
 
+  
+  <url>
+    <loc>https://embpgp.github.io/tags/C-C/</loc>
+    <lastmod>2025-03-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://embpgp.github.io/tags/Linux/</loc>
+    <lastmod>2025-03-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
   
   <url>
     <loc>https://embpgp.github.io/tags/misc/</loc>
@@ -354,13 +368,6 @@
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/tags/C-C/</loc>
-    <lastmod>2025-03-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://embpgp.github.io/tags/Asm/</loc>
     <lastmod>2025-03-12</lastmod>
     <changefreq>daily</changefreq>
@@ -368,28 +375,21 @@
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/tags/Linux/</loc>
+    <loc>https://embpgp.github.io/tags/go/</loc>
     <lastmod>2025-03-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/tags/GNU-Linux/</loc>
+    <loc>https://embpgp.github.io/tags/%E8%AE%BE%E8%AE%A1/</loc>
     <lastmod>2025-03-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/tags/gentoo/</loc>
-    <lastmod>2025-03-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://embpgp.github.io/tags/Configure/</loc>
+    <loc>https://embpgp.github.io/tags/%E7%BD%91%E7%BB%9C/</loc>
     <lastmod>2025-03-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -404,6 +404,20 @@
   
   <url>
     <loc>https://embpgp.github.io/tags/shellcode/</loc>
+    <lastmod>2025-03-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://embpgp.github.io/tags/GNU-Linux/</loc>
+    <lastmod>2025-03-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://embpgp.github.io/tags/gentoo/</loc>
     <lastmod>2025-03-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -425,6 +439,13 @@
   
   <url>
     <loc>https://embpgp.github.io/tags/shadowbroker/</loc>
+    <lastmod>2025-03-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://embpgp.github.io/tags/Configure/</loc>
     <lastmod>2025-03-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -466,6 +487,20 @@
   </url>
   
   <url>
+    <loc>https://embpgp.github.io/tags/DIM-SUM/</loc>
+    <lastmod>2025-03-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://embpgp.github.io/tags/OS%E5%86%85%E6%A0%B8/</loc>
+    <lastmod>2025-03-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://embpgp.github.io/tags/emb/</loc>
     <lastmod>2025-03-12</lastmod>
     <changefreq>daily</changefreq>
@@ -493,52 +528,17 @@
     <priority>0.6</priority>
   </url>
   
-  <url>
-    <loc>https://embpgp.github.io/tags/go/</loc>
-    <lastmod>2025-03-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://embpgp.github.io/tags/%E8%AE%BE%E8%AE%A1/</loc>
-    <lastmod>2025-03-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://embpgp.github.io/tags/%E7%BD%91%E7%BB%9C/</loc>
-    <lastmod>2025-03-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://embpgp.github.io/tags/DIM-SUM/</loc>
-    <lastmod>2025-03-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://embpgp.github.io/tags/OS%E5%86%85%E6%A0%B8/</loc>
-    <lastmod>2025-03-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
 
   
   <url>
-    <loc>https://embpgp.github.io/categories/misc/</loc>
+    <loc>https://embpgp.github.io/categories/study/</loc>
     <lastmod>2025-03-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://embpgp.github.io/categories/study/</loc>
+    <loc>https://embpgp.github.io/categories/misc/</loc>
     <lastmod>2025-03-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
