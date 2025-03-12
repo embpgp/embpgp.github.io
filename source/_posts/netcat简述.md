@@ -16,6 +16,8 @@ categories:
 [Reverse shell](http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet)
 [NetCat for windows](https://joncraton.org/blog/46/netcat-for-windows/)
 
+<!--more-->
+
 ---
 
 # 1. nc能干啥？

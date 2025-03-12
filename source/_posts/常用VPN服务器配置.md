@@ -9,6 +9,8 @@ tags:
 ---
 
 
+<!--more-->
+
 参考资料:  
 [https://www.nigesb.com/setup-your-own-vpn-with-pptp.html](https://www.nigesb.com/setup-your-own-vpn-with-pptp.html)
 `sudo apt-get install pptpd`  

@@ -13,6 +13,7 @@ Hexo and NexT on Github 建博客折腾...
 ------   
 > 本来已经搭建好了,后来在知乎上看到了自己以前想解决的问题--->如何保证仓库所有的都同步.因为hexo只会生成网页所需要的部分,并不会将本地仓库所有内容都上传至github,由此再次折腾....为了在Windows上搭建环境看是否能够同步,由此再再次验证...
 
+<!--more-->
 **参考资料**  
 - [Hexo.io原装教程:https://hexo.io/zh-cn/docs/](https://hexo.io/zh-cn/docs/ "Hexo官网")  
 - [Next主题配置:http://theme-next.iissnan.com/theme-settings.html](http://theme-next.iissnan.com/theme-settings.html "Next主题")  

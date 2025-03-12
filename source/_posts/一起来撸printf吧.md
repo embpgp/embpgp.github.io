@@ -13,6 +13,9 @@ tags:
 
 > printf实现还隐藏了很多参数,例如%n,printf返回值是啥你知道吗?格式化字符串漏洞成因何在?这里分析Linux内核中的printf实现,而非glibc库中的标准实现(我们用的肯定是标准库咯,不过很复杂~_~),因为这里没有%f等浮点类型的匹配,简单一些.
 
+<!--more-->
+
+
 参考资料:  
 [Linus的github仓库https://github.com/torvalds/linux/blob/master/arch/x86/boot/printf.c](https://github.com/torvalds/linux/blob/master/arch/x86/boot/printf.c)
 
