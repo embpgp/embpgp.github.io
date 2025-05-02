@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 5.4.0">
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"embpgp.github.io","root":"/embpgp.github.io/","images":"/embpgp.github.io/images","scheme":"Gemini","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500}},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/embpgp.github.io/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/embpgp.github.io/js/config.js" defer></script>
+
+
+
+<link rel="canonical" href="https://embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%BA%94%E7%AB%A0/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%BA%94%E7%AB%A0/","path":"2016/12/14/Linux内核0-11完全注释-第五章/","title":"Linux内核0.11完全注释 第五章"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Linux内核0.11完全注释 第五章 | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/embpgp.github.io/js/utils.js" defer></script><script src="/embpgp.github.io/js/motion.js" defer></script><script src="/embpgp.github.io/js/sidebar.js" defer></script><script src="/embpgp.github.io/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous" defer></script>
+<script src="/embpgp.github.io/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/embpgp.github.io/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">rutk1t0r's blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a></li><li class="menu-item menu-item-categories"><a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a></li><li class="menu-item menu-item-archives"><a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">40</span></a></li><li class="menu-item menu-item-schedule"><a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="Searching..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#OS%E7%BB%84%E6%88%90%E9%83%A8%E5%88%86"><span class="nav-number">1.</span> <span class="nav-text">OS组成部分</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%8F%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">宏内核模型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">Linux内核体系结构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E6%A8%A1%E5%9D%97"><span class="nav-number">3.1.</span> <span class="nav-text">主要模块</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E6%A0%B8%E5%AF%B9%E5%86%85%E5%AD%98%E7%9A%84%E7%AE%A1%E7%90%86%E5%92%8C%E4%BD%BF%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">内核对内存的管理和使用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E5%B8%83%E8%A7%86%E5%9B%BE"><span class="nav-number">4.1.</span> <span class="nav-text">内存分布视图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E6%A6%82%E5%BF%B5"><span class="nav-number">4.2.</span> <span class="nav-text">内存地址空间概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Linux%E5%85%B7%E4%BD%93%E7%9A%84%E5%86%85%E5%AD%98%E5%88%86%E5%B8%83"><span class="nav-number">4.3.</span> <span class="nav-text">Linux具体的内存分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E6%AE%B5%E5%92%8C%E6%95%B0%E6%8D%AE%E6%AE%B5%E4%B8%89%E7%A7%8D%E5%9C%B0%E5%9D%80%E8%BD%AC%E6%8D%A2"><span class="nav-number">4.4.</span> <span class="nav-text">内核代码段和数据段三种地址转换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A10"><span class="nav-number">4.5.</span> <span class="nav-text">任务0</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A11"><span class="nav-number">4.6.</span> <span class="nav-text">任务1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E4%BB%BB%E5%8A%A1"><span class="nav-number">4.7.</span> <span class="nav-text">其他任务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E4%B8%BB%E5%8A%A8%E7%94%B3%E8%AF%B7%E7%9A%84%E5%86%85%E5%AD%98"><span class="nav-number">4.8.</span> <span class="nav-text">用户主动申请的内存</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6"><span class="nav-number">5.</span> <span class="nav-text">中断机制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="nav-number">6.</span> <span class="nav-text">系统调用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Linux%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6"><span class="nav-number">7.</span> <span class="nav-text">Linux进程控制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E6%96%B0%E8%BF%9B%E7%A8%8B"><span class="nav-number">7.1.</span> <span class="nav-text">创建新进程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E5%BA%A6%E7%A8%8B%E5%BA%8F"><span class="nav-number">7.2.</span> <span class="nav-text">调度程序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A0%86%E6%A0%88%E5%88%86%E5%B8%83"><span class="nav-number">7.3.</span> <span class="nav-text">堆栈分布</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">8.</span> <span class="nav-text">文件系统</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">9.</span> <span class="nav-text">小结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/embpgp.github.io/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/embpgp.github.io/categories/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/embpgp.github.io/tags/">
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+          Links
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E4%BA%94%E7%AB%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Linux内核0.11完全注释 第五章 | rutk1t0r's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux内核0.11完全注释 第五章
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2016-12-14 17:14:41" itemprop="dateCreated datePublished" datetime="2016-12-14T17:14:41+08:00">2016-12-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2025-05-02 08:38:29" itemprop="dateModified" datetime="2025-05-02T08:38:29+08:00">2025-05-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="Word count in article">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">Word count in article: </span>
+      <span>3.6k</span>
+    </span>
+    <span class="post-meta-item" title="Reading time">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">Reading time &asymp;</span>
+      <span>3 mins.</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>久违的章节,简介Linux内核体系结构<br><span id="more"></span></p>
+</blockquote>
+<hr>
+<h1 id="OS组成部分"><a href="#OS组成部分" class="headerlink" title="OS组成部分"></a>OS组成部分</h1><p><img src="/images/Linux_0.11_chapter5_Linux_kernel_arch.png" alt="Linux_0.11_chapter5_Linux_kernel_arch.png"></p>
+<blockquote>
+<p>所谓内核，主要是运行起来之后与计算机硬件交互，实现对硬件部件的编程控制和接口操作，调度对硬件资源的访问，并且为计算机的用户程序提供一个高级环境和对硬件的虚拟接口。个人认为纯粹地看就是一大堆的数据结构和策略算法以及驱动程序，当然为了能够发挥作用必须得提供接口给用户等等。</p>
+</blockquote>
+<h1 id="宏内核模型"><a href="#宏内核模型" class="headerlink" title="宏内核模型"></a>宏内核模型</h1><p><img src="/images/Linux_0.11_chapter5_Linux_kernel_single_model.png" alt="Linux_0.11_chapter5_Linux_kernel_single_model.png"></p>
+<ul>
+<li>灵活运用计算机体系里最重要的”分层”思想，可以很好地解决大问题，此时可以揣摩计算机网络等等</li>
+<li>服务提供者和调用者即“客户-服务”思想让人容易想到C++类等等机制</li>
+</ul>
+<h1 id="Linux内核体系结构"><a href="#Linux内核体系结构" class="headerlink" title="Linux内核体系结构"></a>Linux内核体系结构</h1><h2 id="主要模块"><a href="#主要模块" class="headerlink" title="主要模块"></a>主要模块</h2><ul>
+<li>进程调度</li>
+<li>内存管理</li>
+<li>文件系统</li>
+<li>进程间通信</li>
+<li>网络接口<br><img src="/images/Linux_0.11_chapter5_Linux_kernel_arch_picture.png" alt="Linux_0.11_chapter5_Linux_kernel_arch_picture.png"></li>
+</ul>
+<h1 id="内核对内存的管理和使用"><a href="#内核对内存的管理和使用" class="headerlink" title="内核对内存的管理和使用"></a>内核对内存的管理和使用</h1><h2 id="内存分布视图"><a href="#内存分布视图" class="headerlink" title="内存分布视图"></a>内存分布视图</h2><p><img src="/images/Linux_0.11_chapter5_Linux_kernel_mm_function.png" alt="Linux_0.11_chapter5_Linux_kernel_mm_function.png"></p>
+<ul>
+<li>其中显存和ROM BIOS部分是由于工程师在集成PC的时候把地址空间分给了它们。</li>
+<li>分段机制在Intel处理器中必须开启，但是软件工程师可以采用”平坦模式”寻址使得没有分段</li>
+<li>分页机制需要大量的”铺垫”才能启用，并且为mm子系统提供支持<h2 id="内存地址空间概念"><a href="#内存地址空间概念" class="headerlink" title="内存地址空间概念"></a>内存地址空间概念</h2></li>
+<li>虚拟地址:由程序运行时候CPU内部的段选择子和段内偏移组成，因为没有直接用来访问物理内存(区别于8086时代)，因此成为虚拟地址。虚拟地址空间由GDT和LDT映射组成，理论上的空间总量(注意不要又扯到物理地址去了，不要管地址总线多少根)为2^13*4G=64T。逻辑地址即可理解为虚拟地址。</li>
+<li>线性地址:虚拟地址和物理地址变换之间的中间层，是处理器可以寻址的内存空间。即相应的段基址加上偏移地址即可，相当于去描述符表中或者高速缓存中取了一次数据后合并后的地址。如果此时没有启用分页机制，则线性地址即为物理地址，CPU直接放在地址总线上去内存中存取数据。</li>
+<li>物理地址:即CPU外部总线上的地址信号，如果开启分页机制，则线性地址必须经过CR3、页目录和页表等转换才能送到地址总线上。</li>
+<li>虚拟存储:即OS使得CPU对所有内存的寻址加一个”hook”,以满足最大化的需求。</li>
+</ul>
+<p><img src="/images/Linux_0.11_chapter5_Linux_kernel_vm_space.png" alt="Linux_0.11_chapter5_Linux_kernel_vm_space.png"></p>
+<h2 id="Linux具体的内存分布"><a href="#Linux具体的内存分布" class="headerlink" title="Linux具体的内存分布"></a>Linux具体的内存分布</h2><p><img src="/images/Linux_0.11_chapter5_Linux_kernel_line_addr.png" alt="Linux_0.11_chapter5_Linux_kernel_line_addr.png"></p>
+<ul>
+<li>虽然代码段和数据段共用一个内存空间，但是对于当时的版本来说安全性不是首要考虑的，因此一切以方便工程师编程为出发点。</li>
+<li>各种人工的定义也是为了方便操作。<br><img src="/images/Linux_0.11_chapter5_Linux_kernel_process_code_data_space.png" alt="Linux_0.11_chapter5_Linux_kernel_process_code_data_space.png"></li>
+</ul>
+<h2 id="内核代码段和数据段三种地址转换"><a href="#内核代码段和数据段三种地址转换" class="headerlink" title="内核代码段和数据段三种地址转换"></a>内核代码段和数据段三种地址转换</h2><p><img src="/images/Linux_0.11_chapter5_Linux_kernel_code_data_on_3_addr_convert.png" alt="Linux_0.11_chapter5_Linux_kernel_code_data_on_3_addr_convert.png"></p>
+<ul>
+<li>在head.s程序的初始化过程中把内核代码段和数据段都设置为16M的段，两个段重叠并且线性地址都为0开始到0xFFFFF。</li>
+<li>在这16M的内核空间中包括所有的代码、内核段表、页目录表和内核的二级页表、内核局部数据以及内核临时堆栈(将被用作任务0的用户堆栈)。</li>
+<li>16M的空间仅仅需要4个页表(16M/1024/4K=4)，一个页4*1024字节,一个页目录项包括1024个页表，一个页表含有1024个页，因此仅仅需要一个页目录表和4个页表即可。(默认情况Linux 0.11最多可以管理16MB的物理内存)</li>
+<li>小于16M的物理内存也可以运行Linux 0.11,在init/main.c中也仅仅映射了0-16MB的内存范围，多了也用不到，除非自己修改内核代码，增加页表。</li>
+</ul>
+<h2 id="任务0"><a href="#任务0" class="headerlink" title="任务0"></a>任务0</h2><ul>
+<li>空闲进程，主要执行pause()系统调用<br><img src="/images/Linux_0.11_chapter5_task0_space.png" alt="Linux_0.11_chapter5_task0_space.png"><h2 id="任务1"><a href="#任务1" class="headerlink" title="任务1"></a>任务1</h2></li>
+<li>init进程<br><img src="/images/Linux_0.11_chapter5_task1_space_part1.png" alt="Linux_0.11_chapter5_task1_space_part1.png"><br><img src="/images/Linux_0.11_chapter5_task1_space_part2.png" alt="Linux_0.11_chapter5_task1_space_part2.png"><h2 id="其他任务"><a href="#其他任务" class="headerlink" title="其他任务"></a>其他任务</h2><img src="/images/Linux_0.11_chapter5_other_task_space.png" alt="Linux_0.11_chapter5_other_task_space.png"><br><img src="/images/Linux_0.11_chapter5_other_task_space_part2.png" alt="Linux_0.11_chapter5_other_task_space_part2.png"><h2 id="用户主动申请的内存"><a href="#用户主动申请的内存" class="headerlink" title="用户主动申请的内存"></a>用户主动申请的内存</h2></li>
+<li>由task_struct结构体(PCB)维护的brk值满足C库中malloc函数的动态堆内存分布需求。</li>
+<li>内核仅仅更新brk值并延迟等到访问页失败的时候才分配真正的空间</li>
+<li>free释放的时候也仅仅是告知内核将对应的页标记为空闲，以被程序再次使用，当进程结束的时候才回收。</li>
+</ul>
+<h1 id="中断机制"><a href="#中断机制" class="headerlink" title="中断机制"></a>中断机制</h1><ul>
+<li>采用外置8259A芯片来管理多级优先级中断。<br><img src="/images/Linux_0.11_chapter5_int_8259.png" alt="Linux_0.11_chapter5_int_8259.png"><br><img src="/images/Linux_0.11_chapter5_int_IRP.png" alt="Linux_0.11_chapter5_int_IRP.png"></li>
+<li>中断请求号对应实际的信号引脚，中断号将由PIC通过数据总线送往CPU。</li>
+<li>中断门和陷阱门的区别在于对EFLAGS中的IF的影响，进入到中断门后CPU会自动复位IF以防止其他中断干扰，随后的iret也会自动从堆栈中恢复，而陷阱门则不会影响IF。<br><img src="/images/Linux_0.11_chapter5_int_number_part1.png" alt="Linux_0.11_chapter5_int_number_part1.png"><br><img src="/images/Linux_0.11_chapter5_int_number_part2.png" alt="Linux_0.11_chapter5_int_number_part2.png"></li>
+</ul>
+<h1 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h1><ul>
+<li>syscalls是Linux内核与上层应用程序进行交互通信的唯一接口，约定调用软中断号为0x80(int 0x80)。参数传递为eax表示调用功能号，ebx、ecx、edx为参数，详情参考源码。</li>
+<li>0.11版本的多用C嵌入汇编实现</li>
+<li>0.11版本的内核约定进程在内核态运行不会被调度程序切换即进程在内核态运行时是不可抢占的。后期内核版本由于性能需求必须被设计成可抢占的。</li>
+</ul>
+<h1 id="Linux进程控制"><a href="#Linux进程控制" class="headerlink" title="Linux进程控制"></a>Linux进程控制</h1><ul>
+<li>任务主要数据结构<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">i387_struct</span> &#123;</span></span><br><span class="line">	<span class="type">long</span>	cwd;</span><br><span class="line">	<span class="type">long</span>	swd;</span><br><span class="line">	<span class="type">long</span>	twd;</span><br><span class="line">	<span class="type">long</span>	fip;</span><br><span class="line">	<span class="type">long</span>	fcs;</span><br><span class="line">	<span class="type">long</span>	foo;</span><br><span class="line">	<span class="type">long</span>	fos;</span><br><span class="line">	<span class="type">long</span>	st_space[<span class="number">20</span>];	<span class="comment">/* 8*10 bytes for each FP-reg = 80 bytes */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">tss_struct</span> &#123;</span></span><br><span class="line">	<span class="type">long</span>	back_link;	<span class="comment">/* 16 high bits zero */</span></span><br><span class="line">	<span class="type">long</span>	esp0;</span><br><span class="line">	<span class="type">long</span>	ss0;		<span class="comment">/* 16 high bits zero */</span></span><br><span class="line">	<span class="type">long</span>	esp1;</span><br><span class="line">	<span class="type">long</span>	ss1;		<span class="comment">/* 16 high bits zero */</span></span><br><span class="line">	<span class="type">long</span>	esp2;</span><br><span class="line">	<span class="type">long</span>	ss2;		<span class="comment">/* 16 high bits zero */</span></span><br><span class="line">	<span class="type">long</span>	cr3;</span><br><span class="line">	<span class="type">long</span>	eip;</span><br><span class="line">	<span class="type">long</span>	eflags;</span><br><span class="line">	<span class="type">long</span>	eax,ecx,edx,ebx;</span><br><span class="line">	<span class="type">long</span>	esp;</span><br><span class="line">	<span class="type">long</span>	ebp;</span><br><span class="line">	<span class="type">long</span>	esi;</span><br><span class="line">	<span class="type">long</span>	edi;</span><br><span class="line">	<span class="type">long</span>	es;		<span class="comment">/* 16 high bits zero */</span></span><br><span class="line">	<span class="type">long</span>	cs;		<span class="comment">/* 16 high bits zero */</span></span><br><span class="line">	<span class="type">long</span>	ss;		<span class="comment">/* 16 high bits zero */</span></span><br><span class="line">	<span class="type">long</span>	ds;		<span class="comment">/* 16 high bits zero */</span></span><br><span class="line">	<span class="type">long</span>	fs;		<span class="comment">/* 16 high bits zero */</span></span><br><span class="line">	<span class="type">long</span>	gs;		<span class="comment">/* 16 high bits zero */</span></span><br><span class="line">	<span class="type">long</span>	ldt;		<span class="comment">/* 16 high bits zero */</span></span><br><span class="line">	<span class="type">long</span>	trace_bitmap;	<span class="comment">/* bits: trace 0, bitmap 16-31 */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">i387_struct</span> <span class="title">i387</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> &#123;</span></span><br><span class="line"><span class="comment">/* these are hardcoded - don&#x27;t touch */</span></span><br><span class="line">	<span class="type">long</span> state;	<span class="comment">/* -1 unrunnable, 0 runnable, &gt;0 stopped */</span></span><br><span class="line">	<span class="type">long</span> counter; <span class="comment">//任务运行时间计数(递减)(滴答数),运行时间片</span></span><br><span class="line">	<span class="type">long</span> priority;<span class="comment">//优先级,初始化的时候等于上者</span></span><br><span class="line">	<span class="type">long</span> signal; <span class="comment">//信号,位图,每个比特代表一种信号</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">sigaction</span>[32];</span> <span class="comment">//信号执行属性结构，对应信号将要执行的操作和标志信息</span></span><br><span class="line">	<span class="type">long</span> blocked;	<span class="comment">/* bitmap of masked signals */</span> </span><br><span class="line"><span class="comment">/* various fields */</span></span><br><span class="line">	<span class="type">int</span> exit_code;<span class="comment">//父进程会采集</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span> start_code,end_code,end_data,brk,start_stack;<span class="comment">//代码段地址，长度等信息</span></span><br><span class="line">	<span class="type">long</span> pid,father,pgrp,session,leader;进程标识号,父进程号,进程组号,会话号，会话首领</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">short</span> uid,euid,suid;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">short</span> gid,egid,sgid;</span><br><span class="line">	<span class="type">long</span> alarm;<span class="comment">//报警定时值</span></span><br><span class="line">	<span class="type">long</span> utime,stime,cutime,cstime,start_time;<span class="comment">//各个状态运行时间</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">short</span> used_math;<span class="comment">//是否采用协处理器</span></span><br><span class="line"><span class="comment">/* file system info */</span></span><br><span class="line">	<span class="type">int</span> tty;		<span class="comment">/* -1 if no tty, so it must be signed */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">short</span> umask;<span class="comment">//文件创建属性屏蔽位</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">m_inode</span> * <span class="title">pwd</span>;</span><span class="comment">//当前目录i节点结构指针</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">m_inode</span> * <span class="title">root</span>;</span><span class="comment">//根目录i节点结构指针</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">m_inode</span> * <span class="title">executable</span>;</span><span class="comment">//执行文件i节点结构指针</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span> close_on_exec;<span class="comment">//执行时关闭文件句柄位图标志</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> * <span class="title">filp</span>[<span class="title">NR_OPEN</span>];</span><span class="comment">//文件结构指针表</span></span><br><span class="line"><span class="comment">/* ldt for this task 0 - zero 1 - cs 2 - ds&amp;ss */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">desc_struct</span> <span class="title">ldt</span>[3];</span></span><br><span class="line"><span class="comment">/* tss for this task */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tss_struct</span> <span class="title">tss</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="创建新进程"><a href="#创建新进程" class="headerlink" title="创建新进程"></a>创建新进程</h2><img src="/images/Linux_0.11_chapter5_fork_principle.png" alt="Linux_0.11_chapter5_fork_principle.png"><h2 id="调度程序"><a href="#调度程序" class="headerlink" title="调度程序"></a>调度程序</h2><img src="/images/Linux_0.11_chapter5_schedule_algorithm.png" alt="Linux_0.11_chapter5_schedule_algorithm.png"><h2 id="堆栈分布"><a href="#堆栈分布" class="headerlink" title="堆栈分布"></a>堆栈分布</h2><img src="/images/Linux_0.11_chapter5_stack_space.png" alt="Linux_0.11_chapter5_stack_space.png"></li>
+</ul>
+<h1 id="文件系统"><a href="#文件系统" class="headerlink" title="文件系统"></a>文件系统</h1><p><img src="/images/Linux_0.11_chapter5_file_system_minix.png" alt="Linux_0.11_chapter5_file_system_minix.png"></p>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>Linux 0.11内核基本框架摘录，详情还得根据需求继续参考，争取尽快熟悉根文件系统并拓展shell。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/C-C/" rel="tag"># C/C++</a>
+              <a href="/embpgp.github.io/tags/Linux-kernel/" rel="tag"># Linux kernel</a>
+              <a href="/embpgp.github.io/tags/LDD/" rel="tag"># LDD</a>
+              <a href="/embpgp.github.io/tags/Asm/" rel="tag"># Asm</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/embpgp.github.io/2016/11/22/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E7%95%AA%E5%A4%96%E7%AF%87/" rel="prev" title="Linux内核0.11完全注释 第四章-番外篇">
+                  <i class="fa fa-angle-left"></i> Linux内核0.11完全注释 第四章-番外篇
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/embpgp.github.io/2016/12/14/Linux%E5%86%85%E6%A0%B80-11%E5%AE%8C%E5%85%A8%E6%B3%A8%E9%87%8A-%E7%AC%AC%E5%85%AD%E7%AB%A0/" rel="next" title="Linux内核0.11完全注释 第六章">
+                  Linux内核0.11完全注释 第六章 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2016 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>Word count total: </span>
+    <span title="Word count total">152k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>Reading time total &asymp;</span>
+    <span title="Reading time total">2:18</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

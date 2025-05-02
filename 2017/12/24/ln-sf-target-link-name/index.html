@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 5.4.0">
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/embpgp.github.io/function%20()%20%7B%0A%20%20%20%20%20%20for%20(var%20_len2%20=%20arguments.length,%20args%20=%20new%20Array(_len2),%20_key2%20=%200;%20_key2%20%3C%20_len2;%20_key2++)%20%7B%0A%20%20%20%20%20%20%20%20args%5B_key2%5D%20=%20arguments%5B_key2%5D;%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20return%20obj%5Bval%5D.apply(obj,%20args);%0A%20%20%20%20%7D">
+
+<link rel="stylesheet" href="/embpgp.github.io/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"embpgp.github.io","root":"/embpgp.github.io/","images":"/embpgp.github.io/images","scheme":"Gemini","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500}},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/embpgp.github.io/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/embpgp.github.io/js/config.js" defer></script>
+
+
+
+<link rel="canonical" href="https://embpgp.github.io/2017/12/24/ln-sf-target-link-name/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://embpgp.github.io/2017/12/24/ln-sf-target-link-name/","path":"2017/12/24/ln-sf-target-link-name/","title":"ln -sf target link_name"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>ln -sf target link_name | rutk1t0r's blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/embpgp.github.io/js/utils.js" defer></script><script src="/embpgp.github.io/js/motion.js" defer></script><script src="/embpgp.github.io/js/sidebar.js" defer></script><script src="/embpgp.github.io/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous" defer></script>
+<script src="/embpgp.github.io/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/embpgp.github.io/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/embpgp.github.io/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">rutk1t0r's blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Developer and Researcher</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/embpgp.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/embpgp.github.io/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/embpgp.github.io/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags<span class="badge">29</span></a></li><li class="menu-item menu-item-categories"><a href="/embpgp.github.io/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories<span class="badge">4</span></a></li><li class="menu-item menu-item-archives"><a href="/embpgp.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives<span class="badge">40</span></a></li><li class="menu-item menu-item-schedule"><a href="/embpgp.github.io/schedule/notes.html" rel="section"><i class="fa fa-calendar fa-fw"></i>Schedule</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="Searching..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8B%E5%9B%A0"><span class="nav-number">1.</span> <span class="nav-text">事因</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C"><span class="nav-number">2.</span> <span class="nav-text">实验</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#down%E6%BA%90%E7%A0%81"><span class="nav-number">2.1.</span> <span class="nav-text">down源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%A7%E8%87%B4%E5%88%86%E6%9E%90ln%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.2.</span> <span class="nav-text">大致分析ln实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#file-name-concat"><span class="nav-number">2.3.</span> <span class="nav-text">file_name_concat</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="rutk1t0r"
+      src="/embpgp.github.io/images/avatar.png">
+  <p class="site-author-name" itemprop="name">rutk1t0r</p>
+  <div class="site-description" itemprop="description">gnireenigne 0x41414141 \xff\xe4\xcc</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/embpgp.github.io/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/embpgp.github.io/categories/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/embpgp.github.io/tags/">
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/embpgp" title="Github → https:&#x2F;&#x2F;github.com&#x2F;embpgp" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/rutk1t0r" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;rutk1t0r" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+          Links
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://www.hicoder.cn/" title="http:&#x2F;&#x2F;www.hicoder.cn" rel="noopener" target="_blank">Yuan</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="http://www.cnblogs.com/fangyz" title="http:&#x2F;&#x2F;www.cnblogs.com&#x2F;fangyz" rel="noopener" target="_blank">Fangyz</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="http://watch0.top/" title="http:&#x2F;&#x2F;watch0.top" rel="noopener" target="_blank">w@tch0</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://embpgp.github.io/2017/12/24/ln-sf-target-link-name/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/embpgp.github.io/images/avatar.png">
+      <meta itemprop="name" content="rutk1t0r">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="rutk1t0r's blog">
+      <meta itemprop="description" content="gnireenigne 0x41414141 \xff\xe4\xcc">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="ln -sf target link_name | rutk1t0r's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ln -sf target link_name
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2017-12-24 22:02:13" itemprop="dateCreated datePublished" datetime="2017-12-24T22:02:13+08:00">2017-12-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2025-05-02 08:38:29" itemprop="dateModified" datetime="2025-05-02T08:38:29+08:00">2025-05-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/embpgp.github.io/categories/study/" itemprop="url" rel="index"><span itemprop="name">study</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="Word count in article">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">Word count in article: </span>
+      <span>2.5k</span>
+    </span>
+    <span class="post-meta-item" title="Reading time">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">Reading time &asymp;</span>
+      <span>2 mins.</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>进程起不来?</p>
+</blockquote>
+<span id="more"></span>
+<hr>
+<h1 id="事因"><a href="#事因" class="headerlink" title="事因"></a>事因</h1><p>Linux下经常会创建软链接来指向真正的路径,特别是Web服务器的配置文件路径.事因是由于在bash脚本中用<code>ln -sf  target_conf_dir new_dir</code>,现象是首次执行的时候会正常创建<code>new_dir</code>,而当<code>new_dir</code>存在的时候,再次执行上述命令现象为在<code>new_dir</code>下新建了一个软链接,名字为<code>target_conf_dir</code>的base_dir,此时若<code>new_dir</code>未指向正确的链接且又用到<code>new_dir</code>的时候,错误就发生了,极有可能导致进程运行失败.</p>
+<h1 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h1><h2 id="down源码"><a href="#down源码" class="headerlink" title="down源码"></a>down源码</h2><p>ln是GNU自带的工具链,因此直接去<a target="_blank" rel="noopener" href="http://ftp.gnu.org/gnu/coreutils/">http://ftp.gnu.org/gnu/coreutils/</a>,可下载最新版的<code>coreutils-8.28.tar.xz</code>,解压后进入目录后经典的GNU三段式源码安装程序,即<code>configure-&gt;make-&gt;make install</code>,单独验证程序逻辑仅仅需要前面两步即可.</p>
+<h2 id="大致分析ln实现"><a href="#大致分析ln实现" class="headerlink" title="大致分析ln实现"></a>大致分析ln实现</h2><p>进入src/ln.c,找到main函数,可以看<code>usage</code>函数,其实就是<code>ln --help</code>的输出.由于重点关注<code>-sf</code>参数,因此找到静态变量中对这两个参数相关的<code>remove_existing_files,interactive,symbolic_link</code>,即当<code>-sf</code>加上的时候,三个变量分别是<code>true,false,true</code>.查看代码找到关键几处,一时<code>no_target_directory</code>是否为NULL,暂时不考虑-T和-t参数,因此逻辑走到<code>!target_directory</code>的else if处,在这里将判断目标链接文件是否为目录的问题,如果命令执行的时候不加,则认为是当前目录.下创建,而&gt;2直接认为非法出<code>die</code>了,因此只能等于2,同时短路if语句去执行<code>target_directory_operand</code>函数,这个函数将直接根据是否有属于-n参数很大一部分程度来决定目标<code>target_directory</code>是否为NULL,如果有-n参数,lstat函数将取到链接文件本身,因此每次这个函数返回false,直接导致<code>target_directory</code>指针为NULL,后面将直接执行else语句<code>ok = do_link (file[0], file[1]);</code>去了.如果-n没有置位,则根据stat函数取得链接文件指向的文件看是否为目录.<code>bool is_a_dir = !err &amp;&amp; S_ISDIR (st.st_mode);</code>如果不为目录则也返回false也进入调用者的else逻辑.这些都不会导致’事故’的产生,最常见的是没加-n参数同时链接指向的是一个目录,这个时候就进入if逻辑.由于创建的是软链接,直接定位for循环,个人认为for循环是没必要的,n_files肯定为1,肯定只能执行一次.关键分析<code>file_name_concat</code>函数.</p>
+<h2 id="file-name-concat"><a href="#file-name-concat" class="headerlink" title="file_name_concat"></a>file_name_concat</h2><p>首先调用者传递的参数中第一个是链接文件路径,第二个是取了<code>last_component</code>源文件路径的末尾,即不包括/之前的部分,同时第三个参数暂时没什么用.分析函数逻辑,这个函数主要是拼接路径,通过<code>DBG</code>宏定义打印,此函数将直接返回在链接目录下再生成一个链接文件指向源文件,此时很可能就违背了命令执行者的本意了.如下:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">root@Rutk1t0r:coreutils-8.28# src/ln -sf /home/rutk1t0r/ /tmp//test/eee</span><br><span class="line">[src/ln.c][533 main]n_files:2</span><br><span class="line">[src/ln.c][559 main]file[n_files -1] = file[1] = /tmp//test/eee</span><br><span class="line">[src/ln.c][132 target_directory_operand]err:0</span><br><span class="line">[src/ln.c][134 target_directory_operand]is_a_dir:<span class="literal">true</span></span><br><span class="line">[src/ln.c][579 main]target_dir:/tmp//test/eee</span><br><span class="line">[lib/filenamecat-lgpl.c][73 mfile_name_concat][param] <span class="built_in">dir</span>:/tmp//test/eee, abase:rutk1t0r/</span><br><span class="line">[lib/filenamecat-lgpl.c][77 mfile_name_concat]dirbase:eee, dirbaselen:3, dirlen:14, needs_separator:1, base:rutk1t0r/, baselen:9</span><br><span class="line">[lib/filenamecat-lgpl.c][87 mfile_name_concat]ret value:/tmp//test/eee/rutk1t0r/ ,base_in_result:rutk1t0r/</span><br><span class="line">[src/ln.c][612 main]file:/home/rutk1t0r/, dest:/tmp//test/eee/rutk1t0r</span><br><span class="line">root@Rutk1t0r:coreutils-8.28#</span><br><span class="line"></span><br></pre></td></tr></table></figure><br>若加上-n参数,则执行如下:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@Rutk1t0r:coreutils-8.28# src/ln -sfn /home/rutk1t0r/ /tmp//test/eee</span><br><span class="line">[src/ln.c][533 main]n_files:2</span><br><span class="line">[src/ln.c][559 main]file[n_files -1] = file[1] = /tmp//test/eee</span><br><span class="line">[src/ln.c][132 target_directory_operand]err:0</span><br><span class="line">[src/ln.c][134 target_directory_operand]is_a_dir:<span class="literal">false</span></span><br><span class="line">[src/ln.c][579 main]target_dir:(null)</span><br><span class="line">[src/ln.c][619 main]file[0]:/home/rutk1t0r/, file[1]:/tmp//test/eee</span><br><span class="line">root@Rutk1t0r:coreutils-8.28# </span><br></pre></td></tr></table></figure><br>具体更改的代码见<a target="_blank" rel="noopener" href="https://github.com/embpgp/gnu_coreutils-8.28">Github:https://github.com/embpgp/gnu_coreutils-8.28</a></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>个人觉得这段代码写得并不怎么样…</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/embpgp.github.io/tags/coreutils/" rel="tag"># coreutils</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/embpgp.github.io/2017/10/18/teardrop%E5%88%86%E6%9E%90/" rel="prev" title="teardrop分析">
+                  <i class="fa fa-angle-left"></i> teardrop分析
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/embpgp.github.io/2021/07/20/golang-init/" rel="next" title="golang init">
+                  golang init <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2016 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">rutk1t0r</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>Word count total: </span>
+    <span title="Word count total">152k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>Reading time total &asymp;</span>
+    <span title="Reading time total">2:18</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
