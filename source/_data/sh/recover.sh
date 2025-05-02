@@ -26,6 +26,10 @@ npm install hexo@4.2.1
 npm install hexo@5.4.0 -f
 npm install -f
 
+# issue fix
+npm uninstall highlight.js  # 卸载旧版本
+npm install highlight.js@10.7.2 --save  # 安装稳定版v10.x
+
 : '
 hexo v
 INFO  Validating config
