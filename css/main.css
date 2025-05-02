@@ -1201,7 +1201,7 @@ pre code {
     vertical-align: middle;
   }
   .links-of-author a::before {
-    background: #7ede9f;
+    background: #4ff;
     display: inline-block;
     margin-right: 3px;
     transform: translateY(-2px);
@@ -1651,7 +1651,6 @@ pre code {
 }
 .back-to-top span {
   margin-right: 8px;
-  display: none;
 }
 .back-to-top .fa {
   text-align: center;
@@ -1675,6 +1674,16 @@ pre code {
 }
 .back-to-top.back-to-top-on {
   bottom: 30px;
+}
+.reading-progress-bar {
+  --progress: 0;
+  background: #37c6c0;
+  height: 3px;
+  position: fixed;
+  z-index: 50;
+  width: var(--progress);
+  left: 0;
+  bottom: 0;
 }
 .rtl.post-body p,
 .rtl.post-body a,
@@ -2772,5 +2781,19 @@ header.header {
   }
   .comments {
     padding: 10px 12px;
+  }
+}
+/* 文件路径：source/_data/styles.styl */
+.back-to-top {
+  left: auto !important;
+  right: 50px !important;
+  transition: right 0.3s ease-in-out;
+}
+.back-to-top:hover {
+  right: 45px;
+}
+@media (max-width: 767px) {
+  .back-to-top {
+    right: 15px !important;
   }
 }
