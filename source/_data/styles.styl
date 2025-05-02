@@ -1,0 +1,17 @@
+/* 文件路径：source/_data/styles.styl */
+.back-to-top {
+  // 基础定位
+  left: auto !important;
+  right: 50px !important;
+
+  // 动态效果
+  transition: right 0.3s ease-in-out;
+  &:hover {
+    right: 45px;  // 悬停时微调位置
+  }
+
+  // 移动端适配
+  +mobile() {
+    right: 15px !important;
+  }
+}
